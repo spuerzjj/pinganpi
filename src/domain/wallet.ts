@@ -23,12 +23,16 @@ export interface WalletSettlementResult {
 }
 
 export function settleWallet(input: WalletSettlementInput): WalletSettlementResult {
+  assertFen(input.balanceFen);
+  assertFen(input.monthlyIncomeFen);
+  assertFen(input.dailyLivingCostFen);
+
   const elapsedDays = fullUtcDaysBetween(input.lastSettledAt, input.now);
   const entries: LedgerEntryDraft[] = [];
   let balanceFen = input.balanceFen;
 
-  if (crossedMonthBoundary(input.lastSettledAt, input.now) && input.monthlyIncomeFen > 0) {
-    balanceFen += input.monthlyIncomeFen;
+  if (containsMonthlyIncomeBoundary(input.lastSettledAt, input.now) && input.monthlyIncomeFen > 0) {
+    balanceFen = addFen(balanceFen, input.monthlyIncomeFen);
     entries.push({
       kind: "income",
       amountFen: input.monthlyIncomeFen,
@@ -37,11 +41,13 @@ export function settleWallet(input: WalletSettlementInput): WalletSettlementResu
   }
 
   if (elapsedDays > 0 && input.dailyLivingCostFen > 0) {
-    const requestedCost = elapsedDays * input.dailyLivingCostFen;
+    const requestedCost = multiplyFen(input.dailyLivingCostFen, elapsedDays);
     const actualCost = Math.min(balanceFen, requestedCost);
 
     if (actualCost > 0) {
+      assertFen(actualCost);
       balanceFen -= actualCost;
+      assertFen(balanceFen);
       entries.push({
         kind: "living_cost",
         amountFen: -actualCost,
@@ -63,12 +69,18 @@ function fullUtcDaysBetween(start: Date, end: Date): number {
   return Math.max(0, Math.floor((endDay - startDay) / 86_400_000));
 }
 
-function crossedMonthBoundary(start: Date, end: Date): boolean {
-  return (
-    start.getUTCFullYear() !== end.getUTCFullYear() ||
-    start.getUTCMonth() !== end.getUTCMonth() ||
-    start.getUTCDate() === 1
-  );
+function containsMonthlyIncomeBoundary(start: Date, end: Date): boolean {
+  if (end <= start) {
+    return false;
+  }
+
+  const firstBoundary = Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), 1);
+  const candidateBoundary =
+    start.getTime() <= firstBoundary
+      ? firstBoundary
+      : Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 1);
+
+  return start.getTime() <= candidateBoundary && candidateBoundary < end.getTime();
 }
 
 function formatDayCount(days: number): string {
@@ -85,4 +97,22 @@ function formatDayCount(days: number): string {
   }
 
   return `${days}日`;
+}
+
+function addFen(left: Fen, right: Fen): Fen {
+  const result = left + right;
+  assertFen(result);
+  return result;
+}
+
+function multiplyFen(amountFen: Fen, multiplier: number): Fen {
+  const result = amountFen * multiplier;
+  assertFen(result);
+  return result;
+}
+
+function assertFen(value: number): asserts value is Fen {
+  if (!Number.isSafeInteger(value) || value < 0) {
+    throw new Error(`Invalid fen amount: ${value}`);
+  }
 }
