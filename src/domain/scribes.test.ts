@@ -73,4 +73,26 @@ describe("scribe attendance", () => {
 
     expect(attendance.map((scribe) => scribe.id)).toEqual(["xu"]);
   });
+
+  it("rejects invalid attendance rates", () => {
+    const invalidScribes: Scribe[] = [
+      {
+        id: "invalid",
+        name: "错账先生",
+        city: "广州",
+        style: "clerk",
+        feeFen: 2,
+        attendanceRate: 1.1,
+        specialties: []
+      }
+    ];
+
+    expect(() =>
+      getDailyAttendance({
+        city: "广州",
+        date: new Date(Date.UTC(2026, 4, 23)),
+        scribes: invalidScribes
+      })
+    ).toThrow("Invalid attendance rate");
+  });
 });

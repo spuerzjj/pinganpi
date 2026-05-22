@@ -27,6 +27,8 @@ export function getDailyAttendance(input: DailyAttendanceInput): Scribe[] {
 }
 
 function isScribePresent(scribe: Scribe, date: Date): boolean {
+  assertAttendanceRate(scribe.attendanceRate);
+
   if (scribe.attendanceRate <= 0) {
     return false;
   }
@@ -37,6 +39,12 @@ function isScribePresent(scribe: Scribe, date: Date): boolean {
 
   const roll = deterministicRoll(`${scribe.id}:${formatChinaDateKey(date)}`);
   return roll < scribe.attendanceRate;
+}
+
+function assertAttendanceRate(attendanceRate: number): void {
+  if (!Number.isFinite(attendanceRate) || attendanceRate < 0 || attendanceRate > 1) {
+    throw new Error(`Invalid attendance rate: ${attendanceRate}`);
+  }
 }
 
 function deterministicRoll(seed: string): number {
