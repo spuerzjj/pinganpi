@@ -27,32 +27,30 @@ export function settleWallet(input: WalletSettlementInput): WalletSettlementResu
   assertFen(input.monthlyIncomeFen);
   assertFen(input.dailyLivingCostFen);
 
-  const elapsedDays = fullUtcDaysBetween(input.lastSettledAt, input.now);
   const entries: LedgerEntryDraft[] = [];
   let balanceFen = input.balanceFen;
+  const startDay = utcDayStart(input.lastSettledAt);
+  const endDay = utcDayStart(input.now);
+  let contiguousLivingCostDays = 0;
 
-  if (containsMonthlyIncomeBoundary(input.lastSettledAt, input.now) && input.monthlyIncomeFen > 0) {
-    balanceFen = addFen(balanceFen, input.monthlyIncomeFen);
-    entries.push({
-      kind: "income",
-      amountFen: input.monthlyIncomeFen,
-      note: "本月余款入账"
-    });
-  }
-
-  if (elapsedDays > 0 && input.dailyLivingCostFen > 0) {
-    const requestedCost = multiplyFen(input.dailyLivingCostFen, elapsedDays);
-    const actualCost = Math.min(balanceFen, requestedCost);
-
-    if (actualCost > 0) {
-      assertFen(actualCost);
-      balanceFen -= actualCost;
-      assertFen(balanceFen);
+  for (let day = startDay; day < endDay; day += 86_400_000) {
+    if (isMonthlyIncomeBoundary(day, input.lastSettledAt) && input.monthlyIncomeFen > 0) {
+      balanceFen = addFen(balanceFen, input.monthlyIncomeFen);
       entries.push({
-        kind: "living_cost",
-        amountFen: -actualCost,
-        note: `饭食杂用${formatDayCount(elapsedDays)}`
+        kind: "income",
+        amountFen: input.monthlyIncomeFen,
+        note: "本月余款入账"
       });
+      contiguousLivingCostDays = 0;
+    }
+
+    const deductedFen = deductLivingCost(balanceFen, input.dailyLivingCostFen);
+
+    if (deductedFen > 0) {
+      balanceFen -= deductedFen;
+      assertFen(balanceFen);
+      contiguousLivingCostDays += 1;
+      appendLivingCost(entries, deductedFen, contiguousLivingCostDays);
     }
   }
 
@@ -63,24 +61,46 @@ export function settleWallet(input: WalletSettlementInput): WalletSettlementResu
   };
 }
 
-function fullUtcDaysBetween(start: Date, end: Date): number {
-  const startDay = Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate());
-  const endDay = Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate());
-  return Math.max(0, Math.floor((endDay - startDay) / 86_400_000));
+function utcDayStart(date: Date): number {
+  return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
 }
 
-function containsMonthlyIncomeBoundary(start: Date, end: Date): boolean {
-  if (end <= start) {
+function isMonthlyIncomeBoundary(day: number, lastSettledAt: Date): boolean {
+  const date = new Date(day);
+
+  if (date.getUTCDate() !== 1) {
     return false;
   }
 
-  const firstBoundary = Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), 1);
-  const candidateBoundary =
-    start.getTime() <= firstBoundary
-      ? firstBoundary
-      : Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 1);
+  return day > lastSettledAt.getTime() || day === lastSettledAt.getTime();
+}
 
-  return start.getTime() <= candidateBoundary && candidateBoundary < end.getTime();
+function deductLivingCost(balanceFen: Fen, dailyLivingCostFen: Fen): Fen {
+  if (dailyLivingCostFen <= 0 || balanceFen <= 0) {
+    return 0;
+  }
+
+  const actualCost = Math.min(balanceFen, dailyLivingCostFen);
+  assertFen(actualCost);
+  return actualCost;
+}
+
+function appendLivingCost(entries: LedgerEntryDraft[], amountFen: Fen, contiguousDays: number): void {
+  const lastEntry = entries.at(-1);
+
+  if (lastEntry?.kind === "living_cost") {
+    const nextAmount = Math.abs(lastEntry.amountFen) + amountFen;
+    assertFen(nextAmount);
+    lastEntry.amountFen = -nextAmount;
+    lastEntry.note = `饭食杂用${formatDayCount(contiguousDays)}`;
+    return;
+  }
+
+  entries.push({
+    kind: "living_cost",
+    amountFen: -amountFen,
+    note: "饭食杂用一日"
+  });
 }
 
 function formatDayCount(days: number): string {
@@ -101,12 +121,6 @@ function formatDayCount(days: number): string {
 
 function addFen(left: Fen, right: Fen): Fen {
   const result = left + right;
-  assertFen(result);
-  return result;
-}
-
-function multiplyFen(amountFen: Fen, multiplier: number): Fen {
-  const result = amountFen * multiplier;
   assertFen(result);
   return result;
 }

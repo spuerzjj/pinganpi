@@ -36,4 +36,16 @@ describe("era time helpers", () => {
 
     expect(formatPresentCorrespondence(realDate)).toBe("今时对应：2026 年 5 月 23 日");
   });
+
+  it("uses the Shanghai local calendar day around UTC boundaries", () => {
+    const realDate = new Date(Date.UTC(2026, 4, 22, 16, 30, 0));
+
+    const eraDate = toEraDate(realDate);
+
+    expect(formatEraDate(realDate)).toBe("一九六〇年五月二十三日");
+    expect(formatPresentCorrespondence(realDate)).toBe("今时对应：2026 年 5 月 23 日");
+    expect(eraDate.getUTCFullYear()).toBe(1960);
+    expect(eraDate.getUTCMonth()).toBe(4);
+    expect(eraDate.getUTCDate()).toBe(23);
+  });
 });

@@ -74,6 +74,40 @@ describe("wallet settlement", () => {
     ]);
   });
 
+  it("adds income for each crossed month start", () => {
+    const result = settleWallet({
+      balanceFen: 0,
+      monthlyIncomeFen: 120,
+      dailyLivingCostFen: 0,
+      lastSettledAt: new Date(Date.UTC(2026, 3, 30)),
+      now: new Date(Date.UTC(2026, 6, 2))
+    });
+
+    expect(result.balanceFen).toBe(360);
+    expect(result.entries).toEqual([
+      { kind: "income", amountFen: 120, note: "本月余款入账" },
+      { kind: "income", amountFen: 120, note: "本月余款入账" },
+      { kind: "income", amountFen: 120, note: "本月余款入账" }
+    ]);
+  });
+
+  it("settles living costs and income in calendar order", () => {
+    const result = settleWallet({
+      balanceFen: 5,
+      monthlyIncomeFen: 10,
+      dailyLivingCostFen: 8,
+      lastSettledAt: new Date(Date.UTC(2026, 3, 30)),
+      now: new Date(Date.UTC(2026, 4, 2))
+    });
+
+    expect(result.balanceFen).toBe(2);
+    expect(result.entries).toEqual([
+      { kind: "living_cost", amountFen: -5, note: "饭食杂用一日" },
+      { kind: "income", amountFen: 10, note: "本月余款入账" },
+      { kind: "living_cost", amountFen: -8, note: "饭食杂用一日" }
+    ]);
+  });
+
   it("rejects unsafe settlement amounts", () => {
     expect(() =>
       settleWallet({
