@@ -15,4 +15,11 @@ describe("old currency helpers", () => {
     expect(subtractFen(12, 8)).toBe(4);
     expect(() => subtractFen(5, 8)).toThrow("钱匣不足");
   });
+
+  it("rejects invalid and unsafe fen amounts", () => {
+    expect(() => formatFen(Number.MAX_SAFE_INTEGER + 1)).toThrow("Invalid fen amount");
+    expect(() => addFen(Number.MAX_SAFE_INTEGER, 1)).toThrow("Invalid fen amount");
+    expect(() => formatFen(-1)).toThrow("Invalid fen amount");
+    expect(() => formatFen(1.5)).toThrow("Invalid fen amount");
+  });
 });

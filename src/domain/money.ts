@@ -30,7 +30,9 @@ export function formatFen(totalFen: Fen): string {
 export function addFen(left: Fen, right: Fen): Fen {
   assertFen(left);
   assertFen(right);
-  return left + right;
+  const sum = left + right;
+  assertFen(sum);
+  return sum;
 }
 
 export function subtractFen(balance: Fen, cost: Fen): Fen {
@@ -45,7 +47,7 @@ export function subtractFen(balance: Fen, cost: Fen): Fen {
 }
 
 function assertFen(value: Fen): void {
-  if (!Number.isInteger(value) || value < 0) {
+  if (!Number.isSafeInteger(value) || value < 0) {
     throw new Error(`Invalid fen amount: ${value}`);
   }
 }
