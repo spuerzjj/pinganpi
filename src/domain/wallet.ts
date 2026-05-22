@@ -1,3 +1,4 @@
+import { addChinaLocalDays, getChinaLocalDateParts, getChinaLocalDayStartMs } from "./china-calendar.js";
 import type { Fen } from "./money.js";
 
 export type LedgerKind = "income" | "living_cost";
@@ -27,14 +28,25 @@ export function settleWallet(input: WalletSettlementInput): WalletSettlementResu
   assertFen(input.monthlyIncomeFen);
   assertFen(input.dailyLivingCostFen);
 
+  const lastSettledAtMs = input.lastSettledAt.getTime();
+  const nowMs = input.now.getTime();
+
+  if (nowMs < lastSettledAtMs) {
+    throw new Error("Settlement time cannot move backward");
+  }
+
   const entries: LedgerEntryDraft[] = [];
   let balanceFen = input.balanceFen;
-  const startDay = utcDayStart(input.lastSettledAt);
-  const endDay = utcDayStart(input.now);
+  const startDay = getChinaLocalDayStartMs(input.lastSettledAt);
+  const endDay = getChinaLocalDayStartMs(input.now);
   let contiguousLivingCostDays = 0;
 
-  for (let day = startDay; day < endDay; day += 86_400_000) {
-    if (isMonthlyIncomeBoundary(day, input.lastSettledAt) && input.monthlyIncomeFen > 0) {
+  for (let day = startDay; day <= endDay; day = addChinaLocalDays(day, 1)) {
+    if (day <= lastSettledAtMs || day > nowMs) {
+      continue;
+    }
+
+    if (isMonthlyIncomeBoundary(day) && input.monthlyIncomeFen > 0) {
       balanceFen = addFen(balanceFen, input.monthlyIncomeFen);
       entries.push({
         kind: "income",
@@ -61,18 +73,8 @@ export function settleWallet(input: WalletSettlementInput): WalletSettlementResu
   };
 }
 
-function utcDayStart(date: Date): number {
-  return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
-}
-
-function isMonthlyIncomeBoundary(day: number, lastSettledAt: Date): boolean {
-  const date = new Date(day);
-
-  if (date.getUTCDate() !== 1) {
-    return false;
-  }
-
-  return day > lastSettledAt.getTime() || day === lastSettledAt.getTime();
+function isMonthlyIncomeBoundary(dayStartMs: number): boolean {
+  return getChinaLocalDateParts(new Date(dayStartMs)).day === 1;
 }
 
 function deductLivingCost(balanceFen: Fen, dailyLivingCostFen: Fen): Fen {

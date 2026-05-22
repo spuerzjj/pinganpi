@@ -1,5 +1,6 @@
+import { getChinaLocalDateParts } from "./china-calendar.js";
+
 const YEAR_OFFSET = 66;
-const DEFAULT_TIME_ZONE = "Asia/Shanghai";
 const YEAR_DIGITS = ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九"] as const;
 const MONTH_NAMES = [
   "一月",
@@ -17,7 +18,7 @@ const MONTH_NAMES = [
 ] as const;
 
 export function toEraDate(realDate: Date): Date {
-  const localDate = getLocalDateParts(realDate);
+  const localDate = getChinaLocalDateParts(realDate);
 
   return new Date(
     Date.UTC(
@@ -48,56 +49,9 @@ export function formatEraDate(realDate: Date): string {
 }
 
 export function formatPresentCorrespondence(realDate: Date): string {
-  const localDate = getLocalDateParts(realDate);
+  const localDate = getChinaLocalDateParts(realDate);
 
   return `今时对应：${localDate.year} 年 ${localDate.month} 月 ${localDate.day} 日`;
-}
-
-function getLocalDateParts(date: Date): {
-  year: number;
-  month: number;
-  day: number;
-  hour: number;
-  minute: number;
-  second: number;
-  millisecond: number;
-} {
-  const formatter = new Intl.DateTimeFormat("en-US", {
-    timeZone: DEFAULT_TIME_ZONE,
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-    second: "numeric",
-    hourCycle: "h23",
-  });
-  const parts = Object.fromEntries(
-    formatter
-      .formatToParts(date)
-      .filter((part) => part.type !== "literal")
-      .map((part) => [part.type, Number(part.value)]),
-  );
-
-  return {
-    year: readDatePart(parts, "year"),
-    month: readDatePart(parts, "month"),
-    day: readDatePart(parts, "day"),
-    hour: readDatePart(parts, "hour"),
-    minute: readDatePart(parts, "minute"),
-    second: readDatePart(parts, "second"),
-    millisecond: date.getUTCMilliseconds(),
-  };
-}
-
-function readDatePart(parts: Record<string, number>, part: string): number {
-  const value = parts[part];
-
-  if (value === undefined || !Number.isInteger(value)) {
-    throw new Error(`Invalid ${part} part for ${DEFAULT_TIME_ZONE}`);
-  }
-
-  return value;
 }
 
 function formatChineseDay(day: number): string {

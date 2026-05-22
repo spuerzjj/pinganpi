@@ -1,3 +1,4 @@
+import { formatChinaDateKey } from "./china-calendar.js";
 import type { Fen } from "./money.js";
 
 export type ScribeStyle = "street" | "old-scholar" | "schoolmaster" | "clerk";
@@ -34,12 +35,8 @@ function isScribePresent(scribe: Scribe, date: Date): boolean {
     return true;
   }
 
-  const roll = deterministicRoll(`${scribe.id}:${formatDateKey(date)}`);
+  const roll = deterministicRoll(`${scribe.id}:${formatChinaDateKey(date)}`);
   return roll < scribe.attendanceRate;
-}
-
-function formatDateKey(date: Date): string {
-  return `${date.getUTCFullYear()}-${date.getUTCMonth() + 1}-${date.getUTCDate()}`;
 }
 
 function deterministicRoll(seed: string): number {

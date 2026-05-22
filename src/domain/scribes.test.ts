@@ -51,4 +51,26 @@ describe("scribe attendance", () => {
       getDailyAttendance({ city: "上海", date: today, scribes })
     );
   });
+
+  it("uses the China local calendar day for deterministic attendance", () => {
+    const boundaryScribes: Scribe[] = [
+      {
+        id: "xu",
+        name: "许先生",
+        city: "广州",
+        style: "street",
+        feeFen: 3,
+        attendanceRate: 0.418,
+        specialties: ["daily"]
+      }
+    ];
+
+    const attendance = getDailyAttendance({
+      city: "广州",
+      date: new Date(Date.UTC(2026, 4, 22, 16, 30)),
+      scribes: boundaryScribes
+    });
+
+    expect(attendance.map((scribe) => scribe.id)).toEqual(["xu"]);
+  });
 });
