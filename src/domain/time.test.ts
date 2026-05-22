@@ -18,6 +18,19 @@ describe("era time helpers", () => {
     expect(formatEraDate(realDate)).toBe("一九六〇年五月二十三日");
   });
 
+  it.each([
+    [1, "一九六〇年五月一日"],
+    [10, "一九六〇年五月十日"],
+    [11, "一九六〇年五月十一日"],
+    [20, "一九六〇年五月二十日"],
+    [30, "一九六〇年五月三十日"],
+    [31, "一九六〇年五月三十一日"],
+  ])("formats Chinese date boundary day %i", (day, expected) => {
+    const realDate = new Date(Date.UTC(2026, 4, day, 12, 0, 0));
+
+    expect(formatEraDate(realDate)).toBe(expected);
+  });
+
   it("formats the hidden real-world correspondence label", () => {
     const realDate = new Date(Date.UTC(2026, 4, 23, 12, 0, 0));
 

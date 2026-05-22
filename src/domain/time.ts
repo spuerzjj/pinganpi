@@ -53,8 +53,12 @@ function formatChineseDay(day: number): string {
     throw new Error(`Invalid day: ${day}`);
   }
 
-  if (day <= 10) {
+  if (day < 10) {
     return `${YEAR_DIGITS[day]}日`;
+  }
+
+  if (day === 10) {
+    return "十日";
   }
 
   if (day < 20) {
