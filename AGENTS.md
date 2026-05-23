@@ -207,11 +207,14 @@ npm audit --omit=dev
 - iOS WebView console 用 Safari Web Inspector。
 - Android WebView console 用 Chrome `chrome://inspect/#devices`。
 
-当前本机原生调试环境仍未完全安装完成。此前检查到：
+当前本机原生调试环境状态记录在：
 
-- Node/npm 已可用。
-- 完整 Xcode 尚未安装完成。
-- Android Studio / Android SDK / JDK 尚未安装完成。
+- `docs/superpowers/plans/2026-05-23-pinganpi-native-debug-environment.md`
+
+截至该记录：
+
+- Android 原生调试环境已可用，`pinganpi_api36` 模拟器已创建，App 已成功安装并启动过。
+- 完整 Xcode 尚未安装完成，iOS 仍需用户通过 Mac App Store 安装 Xcode 后继续验证。
 
 ## Git 与发布状态
 
