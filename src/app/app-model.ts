@@ -11,7 +11,14 @@ import {
   type RouteClass,
   type Scribe
 } from "../domain/index.js";
-import { createDefaultAppState, settleAppState, type AppState, type DraftPaper, type PersistedLetter } from "./app-state.js";
+import {
+  createDefaultAppState,
+  settleAppState,
+  type AppState,
+  type DraftPaper,
+  type PersistedLetter,
+  type PostalRecord
+} from "./app-state.js";
 import { type MemberProfile } from "./mock-data.js";
 import { createScribeDraft } from "./write-letter-service.js";
 
@@ -96,6 +103,7 @@ export interface LedgerPreviewEntry {
 
 export interface MailboxModel {
   arrivedLetters: LetterSummary[];
+  pendingIncomingLetters: LetterSummary[];
   waitingText: string;
 }
 
@@ -106,16 +114,26 @@ export interface ArchiveModel {
 export interface LetterSummary {
   id: string;
   subject: string;
+  state: LetterState;
   directionText: string;
   statusText: string;
+  actionText: string;
+  availabilityText: string;
+  latestRecordText: string;
   sentDateText: string;
   routeText: string;
   postageText: string;
   deliveryWindowText: string;
   excerpt: string;
   records: string[];
+  recordItems: LetterRecordSummary[];
   canOpen: boolean;
   important: boolean;
+}
+
+export interface LetterRecordSummary {
+  atText: string;
+  text: string;
 }
 
 const routeClassText: Record<RouteClass, string> = {
@@ -144,6 +162,17 @@ const stateText: Record<LetterState, string> = {
   opened: "已拆",
   archived: "归档"
 };
+
+const inTransitStates = new Set<LetterState>([
+  "posted",
+  "accepted",
+  "in_transit",
+  "delayed",
+  "misrouted",
+  "lost",
+  "found"
+]);
+const incomingExcerptVisibleStates = new Set<LetterState>(["arrived", "opened", "archived"]);
 
 const draftStatusText: Record<DraftPaper["status"], string> = {
   draft: "草稿",
@@ -179,9 +208,18 @@ export function buildAppModel(
   const photoPostageFen = calculatePostage({ local: isLocalPost, registered: false, hasPhoto: true });
   const letterSummaries = state.letters.map((letter) => summarizeLetter(letter, currentMember.id, state));
   const arrivedLetters = letterSummaries.filter((letter) => letter.canOpen);
-  const outgoingInTransitCount = letterSummaries.filter(
-    (letter) => letter.directionText === "寄出" && letter.statusText !== "已拆" && letter.statusText !== "可拆"
+  const pendingIncomingIds = new Set(
+    state.letters
+      .filter((letter) => isIncomingLetter(letter, currentMember.id) && inTransitStates.has(letter.state))
+      .map((letter) => letter.id)
+  );
+  const pendingIncomingLetters = letterSummaries.filter((letter) => pendingIncomingIds.has(letter.id));
+  const outgoingInTransitCount = state.letters.filter(
+    (letter) => isOutgoingLetter(letter, currentMember.id) && inTransitStates.has(letter.state)
   ).length;
+  const archiveLetters = letterSummaries
+    .slice()
+    .sort((left, right) => getArchiveSortTime(right.id, state) - getArchiveSortTime(left.id, state));
   const preferredScribe = localScribes.find((scribe) => scribe.id === currentMember.preferredScribeId);
 
   if (preferredScribe === undefined) {
@@ -253,10 +291,11 @@ export function buildAppModel(
     },
     mailbox: {
       arrivedLetters,
+      pendingIncomingLetters,
       waitingText: arrivedLetters.length === 0 ? "今日无信" : "今日有信可拆"
     },
     archive: {
-      letters: letterSummaries
+      letters: archiveLetters
     }
   };
 }
@@ -299,30 +338,91 @@ function summarizeLetter(letter: PersistedLetter, currentMemberIdValue: string, 
   const deliveryWindow = estimateDeliveryWindow(letter.distanceKm);
   const sender = findMember(state, letter.senderId);
   const recipient = findMember(state, letter.recipientId);
+  const directionText = letter.senderId === currentMemberIdValue ? "寄出" : "收进";
+  const canOpen = letter.recipientId === currentMemberIdValue && letter.state === "arrived";
+  const actionText = getLetterActionText(letter.state, canOpen);
+  const records = getSortedPostalRecords(state, letter.id);
   const isLocalPost = sender.city === recipient.city;
   const postageFen = calculatePostage({
     local: isLocalPost,
     registered: letter.registered,
     hasPhoto: letter.hasPhoto
   });
+  const shouldHideExcerpt =
+    letter.recipientId === currentMemberIdValue && !incomingExcerptVisibleStates.has(letter.state);
+  const recordItems = records.map((record) => ({
+    atText: formatEraDate(new Date(record.atIso)),
+    text: record.text
+  }));
 
   return {
     id: letter.id,
     subject: letter.subject,
-    directionText: letter.senderId === currentMemberIdValue ? "寄出" : "收进",
+    state: letter.state,
+    directionText,
     statusText: stateText[letter.state],
+    actionText,
+    availabilityText: canOpen ? "可以拆阅" : actionText,
+    latestRecordText: records.at(-1)?.text ?? "暂无邮政记录",
     sentDateText: formatEraDate(new Date(letter.sentAtIso)),
     routeText: `${sender.city}至${recipient.city}`,
     postageText: formatFen(postageFen),
     deliveryWindowText: formatDeliveryWindow(deliveryWindow),
-    excerpt: letter.excerpt,
-    records: state.postalRecords
-      .filter((record) => record.letterId === letter.id)
-      .sort((left, right) => Date.parse(left.atIso) - Date.parse(right.atIso))
-      .map((record) => record.text),
-    canOpen: letter.recipientId === currentMemberIdValue && letter.state === "arrived",
+    excerpt: shouldHideExcerpt ? "信尚在路上，未到拆阅时。" : letter.excerpt,
+    records: records.map((record) => record.text),
+    recordItems,
+    canOpen,
     important: letter.important
   };
+}
+
+function isIncomingLetter(letter: PersistedLetter, currentMemberIdValue: string): boolean {
+  return letter.recipientId === currentMemberIdValue;
+}
+
+function isOutgoingLetter(letter: PersistedLetter, currentMemberIdValue: string): boolean {
+  return letter.senderId === currentMemberIdValue;
+}
+
+function getSortedPostalRecords(state: AppState, letterId: string): PostalRecord[] {
+  return state.postalRecords
+    .filter((record) => record.letterId === letterId)
+    .sort((left, right) => Date.parse(left.atIso) - Date.parse(right.atIso));
+}
+
+function getArchiveSortTime(letterId: string, state: AppState): number {
+  const latestRecord = getSortedPostalRecords(state, letterId).at(-1);
+
+  if (latestRecord !== undefined) {
+    return Date.parse(latestRecord.atIso);
+  }
+
+  return Date.parse(state.letters.find((letter) => letter.id === letterId)?.sentAtIso ?? "");
+}
+
+function getLetterActionText(state: LetterState, canOpen: boolean): string {
+  if (canOpen) {
+    return "拆阅";
+  }
+
+  switch (state) {
+    case "delayed":
+      return "邮路耽搁，尚不能拆";
+    case "misrouted":
+      return "错分改投，尚不能拆";
+    case "lost":
+      return "邮局查找中";
+    case "found":
+      return "已找回，候送达";
+    case "returned":
+      return "已退回，不可拆";
+    case "opened":
+      return "已拆";
+    case "archived":
+      return "已归档";
+    default:
+      return "尚未投递";
+  }
 }
 
 function formatDeliveryWindow(deliveryWindow: DeliveryWindow): string {

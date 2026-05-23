@@ -54,6 +54,84 @@ describe("app model", () => {
     );
   });
 
+  it("separates pending incoming letters without exposing their contents", () => {
+    const state = createDefaultAppState();
+    state.letters.push({
+      id: "letter-from-lan-0524",
+      senderId: "member-lan",
+      recipientId: "member-zhou",
+      subject: "五月二十四日来信",
+      state: "in_transit",
+      sentAtIso: "2026-05-24T02:00:00.000Z",
+      distanceKm: 1200,
+      registered: false,
+      hasPhoto: false,
+      important: false,
+      excerpt: "这段摘要还不该被看到。",
+      body: "这封信还在路上，未到拆阅时。"
+    });
+
+    const model = buildAppModel(new Date("2026-05-27T04:00:00.000Z"), state);
+    const pendingLetter = model.mailbox.pendingIncomingLetters.find(
+      (letter) => letter.id === "letter-from-lan-0524"
+    );
+
+    expect(pendingLetter).toMatchObject({
+      state: "in_transit",
+      excerpt: "信尚在路上，未到拆阅时。",
+      actionText: "尚未投递",
+      availabilityText: "尚未投递"
+    });
+  });
+
+  it("summarizes postal records for the archive", () => {
+    const state = createDefaultAppState();
+    state.postalRecords.push({
+      id: "letter-to-lan-0521-record-latest",
+      letterId: "letter-to-lan-0521",
+      atIso: "2026-05-25T04:00:00.000Z",
+      text: "一九六〇年五月二十五日，西安局分拣。"
+    });
+
+    const model = buildAppModel(now, state);
+    const letter = model.archive.letters.find((summary) => summary.id === "letter-to-lan-0521");
+
+    expect(letter?.latestRecordText).toBe("一九六〇年五月二十五日，西安局分拣。");
+    expect(letter?.recordItems.at(-1)).toEqual({
+      atText: "一九六〇年五月二十五日",
+      text: "一九六〇年五月二十五日，西安局分拣。"
+    });
+  });
+
+  it("does not count returned or archived outgoing letters as in transit", () => {
+    const state = createDefaultAppState();
+    const outgoingLetter = state.letters.find((letter) => letter.id === "letter-to-lan-0521");
+
+    if (outgoingLetter === undefined) {
+      throw new Error("Missing default outgoing letter");
+    }
+
+    outgoingLetter.state = "returned";
+
+    const model = buildAppModel(now, state);
+
+    expect(model.today.inTransitCount).toBe(0);
+  });
+
+  it("sorts archive letters by newest postal record first", () => {
+    const state = createDefaultAppState();
+    state.postalRecords.push({
+      id: "letter-from-lan-0512-record-latest",
+      letterId: "letter-from-lan-0512",
+      atIso: "2026-05-26T04:00:00.000Z",
+      text: "一九六〇年五月二十六日，旧档复核。"
+    });
+
+    const model = buildAppModel(now, state);
+
+    expect(model.archive.letters.map((letter) => letter.id).at(0)).toBe("letter-from-lan-0512");
+  });
+
   it("builds the UI model from a persisted app state", () => {
     const state = settleAppState(createDefaultAppState(), now).state;
     state.wallet.balanceFen = 88;
