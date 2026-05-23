@@ -139,11 +139,9 @@ export interface SaveDraftPaperInput extends WriteLetterInput {
   draftId?: string;
 }
 
-export interface SaveDraftPaperResult {
-  state: AppState;
-  draftId: string;
-  created: boolean;
-}
+export type SaveDraftPaperResult =
+  | { ok: true; state: AppState; draftId: string; created: boolean }
+  | { ok: false; state: AppState; reason: string };
 
 export type DeleteDraftPaperResult =
   | { ok: true; state: AppState }
