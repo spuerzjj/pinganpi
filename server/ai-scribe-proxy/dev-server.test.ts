@@ -8,7 +8,9 @@ const config: AiProxyConfig = {
   modelId: "mimo-v2.5",
   apiKey: "tp-test-key",
   port: 8787,
-  requestTimeoutMs: 30000
+  requestTimeoutMs: 30000,
+  maxOralTextChars: 800,
+  maxCompletionTokens: 900
 };
 
 const servers: Array<ReturnType<typeof createAiProxyServer>> = [];
@@ -156,6 +158,42 @@ describe("AI proxy dev server", () => {
     });
   });
 
+  it("rejects oral text over the configured cost guard before calling the provider", async () => {
+    let called = false;
+    const server = await listen(
+      async () => {
+        called = true;
+        throw new Error("Requester should not be called.");
+      },
+      {
+        ...config,
+        maxOralTextChars: 20
+      }
+    );
+    const response = await fetch(`${baseUrl(server)}/ai/scribe-draft`, {
+      method: "POST",
+      headers: { "content-type": "application/json", origin: "http://localhost:5173" },
+      body: JSON.stringify({
+        oralText: "一".repeat(21),
+        scribeName: "陈启明",
+        scribeStyle: "语气温和，字句端正",
+        senderGreeting: "兰卿",
+        senderSignature: "阿平",
+        senderCity: "广州",
+        recipientCity: "上海",
+        letterType: "ordinary"
+      })
+    });
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({
+      ok: false,
+      reason: "invalid_request",
+      message: "oralText must be 20 characters or fewer."
+    });
+    expect(called).toBe(false);
+  });
+
   it("does not return provider error details", async () => {
     const server = await listen(async () => {
       throw new Error("bad key: tp-secret");
@@ -184,8 +222,11 @@ describe("AI proxy dev server", () => {
   });
 });
 
-async function listen(requester: CompletionRequester): Promise<ReturnType<typeof createAiProxyServer>> {
-  const server = createAiProxyServer(config, requester);
+async function listen(
+  requester: CompletionRequester,
+  serverConfig: AiProxyConfig = config
+): Promise<ReturnType<typeof createAiProxyServer>> {
+  const server = createAiProxyServer(serverConfig, requester);
 
   await new Promise<void>((resolve) => {
     server.listen(0, "127.0.0.1", resolve);

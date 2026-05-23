@@ -489,17 +489,17 @@
         <article class="metric">
           <p class="metric-label">当前基线</p>
           <p class="metric-value">阶段 13 进行中</p>
-          <p class="metric-note">本机 MiMo 连通、本地代理起稿和写信页真实 AI 起稿已通过。</p>
+          <p class="metric-note">本机 MiMo 连通、本地代理起稿、写信页真实 AI 起稿和本地费用护栏已通过。</p>
         </article>
         <article class="metric">
           <p class="metric-label">验证状态</p>
-          <p class="metric-value">167 tests</p>
+          <p class="metric-value">171 tests</p>
           <p class="metric-note">test / typecheck / build 最近通过。</p>
         </article>
         <article class="metric">
           <p class="metric-label">下一推荐</p>
-          <p class="metric-value">云端 AI</p>
-          <p class="metric-note">下一步配置费用告警、云函数 / CloudBase 落点和 secret 管理。</p>
+          <p class="metric-value">云端 AI → 流式</p>
+          <p class="metric-note">先收束云端费用告警、云端落点和 secret，再做阶段 14 流式起稿体验。</p>
         </article>
         <article class="metric">
           <p class="metric-label">主要风险</p>
@@ -512,7 +512,7 @@
         <div class="card-header">
           <div>
             <h2>阶段进度</h2>
-            <p class="muted">12 / 20 个主阶段已有可用基线，阶段 13 正在配置 MiMo env、费用告警与云端 AI 代理。</p>
+            <p class="muted">12 / 20 个主阶段已有可用基线，阶段 13 正在配置云端费用告警、secret 与云端 AI 代理。</p>
           </div>
           <span class="badge done">60%</span>
         </div>
@@ -680,7 +680,7 @@
               <span class="badge warn">chunk warning</span>
             </div>
             <ul class="plain-list" style="margin-top: 12px">
-              <li>18 个测试文件，167 个测试通过。</li>
+              <li>18 个测试文件，171 个测试通过。</li>
               <li>测试覆盖草稿、写信、模板代书、邮政推进、拆阅服务、AI 代理、AppModel 和持久化结算。</li>
               <li>Varlet 首包超过 500 KB 是优化项，当前不阻塞。</li>
             </ul>
@@ -721,7 +721,7 @@
                 <span class="badge info">当前</span>
               </div>
               <h3>云端 AI 配置</h3>
-              <p>本机 MiMo key 已配置，连通检查、本地代理起稿和写信页真实 AI 起稿烟测已通过。</p>
+              <p>本机 MiMo key 已配置，连通检查、本地代理起稿、写信页真实 AI 起稿和本地费用护栏已通过。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
@@ -747,10 +747,10 @@
           </div>
           <div class="card-body">
             <ul class="plain-list">
-              <li>云端代理地址、费用限额、secret 管理、回滚删除步骤仍未完成。</li>
+              <li>云端代理地址、云端费用限额、secret 管理、回滚删除步骤仍未完成。</li>
               <li>AI 起稿流式输出已拆为独立优化阶段，尚未实现。</li>
               <li>云端同步、双人账户绑定和真实双设备同步尚未实现。</li>
-              <li>阶段 13 尚未配置云端权限、部署凭据和费用告警。</li>
+              <li>阶段 13 尚未配置云端权限、部署凭据和云端费用告警。</li>
               <li>延误、迷失、找回、退回尚未接入自动确定性推进规则。</li>
               <li>系统推送和照片附件尚未开始。</li>
               <li>iOS Safari Web Inspector 和真机验证还需手工确认。</li>
@@ -769,13 +769,13 @@
           <div class="link-row">
             <a class="button primary" href="./pinganpi-roadmap.md">详细路线图</a>
             <a class="button" href="./superpowers/specs/2026-05-23-pinganpi-design.md">产品设计文档</a>
-            <a class="button" href="./superpowers/plans/2026-05-23-pinganpi-ai-scribe-app-adapter.md">最近实施计划</a>
+            <a class="button" href="./superpowers/plans/2026-05-23-pinganpi-cloud-ai-proxy.md">阶段 13 实施计划</a>
           </div>
         </div>
       </section>
 
       <footer class="footer">
-        <span>维护规则：阶段、优先级、验证状态或风险项变化时，同步更新本看板与 <code>docs/pinganpi-roadmap.md</code>。</span>
+        <span>维护规则：阶段、优先级、验证状态或风险项变化时，同步更新本看板、<code>docs/pinganpi-roadmap.md</code>、<code>AGENTS.md</code> 和相关设计 / 计划文档。</span>
         <span>本页不属于正式 App。</span>
       </footer>
     </main>

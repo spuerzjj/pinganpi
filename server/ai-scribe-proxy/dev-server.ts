@@ -68,7 +68,7 @@ async function handleRequest(
   }
 
   try {
-    const input = parseProxyRequest(await readJsonBody(request));
+    const input = parseProxyRequest(await readJsonBody(request), config);
     const startedAt = Date.now();
     const result = await requestCompletion(config, buildScribeMessages(input));
 
@@ -133,13 +133,19 @@ async function handleRequest(
   }
 }
 
-function parseProxyRequest(value: unknown): AiScribeProxyRequest {
+function parseProxyRequest(value: unknown, config: AiProxyConfig): AiScribeProxyRequest {
   if (!isRecord(value)) {
     throw new ProxyRequestError("Request body must be an object.");
   }
 
+  const oralText = readString(value, "oralText");
+
+  if (oralText.length > config.maxOralTextChars) {
+    throw new ProxyRequestError(`oralText must be ${config.maxOralTextChars} characters or fewer.`);
+  }
+
   return {
-    oralText: readString(value, "oralText"),
+    oralText,
     scribeName: readString(value, "scribeName"),
     scribeStyle: readString(value, "scribeStyle"),
     senderGreeting: readString(value, "senderGreeting"),

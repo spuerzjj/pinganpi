@@ -4,6 +4,8 @@ export interface AiProxyConfig {
   apiKey: string;
   port: number;
   requestTimeoutMs: number;
+  maxOralTextChars: number;
+  maxCompletionTokens: number;
 }
 
 export type EnvSource = Record<string, string | undefined>;
@@ -28,6 +30,18 @@ export function readAiProxyConfig(env: EnvSource): AiProxyConfig {
       name: "MIMO_REQUEST_TIMEOUT_MS",
       min: 1000,
       max: 120000
+    }),
+    maxOralTextChars: readInteger(env.PINGANPI_AI_MAX_ORAL_TEXT_CHARS, {
+      defaultValue: 800,
+      name: "PINGANPI_AI_MAX_ORAL_TEXT_CHARS",
+      min: 20,
+      max: 2000
+    }),
+    maxCompletionTokens: readInteger(env.MIMO_MAX_COMPLETION_TOKENS, {
+      defaultValue: 900,
+      name: "MIMO_MAX_COMPLETION_TOKENS",
+      min: 100,
+      max: 1500
     })
   };
 }

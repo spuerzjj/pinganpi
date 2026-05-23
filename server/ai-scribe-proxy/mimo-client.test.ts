@@ -7,7 +7,9 @@ const config: AiProxyConfig = {
   modelId: "mimo-v2.5-pro",
   apiKey: "tp-test-key",
   port: 8787,
-  requestTimeoutMs: 30000
+  requestTimeoutMs: 30000,
+  maxOralTextChars: 800,
+  maxCompletionTokens: 900
 };
 
 describe("MiMo client", () => {
@@ -43,6 +45,29 @@ describe("MiMo client", () => {
       max_completion_tokens: 900
     });
     expect(calls[0]?.init.signal).toBeInstanceOf(AbortSignal);
+  });
+
+  it("uses the configured completion token limit", async () => {
+    let body: unknown;
+    const fetcher: typeof fetch = async (_url, init) => {
+      body = JSON.parse(String(init?.body));
+
+      return new Response(JSON.stringify({ choices: [{ message: { content: "平安。" } }] }), {
+        status: 200,
+        headers: { "content-type": "application/json" }
+      });
+    };
+
+    await requestMimoChatCompletion(
+      {
+        ...config,
+        maxCompletionTokens: 450
+      },
+      [{ role: "user", content: "写一封问安信。" }],
+      fetcher
+    );
+
+    expect(body).toMatchObject({ max_completion_tokens: 450 });
   });
 
   it("normalizes provider errors without leaking response body", async () => {

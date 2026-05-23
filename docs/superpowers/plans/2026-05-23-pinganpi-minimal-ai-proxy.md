@@ -41,6 +41,8 @@ export MIMO_API_KEY="replace-with-secret-from-subscription-page"
 
 ## Implementation Status
 
+> 历史进度提示：本计划记录阶段 11 的执行过程，局部进度数字是当时状态。当前总进度、阶段编号和推荐顺序以 `docs/pinganpi-roadmap.md` 为准；后续已拆出阶段 14「AI 起稿流式体验优化」。
+
 本计划已按子 agent 审阅结果做了实施期调整：
 
 - `vitest.config.ts` 已加入 `server/**/*.test.ts`，确保服务端测试会被真实执行。
@@ -790,7 +792,7 @@ After implementation and local no-secret checks pass, update:
   - Record stage 10 as complete and stage 11 as in progress until real MiMo check and cloud placement pass.
   - Add a note under stage 11 that local proxy scaffolding exists.
 - `docs/pinganpi-roadmap-dashboard.html`
-  - Keep progress at `11 / 19`; stage 11 is complete, and real MiMo env / cloud placement is tracked as stage 13.
+  - Keep progress aligned with `docs/pinganpi-roadmap.md`; historical progress numbers in this plan are superseded by the roadmap.
   - Add “MiMo 代理脚手架已建，等待真实 key 连通验证” to risk or next-step text.
 - `AGENTS.md`
   - Add the exact scripts:

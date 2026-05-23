@@ -47,7 +47,7 @@ export async function requestMimoChatCompletion(
         stream: false,
         thinking: { type: "disabled" },
         temperature: 0.8,
-        max_completion_tokens: 900
+        max_completion_tokens: config.maxCompletionTokens
       })
     });
 
