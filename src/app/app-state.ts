@@ -9,6 +9,7 @@ import {
   writingRoute,
   type MemberProfile
 } from "./mock-data.js";
+import { settlePostalProgress } from "./postal-progress-service.js";
 import type { DraftSource, ScribeGenerationMeta } from "./scribe-template-engine.js";
 
 export const APP_STATE_SCHEMA_VERSION = 1;
@@ -161,45 +162,45 @@ export function parseAppState(raw: string): AppState | null {
 
 export function settleAppState(state: AppState, now: Date): AppStateSettlementResult {
   const lastSettledAt = new Date(state.wallet.lastSettledAtIso);
-
-  if (now.getTime() <= lastSettledAt.getTime()) {
-    return {
-      state: cloneAppState(state),
-      changed: false
-    };
-  }
-
-  const settlement = settleWallet({
-    balanceFen: state.wallet.balanceFen,
-    monthlyIncomeFen: state.wallet.monthlyIncomeFen,
-    dailyLivingCostFen: state.wallet.dailyLivingCostFen,
-    lastSettledAt,
-    now
-  });
   const nextState = cloneAppState(state);
-  const settledAtIso = settlement.settledAt.toISOString();
+  let walletChanged = false;
 
-  nextState.wallet = {
-    ...nextState.wallet,
-    balanceFen: settlement.balanceFen,
-    lastSettledAtIso: settledAtIso
-  };
-  nextState.ledgerEntries.push(
-    ...settlement.entries.map((entry, index) => ({
-      id: `ledger-${now.getTime()}-${state.ledgerEntries.length + index + 1}`,
-      atIso: settledAtIso,
-      kind: entry.kind,
-      amountFen: entry.amountFen,
-      note: entry.note
-    }))
-  );
+  if (now.getTime() > lastSettledAt.getTime()) {
+    const settlement = settleWallet({
+      balanceFen: state.wallet.balanceFen,
+      monthlyIncomeFen: state.wallet.monthlyIncomeFen,
+      dailyLivingCostFen: state.wallet.dailyLivingCostFen,
+      lastSettledAt,
+      now
+    });
+    const settledAtIso = settlement.settledAt.toISOString();
 
-  return {
-    state: nextState,
-    changed:
+    nextState.wallet = {
+      ...nextState.wallet,
+      balanceFen: settlement.balanceFen,
+      lastSettledAtIso: settledAtIso
+    };
+    nextState.ledgerEntries.push(
+      ...settlement.entries.map((entry, index) => ({
+        id: `ledger-${now.getTime()}-${state.ledgerEntries.length + index + 1}`,
+        atIso: settledAtIso,
+        kind: entry.kind,
+        amountFen: entry.amountFen,
+        note: entry.note
+      }))
+    );
+
+    walletChanged =
       settlement.balanceFen !== state.wallet.balanceFen ||
       settledAtIso !== state.wallet.lastSettledAtIso ||
-      settlement.entries.length > 0
+      settlement.entries.length > 0;
+  }
+
+  const postalSettlement = settlePostalProgress(nextState, now);
+
+  return {
+    state: postalSettlement.state,
+    changed: walletChanged || postalSettlement.changed
   };
 }
 

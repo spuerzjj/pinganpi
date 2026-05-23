@@ -78,4 +78,30 @@ describe("app state", () => {
       note: "饭食杂用一日"
     });
   });
+
+  it("settles postal progress into persistent records", () => {
+    const state = createDefaultAppState();
+
+    const result = settleAppState(state, new Date("2026-05-28T08:10:00.000Z"));
+
+    expect(result.changed).toBe(true);
+    expect(result.state.letters.find((letter) => letter.id === "letter-to-lan-0521")?.state).toBe("arrived");
+    expect(result.state.postalRecords.find((record) => record.id === "letter-to-lan-0521-postal-arrive")).toMatchObject({
+      letterId: "letter-to-lan-0521",
+      atIso: "2026-05-28T08:10:00.000Z",
+      text: "一九六〇年五月二十八日，南院门邮政支局投递。"
+    });
+  });
+
+  it("settles postal progress even when wallet does not advance", () => {
+    const state = createDefaultAppState();
+    state.wallet.lastSettledAtIso = "2026-06-01T00:00:00.000Z";
+
+    const result = settleAppState(state, new Date("2026-05-28T08:10:00.000Z"));
+
+    expect(result.changed).toBe(true);
+    expect(result.state.letters.find((letter) => letter.id === "letter-to-lan-0521")?.state).toBe("arrived");
+    expect(result.state.postalRecords.some((record) => record.id === "letter-to-lan-0521-postal-arrive")).toBe(true);
+    expect(result.state.ledgerEntries).toHaveLength(0);
+  });
 });

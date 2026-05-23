@@ -1,5 +1,5 @@
 import { canArriveBy, formatEraDate, nextLetterState } from "../domain/index.js";
-import { cloneAppState, type AppState, type PostalRecord } from "./app-state.js";
+import type { AppState, PostalRecord } from "./app-state.js";
 
 export interface SettlePostalProgressResult {
   state: AppState;
@@ -37,6 +37,10 @@ export function settlePostalProgress(state: AppState, now: Date): SettlePostalPr
     state: nextState,
     changed
   };
+}
+
+function cloneAppState(state: AppState): AppState {
+  return JSON.parse(JSON.stringify(state)) as AppState;
 }
 
 function createArrivalRecord(state: AppState, letterId: string, recipientId: string, now: Date): PostalRecord {
