@@ -489,7 +489,7 @@
         <article class="metric">
           <p class="metric-label">当前基线</p>
           <p class="metric-value">阶段 13 进行中</p>
-          <p class="metric-note">App 侧 AI 起稿链路已接入，本机 MiMo env 配置入口已准备。</p>
+          <p class="metric-note">本机 MiMo 连通、本地代理起稿和写信页真实 AI 起稿已通过。</p>
         </article>
         <article class="metric">
           <p class="metric-label">验证状态</p>
@@ -499,7 +499,7 @@
         <article class="metric">
           <p class="metric-label">下一推荐</p>
           <p class="metric-value">云端 AI</p>
-          <p class="metric-note">下一步填写 .env.ai.local 里的 MIMO_API_KEY，跑通 MiMo 连通检查。</p>
+          <p class="metric-note">下一步配置费用告警、云函数 / CloudBase 落点和 secret 管理。</p>
         </article>
         <article class="metric">
           <p class="metric-label">主要风险</p>
@@ -717,7 +717,7 @@
                 <span class="badge info">当前</span>
               </div>
               <h3>云端 AI 配置</h3>
-              <p>本机 .env.ai.local 已按官方文档填入 base URL 和 mimo-v2.5-pro；接下来填写 key 并验证连通。</p>
+              <p>本机 MiMo key 已配置，连通检查、本地代理起稿和写信页真实 AI 起稿烟测已通过。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
@@ -736,9 +736,9 @@
           </div>
           <div class="card-body">
             <ul class="plain-list">
-              <li>真实 MiMo API key 尚未填写，云端代理地址、费用限额和真实 AI 起稿烟测仍未完成。</li>
+              <li>云端代理地址、费用限额、secret 管理、回滚删除步骤仍未完成。</li>
               <li>云端同步、双人账户绑定和真实双设备同步尚未实现。</li>
-              <li>阶段 13 尚未配置真实 MiMo env、费用限额、云端权限和部署凭据。</li>
+              <li>阶段 13 尚未配置云端权限、部署凭据和费用告警。</li>
               <li>延误、迷失、找回、退回尚未接入自动确定性推进规则。</li>
               <li>系统推送和照片附件尚未开始。</li>
               <li>iOS Safari Web Inspector 和真机验证还需手工确认。</li>

@@ -59,7 +59,7 @@ npx cap doctor
 
 ## 当前代码状态
 
-当前主线开发基于 `main`，最新路线图基线为：**已完成阶段 12 的 App 侧 AI 起稿链路；阶段 13 已开始本地 MiMo env 配置准备，真实 MiMo 连通、费用告警和云端落点配置仍待完成**。继续开发前以 `git log --oneline --decorate -5` 为准。
+当前主线开发基于 `main`，最新路线图基线为：**已完成阶段 12 的 App 侧 AI 起稿链路；阶段 13 已跑通本机 Xiaomi MiMo 连通、本地 AI 代理起稿接口和写信页真实 AI 起稿烟测，费用告警和云端落点配置仍待完成**。继续开发前以 `git log --oneline --decorate -5` 为准。
 
 最新关键提交包括：
 
@@ -132,7 +132,7 @@ npx cap doctor
 - AI 代笔接入设计：明确 AI 只负责代笔先生起稿，模板转为提示词素材，失败保存口述草稿。
 - 本地最小 AI 代理脚手架：`server/ai-scribe-proxy/`、MiMo config/client、`GET /health`、`POST /ai/scribe-draft`、本地 Origin 限制、32 KB 请求体限制、`npm run ai-proxy:check`、`npm run ai-proxy:dev`。
 - App 侧 AI 起稿链路：`src/app/ai-scribe-adapter.ts`、`VITE_PINGANPI_AI_PROXY_URL` 代理配置、写信页异步起稿、AI metadata 持久化、失败不回退模板正文。
-- 阶段 13 正在进行：`npm run ai-proxy:check` / `npm run ai-proxy:dev` 已改为读取本机 `.env.ai.local`；本机已按官方 OpenAI API 文档填入 `MIMO_API_BASE_URL=https://api.xiaomimimo.com/v1` 和 `MIMO_MODEL_ID=mimo-v2.5-pro`，真实 `MIMO_API_KEY`、费用告警、CloudBase 或其他云端落点仍需确认。
+- 阶段 13 正在进行：`npm run ai-proxy:check` / `npm run ai-proxy:dev` 已读取本机 `.env.ai.local` 并跑通真实 Xiaomi MiMo；本地代理 `/ai/scribe-draft` 和写信页真实 AI 起稿烟测已通过；费用告警、CloudBase 或其他云端落点仍需确认。
 
 已验证基线记录在：
 
@@ -170,7 +170,8 @@ npx cap doctor
 1. **阶段 13：云端 AI 代理与费用配置**
    - 把阶段 11 尚未完成的真实 MiMo env、云函数 / CloudBase 落点、费用告警、密钥 secret 和资源删除 / 回滚步骤独立推进。
    - 真实 MiMo key 不要在聊天中发送；只能放在本机服务端 env、`.env.local` 或云平台 secret 中。
-   - 本机优先使用 `.env.ai.local` 保存 MiMo env；该文件已被 Git 忽略，脚本会自动读取。真实 key 只填在 `MIMO_API_KEY`，不要发到聊天或提交到 Git。
+   - 本机优先使用 `.env.ai.local` 保存 MiMo env；该文件已被 Git 忽略，脚本会自动读取。真实 key 已在本机文件中配置，不要打印、发到聊天或提交到 Git。
+   - Prompt 已补充约束：禁止 AI 编造日期、农历、干支或未给出的具体时间。
    - 需要用户从 Xiaomi MiMo 订阅页确认 `MIMO_API_BASE_URL`、`MIMO_MODEL_ID`、key 类型是 `tp-` 还是 `sk-`、额度和费用提醒方式。
    - 优先评估腾讯云 CloudBase 是否适合承载最小 AI 服务端代理，不默认购买 CVM 或高规格包年资源。
    - 同步数据库、文件存储、身份认证和推送资源本阶段只做评估，不正式购买 / 初始化。

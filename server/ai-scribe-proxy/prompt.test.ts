@@ -20,6 +20,9 @@ describe("scribe prompt material", () => {
       content: expect.stringContaining("1960 年左右中国街口代笔先生")
     });
     expect(messages[0]?.content).toContain("不要替用户投寄");
+    expect(messages[0]?.content).toContain("不要编造日期");
+    expect(messages[0]?.content).toContain("不要写干支年份");
+    expect(messages[0]?.content).toContain("不要添加未给出的具体日期");
     expect(messages[1]).toMatchObject({
       role: "user",
       content: expect.stringContaining("代笔先生：陈启明")

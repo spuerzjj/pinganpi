@@ -48,7 +48,9 @@ export MIMO_API_KEY="replace-with-secret-from-subscription-page"
 - MiMo client 已加入默认 30 秒超时，可通过 `MIMO_REQUEST_TIMEOUT_MS` 调整。
 - 本地代理已补充 `prompt.test.ts` 和 `dev-server.test.ts`，用 fake requester 覆盖 prompt、health、CORS 预检、成功响应和校验错误。
 - 代码审查后已补充本地 Origin 限制、32 KB 请求体限制和固定 provider 错误响应，避免任意网页借用本机代理消耗 MiMo 额度或看到 provider 原始错误。
-- 当前仓库只完成阶段 11 本地可测代理脚手架；真实 MiMo env 连通验证、费用告警和 CloudBase / 云函数落点已拆到阶段 13 独立推进。
+- 阶段 13 已配置本机真实 MiMo env，并跑通 `npm run ai-proxy:check`、本地代理 `/ai/scribe-draft` 和写信页真实 AI 起稿烟测。
+- Prompt 已补充约束：禁止模型编造日期、农历、干支或未给出的具体时间。
+- 费用告警和 CloudBase / 云函数落点仍在阶段 13 独立推进。
 
 ## File Structure
 
