@@ -16,7 +16,7 @@ export interface ScribeDraftInput {
   emotionTags: string[];
 }
 
-export interface ScribeGenerationMeta {
+export interface LocalTemplateGenerationMeta {
   engine: "local-template-v1";
   templateId: string;
   scribeId: string | null;
@@ -25,6 +25,22 @@ export interface ScribeGenerationMeta {
   senderCity: string;
   recipientCity: string;
 }
+
+export interface AiScribeGenerationMeta {
+  engine: "ai-scribe-v1";
+  provider: string;
+  model: string;
+  promptVersion: string;
+  scribeId: string | null;
+  sceneTags: string[];
+  letterType: LetterType;
+  senderCity: string;
+  recipientCity: string;
+  latencyMs: number;
+  failureReason?: string;
+}
+
+export type ScribeGenerationMeta = LocalTemplateGenerationMeta | AiScribeGenerationMeta;
 
 export interface ScribeDraftResult {
   oralText: string;
