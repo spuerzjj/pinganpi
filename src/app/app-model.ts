@@ -13,6 +13,7 @@ import {
 } from "../domain/index.js";
 import { createDefaultAppState, settleAppState, type AppState, type PersistedLetter } from "./app-state.js";
 import { type MemberProfile } from "./mock-data.js";
+import { createScribeDraft } from "./write-letter-service.js";
 
 export interface AppModel {
   today: TodaySnapshot;
@@ -38,6 +39,8 @@ export interface WriteLetterModel {
   toCity: string;
   recipientGreeting: string;
   preferredScribeName: string;
+  defaultScribeId: string | null;
+  scribeOptions: WriteLetterScribeOption[];
   plainPostageText: string;
   registeredPostageText: string;
   photoPostageText: string;
@@ -45,6 +48,13 @@ export interface WriteLetterModel {
   routeClassText: string;
   sampleOralText: string;
   sampleDraftText: string;
+}
+
+export interface WriteLetterScribeOption {
+  id: string | null;
+  name: string;
+  feeText: string;
+  styleText: string;
 }
 
 export interface ScribeDeskModel {
@@ -161,6 +171,9 @@ export function buildAppModel(
     throw new Error(`Missing preferred scribe: ${currentMember.preferredScribeId}`);
   }
 
+  const defaultScribeId = presentIds.has(preferredScribe.id) ? preferredScribe.id : (dailyPresentScribes[0]?.id ?? null);
+  const sampleOralText = "近日都好，只是见天阴久了，心里老记挂你。";
+
   return {
     today: {
       eraDateText: formatEraDate(now),
@@ -176,13 +189,31 @@ export function buildAppModel(
       toCity: recipientMember.city,
       recipientGreeting: currentMember.letterGreeting,
       preferredScribeName: preferredScribe.name,
+      defaultScribeId,
+      scribeOptions: [
+        {
+          id: null,
+          name: "亲笔",
+          feeText: "免代书费",
+          styleText: "自己落笔"
+        },
+        ...dailyPresentScribes.map((scribe) => ({
+          id: scribe.id,
+          name: scribe.name,
+          feeText: formatFen(scribe.feeFen),
+          styleText: scribeStyleText[scribe.style]
+        }))
+      ],
       plainPostageText: formatFen(plainPostageFen),
       registeredPostageText: formatFen(registeredPostageFen),
       photoPostageText: formatFen(photoPostageFen),
       deliveryWindowText: formatDeliveryWindow(deliveryWindow),
       routeClassText: routeClassText[deliveryWindow.routeClass],
-      sampleOralText: "近日都好，只是见天阴久了，心里老记挂你。",
-      sampleDraftText: "兰卿：近日都好，只是见天阴久了，心里老记挂你。前信不知可曾收到，若得空，请托人回一纸。"
+      sampleOralText,
+      sampleDraftText: createScribeDraft(state, {
+        oralText: sampleOralText,
+        scribeId: defaultScribeId
+      })
     },
     scribeDesk: {
       city: currentMember.city,

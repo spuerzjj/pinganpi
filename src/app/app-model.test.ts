@@ -36,6 +36,14 @@ describe("app model", () => {
     expect(model.writeLetter.deliveryWindowText).toBe("约 7 至 12 日");
   });
 
+  it("offers handwritten and present scribe choices for writing", () => {
+    const model = buildAppModel(now);
+
+    expect(model.writeLetter.defaultScribeId).toBe("scribe-xu");
+    expect(model.writeLetter.scribeOptions.map((option) => option.name)).toEqual(["亲笔", "钱守明", "许鹤年"]);
+    expect(model.writeLetter.sampleDraftText).toContain("兰卿");
+  });
+
   it("summarizes letter states without exposing realtime tracking", () => {
     const model = buildAppModel(now);
 

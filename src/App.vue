@@ -8,6 +8,7 @@ import ScribesPage from "./app/pages/ScribesPage.vue";
 import TodayPage from "./app/pages/TodayPage.vue";
 import WalletPage from "./app/pages/WalletPage.vue";
 import WriteLetterPage from "./app/pages/WriteLetterPage.vue";
+import { postLetter, saveDraftPaper, type WriteLetterInput } from "./app/write-letter-service.js";
 
 type NavKey = "today" | "write" | "scribes" | "wallet" | "mailbox";
 
@@ -22,6 +23,7 @@ const appStateStore = createBrowserAppStateStore();
 const settlement = settleAppState(appStateStore.load(), new Date());
 const appState = ref(settlement.state);
 const model = computed(() => buildAppModel(new Date(), appState.value));
+const noticeText = ref("");
 
 if (settlement.changed) {
   appStateStore.save(settlement.state);
@@ -45,6 +47,30 @@ const activePage = computed(() => {
 
   return found;
 });
+
+function persistState(nextState: typeof appState.value): void {
+  appState.value = nextState;
+  appStateStore.save(nextState);
+}
+
+function handleSaveDraft(input: WriteLetterInput): void {
+  const result = saveDraftPaper(appState.value, input, new Date());
+
+  persistState(result.state);
+  noticeText.value = "草稿已存入信纸匣。";
+}
+
+function handlePostLetter(input: WriteLetterInput): void {
+  const result = postLetter(appState.value, input, new Date());
+
+  if (!result.ok) {
+    noticeText.value = result.reason;
+    return;
+  }
+
+  persistState(result.state);
+  noticeText.value = "信已封缄投寄，邮政存根已入档。";
+}
 </script>
 
 <template>
@@ -61,7 +87,15 @@ const activePage = computed(() => {
       </header>
 
       <main class="flex-1 py-4">
-        <component :is="activePage.component" :model="model" />
+        <div v-if="noticeText" class="mb-4 border border-[var(--app-rule)] bg-[#fbf5e8] px-4 py-3 text-sm text-[var(--app-muted)]">
+          {{ noticeText }}
+        </div>
+        <component
+          :is="activePage.component"
+          :model="model"
+          @save-draft="handleSaveDraft"
+          @post-letter="handlePostLetter"
+        />
       </main>
 
       <nav class="sticky bottom-0 z-10 border border-[var(--app-rule)] bg-[rgb(247_240_223_/_0.96)] shadow-[0_-8px_24px_rgb(60_49_31_/_0.12)] backdrop-blur">

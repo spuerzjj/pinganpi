@@ -4,7 +4,7 @@
 
 **当前分支：** `main`
 
-**当前提交：** `e815c93 chore: 忽略原生调试生成目录`
+**当前开发基线：** 已完成阶段 5 第一版本地写信投寄流程。精确提交以 `git log --oneline --decorate -5` 为准。
 
 **工作区策略：** 日常开发直接在 `/Users/zhujunjie/code/pinganpi` 进行。除非用户明确要求隔离开发，否则不要创建或使用 `.worktrees/`。
 
@@ -101,6 +101,27 @@
 - `src/app/app-state.test.ts`
 - `src/app/app-model.test.ts`
 
+### 阶段 5：写信主流程
+
+状态：第一版本地闭环已完成。
+
+已实现：
+
+- 写信服务 `src/app/write-letter-service.ts`，以纯函数方式接收 `AppState` 并返回新状态。
+- 可选择当天在场代笔先生或亲笔。
+- 可输入口述、生成先生初稿、手工校改正文。
+- 可保存本地草稿到 `draftPapers`。
+- 可封缄投寄普通信或挂号信。
+- 投寄时校验钱匣余额，不允许赊账。
+- 投寄成功后扣除代书费和邮资，追加 `ledgerEntries`。
+- 投寄成功后生成信件副本和邮政记录。
+- 写信页面已从静态展示改为本地表单，并接入 `localStorage` 持久化。
+
+当前测试覆盖：
+
+- `src/app/write-letter-service.test.ts`
+- `src/app/app-model.test.ts`
+
 ## 验证基线
 
 以下命令曾在 `/Users/zhujunjie/code/pinganpi` 下通过：
@@ -126,9 +147,8 @@ npx cap doctor
 
 - 真机验证。
 - iOS Safari Web Inspector 的 WebView console 手工确认。
-- 可交互的写信状态流转。
-- 写信界面里的信纸草稿保存与恢复操作。
-- 基于模板的代书生成。
+- 草稿列表、草稿继续编辑和草稿删除。
+- 完整可替换的模板代书引擎。
 - 照片附件流程。
 - 基于持久化时间戳的真实等待和送达推进。
 - 延误、迷失、找回、退回状态在 App UI 中的完整呈现。

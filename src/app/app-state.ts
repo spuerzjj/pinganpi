@@ -192,7 +192,7 @@ export function settleAppState(state: AppState, now: Date): AppStateSettlementRe
   };
 }
 
-function cloneAppState(state: AppState): AppState {
+export function cloneAppState(state: AppState): AppState {
   const parsed = parseAppState(serializeAppState(state));
 
   if (parsed === null) {
