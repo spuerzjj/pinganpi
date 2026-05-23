@@ -32,6 +32,23 @@ describe("write letter service", () => {
     });
   });
 
+  it("does not persist registered posting choice into a draft paper", () => {
+    const state = settleAppState(createDefaultAppState(), now).state;
+
+    const result = saveDraftPaper(
+      state,
+      {
+        oralText: "今日雨停，心里记挂你。",
+        scribeId: "scribe-xu",
+        finalText: "兰卿：今日雨停，心里记挂你。",
+        registered: true
+      },
+      now
+    );
+
+    expect(result.state.draftPapers[0]?.generationMeta?.letterType).toBe("ordinary");
+  });
+
   it("posts a local letter, deducts costs, and records the post office events", () => {
     const state = settleAppState(createDefaultAppState(), now).state;
 

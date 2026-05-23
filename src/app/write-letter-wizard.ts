@@ -20,6 +20,14 @@ export interface WriteLetterWizardState {
   finalTextFromDraft: boolean;
 }
 
+export interface DraftWizardSyncSnapshot {
+  draftId: string | undefined;
+  resetKey: number;
+  saveKey: number;
+}
+
+export type DraftWizardSyncAction = "keep" | "restore" | "reset";
+
 export interface CreateInitialWriteLetterWizardStateInput {
   defaultScribeId: string | null;
   sampleOralText: string;
@@ -63,6 +71,29 @@ export function createWriteLetterWizardStateFromDraft(draft: DraftPaper): WriteL
     draftDirty: false,
     finalTextFromDraft: draft.finalText.trim() === draft.scribeDraft.trim()
   };
+}
+
+export function getDraftWizardSyncAction(
+  previous: DraftWizardSyncSnapshot | undefined,
+  next: DraftWizardSyncSnapshot
+): DraftWizardSyncAction {
+  if (previous !== undefined && next.resetKey !== previous.resetKey) {
+    return "reset";
+  }
+
+  if (previous !== undefined && next.saveKey !== previous.saveKey) {
+    return "keep";
+  }
+
+  if (previous !== undefined && next.draftId === previous.draftId) {
+    return "keep";
+  }
+
+  if (next.draftId === undefined) {
+    return "reset";
+  }
+
+  return "restore";
 }
 
 export function canSaveDraft(state: WriteLetterWizardState): boolean {

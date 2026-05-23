@@ -5,6 +5,7 @@ import {
   canEnterStep,
   createInitialWriteLetterWizardState,
   createWriteLetterWizardStateFromDraft,
+  getDraftWizardSyncAction,
   getNextStepId,
   markDraftGenerated,
   markTextBasisChanged,
@@ -96,5 +97,30 @@ describe("write letter wizard", () => {
       finalTextFromDraft: false
     });
     expect(canEnterStep(restored, "post")).toBe(true);
+  });
+
+  it("keeps the current wizard when the same draft is saved again", () => {
+    expect(getDraftWizardSyncAction({ draftId: "draft-1", resetKey: 0, saveKey: 1 }, { draftId: "draft-1", resetKey: 0, saveKey: 2 })).toBe("keep");
+  });
+
+  it("keeps the current wizard when a new letter is first saved as a draft", () => {
+    expect(getDraftWizardSyncAction({ draftId: undefined, resetKey: 0, saveKey: 0 }, { draftId: "draft-1", resetKey: 0, saveKey: 1 })).toBe(
+      "keep"
+    );
+  });
+
+  it("restores the wizard only when switching to another draft", () => {
+    expect(getDraftWizardSyncAction({ draftId: "draft-1", resetKey: 0, saveKey: 0 }, { draftId: "draft-2", resetKey: 0, saveKey: 0 })).toBe(
+      "restore"
+    );
+  });
+
+  it("resets the wizard after a successful post or active draft clear", () => {
+    expect(getDraftWizardSyncAction({ draftId: undefined, resetKey: 0, saveKey: 0 }, { draftId: undefined, resetKey: 1, saveKey: 0 })).toBe(
+      "reset"
+    );
+    expect(getDraftWizardSyncAction({ draftId: "draft-1", resetKey: 0, saveKey: 0 }, { draftId: undefined, resetKey: 0, saveKey: 0 })).toBe(
+      "reset"
+    );
   });
 });

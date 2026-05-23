@@ -44,7 +44,10 @@ export type PostLetterResult =
 export function saveDraftPaper(state: AppState, input: WriteLetterInput, now: Date): SaveDraftResult {
   const nextState = cloneAppState(state);
   const draftId = `draft-${now.getTime()}-${nextState.draftPapers.length + 1}`;
-  const draftResult = createDraftResult(nextState, input);
+  const draftResult = createDraftResult(nextState, {
+    ...input,
+    registered: false
+  });
   const finalText = normalizeText(input.finalText) || draftResult.scribeDraft;
   const draft: DraftPaper = {
     id: draftId,

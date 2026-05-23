@@ -6,7 +6,7 @@
 
 **当前分支：** `main`
 
-**当前开发基线：** 已完成阶段 7 写信分步流程。精确提交以 `git log --oneline --decorate -5` 为准。
+**当前开发基线：** 已完成阶段 8 草稿管理 / 信纸匣。精确提交以 `git log --oneline --decorate -5` 为准。
 
 **工作区策略：** 日常开发直接在 `/Users/zhujunjie/code/pinganpi` 进行。除非用户明确要求隔离开发，否则不要创建或使用 `.worktrees/`。
 
@@ -159,6 +159,28 @@
 
 - `src/app/write-letter-wizard.test.ts`
 
+### 阶段 8：草稿管理 / 信纸匣
+
+状态：本地草稿管理闭环已完成。
+
+已实现：
+
+- 新增 `src/app/draft-paper-service.ts`，统一处理草稿新增、覆盖保存、删除和从草稿投寄。
+- 写信页右栏新增“信纸匣”，展示草稿列表、更新时间、收件人、写法和状态。
+- 支持从草稿续写，并恢复口述、先生初稿、校改正文和写法。
+- 支持保存新草稿，也支持覆盖当前草稿，不重复新增。
+- 新信第一次存为草稿后，会采用新草稿 id，但不重置当前写信步骤和投寄前临时选择。
+- 删除当前正在续写的草稿后，会清除当前编辑态并重置写信 wizard。
+- 从草稿封缄投寄成功后，会清理该草稿；投寄、扣款、账本和邮政记录继续复用写信服务。
+- 草稿不持久化挂号选择，挂号只作为投寄前确认选项。
+
+当前测试覆盖：
+
+- `src/app/draft-paper-service.test.ts`
+- `src/app/write-letter-wizard.test.ts`
+- `src/app/write-letter-service.test.ts`
+- `src/app/app-model.test.ts`
+
 ## 验证基线
 
 以下命令曾在 `/Users/zhujunjie/code/pinganpi` 下通过：
@@ -184,7 +206,6 @@ npx cap doctor
 
 - 真机验证。
 - iOS Safari Web Inspector 的 WebView console 手工确认。
-- 草稿列表、草稿继续编辑和草稿删除。
 - 更丰富的模板内容库和场景覆盖。
 - 照片附件流程。
 - 基于持久化时间戳的真实等待和送达推进。
@@ -203,120 +224,7 @@ npx cap doctor
 
 ## 后续推荐阶段
 
-### 阶段 3：原生调试环境收尾
-
-目标：确认当前 Capacitor 壳层在 iOS 和 Android 的完整调试链路可用。
-
-当前状态：Android 模拟器和 iOS Simulator 都已验证可以启动 App。本阶段只剩 WebView inspector 最终确认，以及未来真机验证。
-
-剩余任务：
-
-- 在 iOS 上通过 Safari Web Inspector 确认 WebView console 可查看。
-- 在 Android 上通过 Chrome `chrome://inspect/#devices` 确认 WebView console 可查看。
-- 后续有真机时，分别进行 iOS / Android 真机安装与启动验证。
-- 继续保持浏览器优先调试：`npm run dev`。
-- 每次进行打包式原生检查前，先执行 `npm run cap:sync`。
-
-验收标准：
-
-- App 能在至少一个 iOS Simulator 打开。
-- App 能在至少一个 Android Emulator 打开。
-- 两个平台的 WebView console 都可以检查。
-- 必要的本机环境步骤都记录在文档中。
-
-### 阶段 4：本地持久化层
-
-目标：把当前静态 mock-only 状态替换为可持久保存的本地 App 状态，同时暂不依赖云端。
-
-当前状态：本地存储基础已完成。后续写信主流程接入时，需要把页面上的“存作草稿”“封缄投寄”连接到 `draftPapers`、`letters`、`postalRecords` 和 `ledgerEntries`。
-
-推荐范围：
-
-- 定义本地 App state schema：
-  - members
-  - wallet
-  - ledger entries
-  - draft papers
-  - letters
-  - postal records
-- 增加 storage adapter 边界，方便后续云同步替换或扩展。
-- 第一版使用浏览器兼容的本地存储方案，便于本地开发。
-- 所有领域计算继续保留在 `src/domain`。
-- 增加测试覆盖加载、保存、默认迁移和坏数据恢复。
-
-验收标准：
-
-- 刷新 App 后不会丢失草稿或钱匣状态。
-- 本地存储数据损坏时，App 能安全回退，不崩溃。
-- 测试覆盖默认状态和一个已保存信件生命周期。
-
-### 阶段 5：写信主流程
-
-目标：把当前写信页面变成第一版真实可用的本地流程。
-
-推荐流程：
-
-- 选择当天在场的代笔先生，或选择亲笔。
-- 输入口述内容。
-- 通过模板生成先生初稿。
-- 允许手工校改正文。
-- 计算代书费、邮资、挂号费；照片费后续再接。
-- 校验钱匣余额。
-- 阻止透支，不允许赊账。
-- 封缄投寄。
-- 扣除钱匣费用。
-- 增加账本记录。
-- 生成信件副本 / 存根。
-- 生成邮政记录。
-
-验收标准：
-
-- 用户可以从口述内容完成一封本地信件投寄。
-- 余额不足时阻止投寄，并保留草稿。
-- 已投寄信件不能继续编辑。
-- 账本和档案能反映本次投寄。
-
-### 阶段 6：模板代书引擎
-
-目标：实现第一版非 AI 的代书生成能力。
-
-推荐范围：
-
-- 增加可替换的 template engine 边界，为后续 AI 接入预留位置。
-- 输入：
-  - oral text
-  - scribe
-  - sender city
-  - recipient city
-  - letter type
-  - reply context
-  - emotion / scene tags
-- 输出：
-  - scribe draft
-  - read-aloud text
-  - signature
-  - draft source metadata
-- 覆盖首批场景：
-  - 问安
-  - 想念
-  - 报平安
-  - 道歉
-  - 久未回信
-  - 天气
-  - 劳累
-  - 生病
-  - 生日
-  - 纪念日
-  - 回信
-
-验收标准：
-
-- 不同代笔先生会生成风格可感知不同的草稿。
-- 原始口述内容保留为 `oralText`。
-- 最终校改正文保留为 `finalText`。
-- 生成元数据能保留下来，便于未来迁移到 AI 生成。
-
-### 阶段 7：信箱与真实时间送达推进
+### 阶段 9：信箱与真实时间送达推进
 
 目标：让信件可拆阅状态取决于真实经过时间。
 
@@ -336,7 +244,7 @@ npx cap doctor
 - 状态变化会生成邮政记录。
 - 没有任何信件会在没有记录的情况下消失。
 
-### 阶段 8：云端与双人同步准备
+### 阶段 10：云端与双人同步准备
 
 目标：本地流程稳定后，为真实两人使用做云端同步准备。
 
@@ -357,6 +265,12 @@ npx cap doctor
 - 本地 schema 可以映射到云端记录，不需要重写领域规则。
 - 云端边界不渗入 `src/domain`。
 - 推送事件保持克制，并符合旧时代通信体验。
+
+### 并行维护项
+
+- 原生调试环境收尾：继续确认 Safari Web Inspector、Chrome WebView inspect 和未来真机安装。
+- UI 提示增强：把保存、投寄、失败提示改为更明显的 toast / snackbar。
+- Bundle 优化：后续评估 Varlet 按需加载或手动拆包，降低首包提示。
 
 ## 操作备注
 

@@ -240,7 +240,7 @@
       }
 
       .progress-fill {
-        width: 87.5%;
+        width: 80%;
         height: 100%;
         border-radius: inherit;
         background: linear-gradient(90deg, #2563eb, #059669);
@@ -248,7 +248,7 @@
 
       .phase-grid {
         display: grid;
-        grid-template-columns: repeat(8, minmax(0, 1fr));
+        grid-template-columns: repeat(10, minmax(0, 1fr));
         gap: 8px;
       }
 
@@ -479,7 +479,7 @@
           </p>
         </div>
         <div class="meta">
-          <span class="badge info">当前：阶段 7</span>
+          <span class="badge info">当前：阶段 8</span>
           <span class="badge done">main</span>
           <span class="badge">更新：2026-05-23</span>
         </div>
@@ -488,23 +488,23 @@
       <section class="grid-4" aria-label="关键状态">
         <article class="metric">
           <p class="metric-label">当前基线</p>
-          <p class="metric-value">阶段 7 完成</p>
-          <p class="metric-note">写信已拆为 5 步可回看流程。</p>
+          <p class="metric-value">阶段 8 完成</p>
+          <p class="metric-note">信纸匣草稿管理已接入写信流程。</p>
         </article>
         <article class="metric">
           <p class="metric-label">验证状态</p>
-          <p class="metric-value">105 tests</p>
+          <p class="metric-value">120 tests</p>
           <p class="metric-note">test / typecheck / build 最近通过。</p>
         </article>
         <article class="metric">
           <p class="metric-label">下一推荐</p>
-          <p class="metric-value">草稿管理</p>
-          <p class="metric-note">先补齐草稿列表、继续编辑、删除。</p>
+          <p class="metric-value">真实送达</p>
+          <p class="metric-note">让信箱按现实经过时间推进可拆阅状态。</p>
         </article>
         <article class="metric">
           <p class="metric-label">主要风险</p>
-          <p class="metric-value">3 项</p>
-          <p class="metric-note">提示弱、真机待验、bundle warning。</p>
+          <p class="metric-value">4 项</p>
+          <p class="metric-note">送达未接、提示弱、真机待验、bundle warning。</p>
         </article>
       </section>
 
@@ -512,9 +512,9 @@
         <div class="card-header">
           <div>
             <h2>阶段进度</h2>
-            <p class="muted">7 / 8 个主阶段已有可用基线，后续阶段从草稿管理和真实送达推进中选择。</p>
+            <p class="muted">8 / 10 个主阶段已有可用基线，后续优先推进信箱真实时间送达。</p>
           </div>
-          <span class="badge done">87.5%</span>
+          <span class="badge done">80%</span>
         </div>
         <div class="card-body progress">
           <div class="progress-track" aria-hidden="true">
@@ -549,9 +549,17 @@
               <span class="phase-number">7</span>
               <span class="phase-title">分步写信</span>
             </div>
-            <div class="phase next">
+            <div class="phase done">
               <span class="phase-number">8</span>
-              <span class="phase-title">下一阶段</span>
+              <span class="phase-title">草稿管理</span>
+            </div>
+            <div class="phase next">
+              <span class="phase-number">9</span>
+              <span class="phase-title">真实送达</span>
+            </div>
+            <div class="phase">
+              <span class="phase-number">10</span>
+              <span class="phase-title">云端同步</span>
             </div>
           </div>
         </div>
@@ -590,6 +598,11 @@
                 <span>非 AI 模板引擎已接入，保留 future AI metadata 边界。</span>
                 <span class="badge done">完成</span>
               </li>
+              <li class="list-item">
+                <strong>草稿管理</strong>
+                <span>信纸匣列表、续写、覆盖保存、删除、投寄后清理已接入。</span>
+                <span class="badge done">完成</span>
+              </li>
             </ul>
           </div>
         </article>
@@ -607,8 +620,8 @@
               <span class="badge warn">chunk warning</span>
             </div>
             <ul class="plain-list" style="margin-top: 12px">
-              <li>10 个测试文件，105 个测试通过。</li>
-              <li>浏览器冒烟覆盖写信步骤、挂号费用、存草稿、投寄、扣款、档案新增。</li>
+              <li>11 个测试文件，120 个测试通过。</li>
+              <li>测试覆盖草稿服务、wizard 状态同步、挂号草稿隔离、保存和投寄路径。</li>
               <li>Varlet 首包超过 500 KB 是优化项，当前不阻塞。</li>
             </ul>
           </div>
@@ -618,20 +631,13 @@
       <section class="section columns">
         <article class="card">
           <div class="card-header">
-            <h2>下一步候选</h2>
-            <span class="badge info">建议先选一个推进</span>
+            <h2>后续优先级</h2>
+            <span class="badge info">建议继续阶段 9</span>
           </div>
           <div class="card-body priority-grid">
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
                 <span class="badge info">推荐优先</span>
-              </div>
-              <h3>草稿管理</h3>
-              <p>新增草稿列表、继续编辑、删除。能补齐当前写信闭环，风险低，收益直接。</p>
-            </div>
-            <div class="priority">
-              <div class="meta" style="justify-content: flex-start">
-                <span class="badge info">核心体验</span>
               </div>
               <h3>真实时间送达推进</h3>
               <p>基于真实经过时间改变信件可拆状态，并记录延误、迷失、找回、退回。</p>
@@ -660,7 +666,6 @@
           </div>
           <div class="card-body">
             <ul class="plain-list">
-              <li>草稿列表、继续编辑、删除还没有做。</li>
               <li>真实时间送达、延误、迷失、找回、退回还没有接入 UI。</li>
               <li>iOS Safari Web Inspector 和真机验证还需手工确认。</li>
               <li>照片附件、云端同步、系统推送、两人账户绑定尚未开始。</li>
@@ -679,7 +684,7 @@
           <div class="link-row">
             <a class="button primary" href="./pinganpi-roadmap.md">详细路线图</a>
             <a class="button" href="./superpowers/specs/2026-05-23-pinganpi-design.md">产品设计文档</a>
-            <a class="button" href="./superpowers/plans/2026-05-23-pinganpi-write-letter-wizard.md">最近实施计划</a>
+            <a class="button" href="./superpowers/plans/2026-05-23-pinganpi-draft-management.md">最近实施计划</a>
           </div>
         </div>
       </section>

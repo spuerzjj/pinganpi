@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { createDefaultAppState, settleAppState } from "../app-state.js";
 import type { AppModel } from "../app-model.js";
+import type { DraftPaper } from "../app-state.js";
 import { formatFen } from "../../domain/index.js";
 import { calculateWriteLetterCost, createScribeDraft, type WriteLetterInput } from "../write-letter-service.js";
 import {
@@ -9,6 +10,8 @@ import {
   canEnterStep,
   canSaveDraft,
   createInitialWriteLetterWizardState,
+  createWriteLetterWizardStateFromDraft,
+  getDraftWizardSyncAction,
   getNextStepId,
   getPreviousStepId,
   getStepIndex,
@@ -21,21 +24,26 @@ import {
 
 const props = defineProps<{
   model: AppModel;
+  editingDraft?: DraftPaper | null;
+  composeResetKey?: number;
+  composeSaveKey?: number;
 }>();
 
+interface WriteLetterSubmitPayload {
+  draftId?: string;
+  input: WriteLetterInput;
+}
+
 const emit = defineEmits<{
-  "save-draft": [input: WriteLetterInput];
-  "post-letter": [input: WriteLetterInput];
+  (event: "edit-draft", draftId: string): void;
+  (event: "delete-draft", draftId: string): void;
+  (event: "save-draft", payload: WriteLetterSubmitPayload): void;
+  (event: "post-letter", payload: WriteLetterSubmitPayload): void;
 }>();
 
 const handwrittenValue = "__handwritten";
-const wizard = ref(
-  createInitialWriteLetterWizardState({
-    defaultScribeId: props.model.writeLetter.defaultScribeId,
-    sampleOralText: props.model.writeLetter.sampleOralText,
-    sampleDraftText: props.model.writeLetter.sampleDraftText
-  })
-);
+const activeDraftId = ref<string | undefined>(props.editingDraft?.id);
+const wizard = ref(createFreshWizardState());
 const serviceState = computed(() => settleAppState(createDefaultAppState(), new Date()).state);
 const currentStep = computed(() => writeLetterSteps.find((step) => step.id === wizard.value.currentStepId) ?? writeLetterSteps[0]);
 const currentStepEyebrow = computed(() => currentStep.value?.eyebrow ?? "");
@@ -56,6 +64,39 @@ const postingCost = computed(() =>
 );
 const totalCostText = computed(() => formatFen(postingCost.value.totalFen));
 const letterPreviewText = computed(() => wizard.value.finalText || wizard.value.scribeDraft || "尚未起稿。");
+
+function createFreshWizardState() {
+  return createInitialWriteLetterWizardState({
+    defaultScribeId: props.model.writeLetter.defaultScribeId,
+    sampleOralText: props.model.writeLetter.sampleOralText,
+    sampleDraftText: props.model.writeLetter.sampleDraftText
+  });
+}
+
+watch(
+  () => ({
+    draftId: props.editingDraft?.id,
+    resetKey: props.composeResetKey ?? 0,
+    saveKey: props.composeSaveKey ?? 0
+  }),
+  (snapshot, previous) => {
+    const action = getDraftWizardSyncAction(previous, snapshot);
+
+    activeDraftId.value = snapshot.draftId;
+
+    if (action === "keep") {
+      return;
+    }
+
+    if (action === "reset" || props.editingDraft === null || props.editingDraft === undefined) {
+      wizard.value = createFreshWizardState();
+      return;
+    }
+
+    wizard.value = createWriteLetterWizardStateFromDraft(props.editingDraft);
+  },
+  { immediate: true }
+);
 
 function setStep(stepId: WriteLetterStepId): void {
   if (!canEnterStep(wizard.value, stepId)) {
@@ -148,12 +189,25 @@ function buildInput(): WriteLetterInput {
   };
 }
 
+function buildSubmitPayload(): WriteLetterSubmitPayload {
+  const input = buildInput();
+
+  if (activeDraftId.value === undefined) {
+    return { input };
+  }
+
+  return {
+    draftId: activeDraftId.value,
+    input
+  };
+}
+
 function saveDraft(): void {
   if (!canSave.value) {
     return;
   }
 
-  emit("save-draft", buildInput());
+  emit("save-draft", buildSubmitPayload());
 }
 
 function postLetter(): void {
@@ -161,15 +215,28 @@ function postLetter(): void {
     return;
   }
 
-  emit("post-letter", buildInput());
+  emit("post-letter", buildSubmitPayload());
+}
+
+function editDraft(draftId: string): void {
+  emit("edit-draft", draftId);
+}
+
+function deleteDraft(draftId: string): void {
+  if (!window.confirm("删去这张草稿？")) {
+    return;
+  }
+
+  emit("delete-draft", draftId);
 }
 </script>
 
 <template>
   <div class="grid gap-4 lg:grid-cols-[0.92fr_1.08fr]">
-    <section class="archive-panel">
+    <section class="archive-panel min-w-0">
       <p class="text-sm text-[var(--app-muted)]">代书摊</p>
       <h2 class="mt-1 text-2xl font-semibold">写一封平安批</h2>
+      <p v-if="activeDraftId" class="mt-2 text-sm text-[var(--app-muted)]">正在续写信纸匣中的草稿。</p>
 
       <div class="mt-5 grid grid-cols-5 gap-1 border border-[var(--app-rule)] bg-[#f7f0df] p-1">
         <button
@@ -276,9 +343,39 @@ function postLetter(): void {
       </div>
     </section>
 
-    <section class="archive-panel">
-      <p class="text-sm text-[var(--app-muted)]">邮资估记</p>
-      <h2 class="mt-1 text-2xl font-semibold">{{ model.writeLetter.fromCity }} 至 {{ model.writeLetter.toCity }}</h2>
+    <section class="archive-panel min-w-0">
+      <p class="text-sm text-[var(--app-muted)]">信纸匣</p>
+      <h2 class="mt-1 text-2xl font-semibold">草稿</h2>
+
+      <div class="mt-5 space-y-3">
+        <p v-if="model.writeLetter.drafts.length === 0" class="record-card text-sm text-[var(--app-muted)]">暂无草稿</p>
+        <article
+          v-for="draft in model.writeLetter.drafts"
+          :key="draft.id"
+          class="record-card"
+          :class="draft.id === activeDraftId ? 'border-[#253b5b]' : ''"
+        >
+          <div class="grid gap-2 sm:grid-cols-[1fr_auto]">
+            <div class="min-w-0">
+              <p class="text-xs text-[var(--app-muted)]">{{ draft.updatedAtText }} · 收 {{ draft.recipientName }}</p>
+              <h3 class="mt-1 break-words text-lg font-semibold">{{ draft.excerpt || "未落正文" }}</h3>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 sm:justify-end">
+              <span class="thin-label">{{ draft.writingMethodText }}</span>
+              <span class="thin-label">{{ draft.statusText }}</span>
+            </div>
+          </div>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <var-button size="small" plain color="#253b5b" @click="editDraft(draft.id)">续写</var-button>
+            <var-button size="small" plain color="#9b2f24" @click="deleteDraft(draft.id)">删去</var-button>
+          </div>
+        </article>
+      </div>
+
+      <div class="mt-5 border-t border-dashed border-[var(--app-rule)] pt-4">
+        <p class="text-sm text-[var(--app-muted)]">邮资估记</p>
+        <h2 class="mt-1 text-2xl font-semibold">{{ model.writeLetter.fromCity }} 至 {{ model.writeLetter.toCity }}</h2>
+      </div>
 
       <div class="mt-5 grid gap-3 text-sm">
         <div class="ledger-row">

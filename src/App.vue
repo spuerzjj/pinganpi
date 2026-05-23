@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { computed, ref, type Component } from "vue";
-import { settleAppState } from "./app/app-state.js";
+import { settleAppState, type DraftPaper } from "./app/app-state.js";
 import { createBrowserAppStateStore } from "./app/app-state-storage.js";
 import { buildAppModel } from "./app/app-model.js";
+import { deleteDraftPaper, postDraftPaper, saveDraftPaper, type SaveDraftPaperInput } from "./app/draft-paper-service.js";
 import MailboxArchivePage from "./app/pages/MailboxArchivePage.vue";
 import ScribesPage from "./app/pages/ScribesPage.vue";
 import TodayPage from "./app/pages/TodayPage.vue";
 import WalletPage from "./app/pages/WalletPage.vue";
 import WriteLetterPage from "./app/pages/WriteLetterPage.vue";
-import { postLetter, saveDraftPaper, type WriteLetterInput } from "./app/write-letter-service.js";
+import { postLetter, type WriteLetterInput } from "./app/write-letter-service.js";
 
 type NavKey = "today" | "write" | "scribes" | "wallet" | "mailbox";
 
@@ -19,11 +20,26 @@ interface NavItem {
   component: Component;
 }
 
+interface WriteLetterSubmitPayload {
+  draftId?: string;
+  input: WriteLetterInput;
+}
+
 const appStateStore = createBrowserAppStateStore();
 const settlement = settleAppState(appStateStore.load(), new Date());
 const appState = ref(settlement.state);
 const model = computed(() => buildAppModel(new Date(), appState.value));
 const noticeText = ref("");
+const editingDraftId = ref<string | null>(null);
+const composeResetKey = ref(0);
+const composeSaveKey = ref(0);
+const editingDraft = computed<DraftPaper | null>(() => {
+  if (editingDraftId.value === null) {
+    return null;
+  }
+
+  return appState.value.draftPapers.find((draft) => draft.id === editingDraftId.value) ?? null;
+});
 
 if (settlement.changed) {
   appStateStore.save(settlement.state);
@@ -53,15 +69,19 @@ function persistState(nextState: typeof appState.value): void {
   appStateStore.save(nextState);
 }
 
-function handleSaveDraft(input: WriteLetterInput): void {
-  const result = saveDraftPaper(appState.value, input, new Date());
+function handleEditDraft(draftId: string): void {
+  if (!appState.value.draftPapers.some((draft) => draft.id === draftId)) {
+    noticeText.value = "没有找到这张草稿。";
+    return;
+  }
 
-  persistState(result.state);
-  noticeText.value = "草稿已存入信纸匣。";
+  editingDraftId.value = draftId;
+  activeKey.value = "write";
+  noticeText.value = "草稿已取出，可继续校改。";
 }
 
-function handlePostLetter(input: WriteLetterInput): void {
-  const result = postLetter(appState.value, input, new Date());
+function handleDeleteDraft(draftId: string): void {
+  const result = deleteDraftPaper(appState.value, draftId);
 
   if (!result.ok) {
     noticeText.value = result.reason;
@@ -69,7 +89,56 @@ function handlePostLetter(input: WriteLetterInput): void {
   }
 
   persistState(result.state);
+
+  if (editingDraftId.value === draftId) {
+    editingDraftId.value = null;
+  }
+
+  noticeText.value = "草稿已从信纸匣移出。";
+}
+
+function handleSaveDraft(payload: WriteLetterSubmitPayload): void {
+  const input = buildSaveDraftInput(payload);
+  const result = saveDraftPaper(appState.value, input, new Date());
+
+  if (!result.ok) {
+    noticeText.value = result.reason;
+    return;
+  }
+
+  persistState(result.state);
+  editingDraftId.value = result.draftId;
+  composeSaveKey.value += 1;
+  noticeText.value = result.created ? "草稿已存入信纸匣。" : "草稿已重新存妥。";
+}
+
+function handlePostLetter(payload: WriteLetterSubmitPayload): void {
+  const input = buildSaveDraftInput(payload);
+  const result =
+    input.draftId === undefined
+      ? postLetter(appState.value, input, new Date())
+      : postDraftPaper(appState.value, input.draftId, input, new Date());
+
+  if (!result.ok) {
+    noticeText.value = result.reason;
+    return;
+  }
+
+  persistState(result.state);
+  editingDraftId.value = null;
+  composeResetKey.value += 1;
   noticeText.value = "信已封缄投寄，邮政存根已入档。";
+}
+
+function buildSaveDraftInput(payload: WriteLetterSubmitPayload): SaveDraftPaperInput {
+  if (payload.draftId === undefined) {
+    return payload.input;
+  }
+
+  return {
+    ...payload.input,
+    draftId: payload.draftId
+  };
 }
 </script>
 
@@ -93,6 +162,11 @@ function handlePostLetter(input: WriteLetterInput): void {
         <component
           :is="activePage.component"
           :model="model"
+          :editing-draft="editingDraft"
+          :compose-reset-key="composeResetKey"
+          :compose-save-key="composeSaveKey"
+          @edit-draft="handleEditDraft"
+          @delete-draft="handleDeleteDraft"
           @save-draft="handleSaveDraft"
           @post-letter="handlePostLetter"
         />
