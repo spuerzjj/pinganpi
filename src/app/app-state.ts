@@ -423,14 +423,29 @@ function isOptionalGenerationMeta(value: unknown): value is ScribeGenerationMeta
     return false;
   }
 
+  if (value.engine === "local-template-v1") {
+    return (
+      isString(value.templateId) &&
+      (value.scribeId === null || isString(value.scribeId)) &&
+      isArrayOf(value.sceneTags, isString) &&
+      (value.letterType === "ordinary" || value.letterType === "registered") &&
+      isString(value.senderCity) &&
+      isString(value.recipientCity)
+    );
+  }
+
   return (
-    value.engine === "local-template-v1" &&
-    isString(value.templateId) &&
+    value.engine === "ai-scribe-v1" &&
+    isString(value.provider) &&
+    isString(value.model) &&
+    isString(value.promptVersion) &&
     (value.scribeId === null || isString(value.scribeId)) &&
     isArrayOf(value.sceneTags, isString) &&
     (value.letterType === "ordinary" || value.letterType === "registered") &&
     isString(value.senderCity) &&
-    isString(value.recipientCity)
+    isString(value.recipientCity) &&
+    isFiniteNonNegativeNumber(value.latencyMs) &&
+    isOptionalString(value.failureReason)
   );
 }
 

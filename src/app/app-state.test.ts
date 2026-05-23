@@ -37,6 +37,52 @@ describe("app state", () => {
     expect(parsed?.letters).toHaveLength(state.letters.length);
   });
 
+  it("serializes and parses AI scribe generation metadata", () => {
+    const state = createDefaultAppState();
+    state.draftPapers.push({
+      id: "draft-ai-1",
+      authorMemberId: "member-zhou",
+      recipientMemberId: "member-lan",
+      createdAtIso: "2026-05-23T10:00:00.000+08:00",
+      updatedAtIso: "2026-05-23T10:30:00.000+08:00",
+      oralText: "请替我问她近来安好。",
+      scribeId: "scribe-xu",
+      scribeDraft: "兰卿：见字如晤。近来安好否。",
+      finalText: "兰卿：见字如晤。近来安好否。",
+      readAloudText: "兰卿：见字如晤。近来安好否。",
+      draftSource: "ai",
+      generationMeta: {
+        engine: "ai-scribe-v1",
+        provider: "xiaomi-mimo",
+        model: "mimo-v2.5",
+        promptVersion: "ai-scribe-prompt-v1",
+        scribeId: "scribe-xu",
+        sceneTags: ["问安"],
+        letterType: "ordinary",
+        senderCity: "杭州",
+        recipientCity: "西安",
+        latencyMs: 1200
+      },
+      status: "scribed"
+    });
+
+    const parsed = parseAppState(serializeAppState(state));
+
+    expect(parsed).not.toBeNull();
+    expect(parsed?.draftPapers[0]?.generationMeta).toEqual({
+      engine: "ai-scribe-v1",
+      provider: "xiaomi-mimo",
+      model: "mimo-v2.5",
+      promptVersion: "ai-scribe-prompt-v1",
+      scribeId: "scribe-xu",
+      sceneTags: ["问安"],
+      letterType: "ordinary",
+      senderCity: "杭州",
+      recipientCity: "西安",
+      latencyMs: 1200
+    });
+  });
+
   it("returns null for corrupt or invalid stored state", () => {
     expect(parseAppState("{bad json")).toBeNull();
     expect(parseAppState(JSON.stringify({ schemaVersion: 1, wallet: null }))).toBeNull();
