@@ -2,6 +2,7 @@
 import { computed, ref } from "vue";
 import { createDefaultAppState, settleAppState } from "../app-state.js";
 import type { AppModel } from "../app-model.js";
+import { formatFen } from "../../domain/index.js";
 import { calculateWriteLetterCost, createScribeDraft, type WriteLetterInput } from "../write-letter-service.js";
 import {
   canContinueFromStep,
@@ -45,12 +46,16 @@ const draftNotice = computed(() => (wizard.value.draftDirty ? "口述或写法�
 const canSave = computed(() => canSaveDraft(wizard.value));
 const canGoNext = computed(() => canContinueFromStep(wizard.value, wizard.value.currentStepId));
 const canPost = computed(() => canContinueFromStep(wizard.value, "post"));
+const selectedScribeFeeText = computed(() => selectedScribe.value?.feeText ?? "免代书费");
+const currentPostageText = computed(() => (wizard.value.registered ? props.model.writeLetter.registeredPostageText : props.model.writeLetter.plainPostageText));
 const postingCost = computed(() =>
   calculateWriteLetterCost(serviceState.value, {
     scribeId: wizard.value.selectedScribeId,
     registered: wizard.value.registered
   })
 );
+const totalCostText = computed(() => formatFen(postingCost.value.totalFen));
+const letterPreviewText = computed(() => wizard.value.finalText || wizard.value.scribeDraft || "尚未起稿。");
 
 function setStep(stepId: WriteLetterStepId): void {
   if (!canEnterStep(wizard.value, stepId)) {
@@ -237,15 +242,27 @@ function postLetter(): void {
           <div class="grid gap-3 text-sm">
             <div class="ledger-row">
               <span>代书费</span>
-              <strong>{{ postingCost.scribeFeeFen }} 分</strong>
+              <strong>{{ selectedScribeFeeText }}</strong>
             </div>
             <div class="ledger-row">
-              <span>邮资</span>
-              <strong>{{ postingCost.postageFen }} 分</strong>
+              <span>平信邮资</span>
+              <strong>{{ model.writeLetter.plainPostageText }}</strong>
             </div>
             <div class="ledger-row">
-              <span>合计</span>
-              <strong>{{ postingCost.totalFen }} 分</strong>
+              <span>挂号邮资</span>
+              <strong>{{ model.writeLetter.registeredPostageText }}</strong>
+            </div>
+            <div class="ledger-row">
+              <span>本次邮资</span>
+              <strong>{{ currentPostageText }}</strong>
+            </div>
+            <div class="ledger-row">
+              <span>钱匣余额</span>
+              <strong>{{ model.wallet.balanceText }}</strong>
+            </div>
+            <div class="ledger-row">
+              <span>本次合计</span>
+              <strong>{{ totalCostText }}</strong>
             </div>
           </div>
         </div>
@@ -282,6 +299,13 @@ function postLetter(): void {
         <p class="text-sm text-[var(--app-muted)]">邮路</p>
         <p class="mt-2 text-xl">{{ model.writeLetter.deliveryWindowText }}</p>
         <p class="mt-1 text-sm text-[var(--app-muted)]">{{ model.writeLetter.routeClassText }}，不显示实时地图。</p>
+      </div>
+
+      <div class="mt-5 border-t border-dashed border-[var(--app-rule)] pt-4">
+        <p class="text-sm text-[var(--app-muted)]">誊清预览</p>
+        <p class="mt-2 whitespace-pre-wrap text-sm leading-7">
+          {{ letterPreviewText }}
+        </p>
       </div>
     </section>
   </div>
