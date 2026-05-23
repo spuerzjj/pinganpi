@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { DraftPaper } from "./app-state.js";
+import type { ScribeDraftResult } from "./scribe-template-engine.js";
 import {
   canContinueFromStep,
   canEnterStep,
@@ -49,6 +50,30 @@ describe("write letter wizard", () => {
     expect(canContinueFromStep(drafted, "revise")).toBe(true);
   });
 
+  it("keeps AI draft metadata after a generated draft enters the wizard", () => {
+    const initial = createInitialWriteLetterWizardState({
+      defaultScribeId: "scribe-xu",
+      sampleOralText: "请替我问她近来安好。",
+      sampleDraftText: ""
+    });
+
+    const drafted = markDraftGenerated(initial, createAiDraftResult());
+
+    expect(drafted).toMatchObject({
+      scribeDraft: "兰卿：见字如晤。近来安好否。",
+      readAloudText: "兰卿：见字如晤。近来安好否。",
+      finalText: "兰卿：见字如晤。近来安好否。",
+      draftSource: "ai",
+      draftDirty: false,
+      finalTextFromDraft: true
+    });
+    expect(drafted.generationMeta).toMatchObject({
+      engine: "ai-scribe-v1",
+      provider: "xiaomi-mimo",
+      scribeId: "scribe-xu"
+    });
+  });
+
   it("requires a new draft after the oral text or writing method changes", () => {
     const drafted = markDraftGenerated(
       createInitialWriteLetterWizardState({
@@ -70,6 +95,32 @@ describe("write letter wizard", () => {
     expect(getNextStepId(changed, "oral")).toBe("draft");
   });
 
+  it("clears stale generated draft metadata after the oral text or writing method changes", () => {
+    const drafted = markDraftGenerated(
+      createInitialWriteLetterWizardState({
+        defaultScribeId: "scribe-xu",
+        sampleOralText: "请替我问她近来安好。",
+        sampleDraftText: ""
+      }),
+      createAiDraftResult()
+    );
+
+    const changed = markTextBasisChanged({
+      ...drafted,
+      oralText: "请替我问她冬衣是否够用。"
+    });
+
+    expect(changed).toMatchObject({
+      scribeDraft: "",
+      readAloudText: "",
+      finalText: "",
+      draftDirty: true,
+      finalTextFromDraft: true
+    });
+    expect(changed.draftSource).toBeUndefined();
+    expect(changed.generationMeta).toBeUndefined();
+  });
+
   it("restores wizard state from an existing draft paper", () => {
     const draft: DraftPaper = {
       id: "draft-1",
@@ -81,6 +132,20 @@ describe("write letter wizard", () => {
       scribeId: "scribe-xu",
       scribeDraft: "兰卿：今日雨停。",
       finalText: "兰卿：今日雨停，心里记挂你。",
+      readAloudText: "兰卿：今日雨停。",
+      draftSource: "ai",
+      generationMeta: {
+        engine: "ai-scribe-v1",
+        provider: "xiaomi-mimo",
+        model: "mimo-v2.5",
+        promptVersion: "ai-scribe-prompt-v1",
+        scribeId: "scribe-xu",
+        sceneTags: ["天气"],
+        letterType: "ordinary",
+        senderCity: "杭州",
+        recipientCity: "西安",
+        latencyMs: 1200
+      },
       status: "revised"
     };
 
@@ -92,9 +157,16 @@ describe("write letter wizard", () => {
       oralText: "今日雨停。",
       scribeDraft: "兰卿：今日雨停。",
       finalText: "兰卿：今日雨停，心里记挂你。",
+      readAloudText: "兰卿：今日雨停。",
+      draftSource: "ai",
       registered: false,
       draftDirty: false,
       finalTextFromDraft: false
+    });
+    expect(restored.generationMeta).toMatchObject({
+      engine: "ai-scribe-v1",
+      provider: "xiaomi-mimo",
+      scribeId: "scribe-xu"
     });
     expect(canEnterStep(restored, "post")).toBe(true);
   });
@@ -124,3 +196,25 @@ describe("write letter wizard", () => {
     );
   });
 });
+
+function createAiDraftResult(): ScribeDraftResult {
+  return {
+    oralText: "请替我问她近来安好。",
+    scribeDraft: "兰卿：见字如晤。近来安好否。",
+    readAloudText: "兰卿：见字如晤。近来安好否。",
+    signature: "明远",
+    draftSource: "ai",
+    generationMeta: {
+      engine: "ai-scribe-v1",
+      provider: "xiaomi-mimo",
+      model: "mimo-v2.5",
+      promptVersion: "ai-scribe-prompt-v1",
+      scribeId: "scribe-xu",
+      sceneTags: ["问安"],
+      letterType: "ordinary",
+      senderCity: "杭州",
+      recipientCity: "西安",
+      latencyMs: 1200
+    }
+  };
+}

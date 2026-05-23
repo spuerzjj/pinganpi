@@ -1,4 +1,5 @@
 import type { DraftPaper } from "./app-state.js";
+import type { DraftSource, ScribeDraftResult, ScribeGenerationMeta } from "./scribe-template-engine.js";
 
 export type WriteLetterStepId = "method" | "oral" | "draft" | "revise" | "post";
 
@@ -14,6 +15,9 @@ export interface WriteLetterWizardState {
   selectedScribeId: string | null;
   oralText: string;
   scribeDraft: string;
+  readAloudText: string;
+  draftSource: DraftSource | undefined;
+  generationMeta: ScribeGenerationMeta | undefined;
   finalText: string;
   registered: boolean;
   draftDirty: boolean;
@@ -50,6 +54,9 @@ export function createInitialWriteLetterWizardState(input: CreateInitialWriteLet
     selectedScribeId: input.defaultScribeId,
     oralText: input.sampleOralText,
     scribeDraft: input.sampleDraftText,
+    readAloudText: input.sampleDraftText,
+    draftSource: input.sampleDraftText.trim().length > 0 ? "template" : undefined,
+    generationMeta: undefined,
     finalText: input.sampleDraftText,
     registered: false,
     draftDirty: input.sampleOralText.trim().length > 0 && input.sampleDraftText.trim().length === 0,
@@ -66,6 +73,9 @@ export function createWriteLetterWizardStateFromDraft(draft: DraftPaper): WriteL
     selectedScribeId: draft.scribeId,
     oralText: draft.oralText,
     scribeDraft: draft.scribeDraft,
+    readAloudText: draft.readAloudText ?? draft.scribeDraft,
+    draftSource: draft.draftSource,
+    generationMeta: draft.generationMeta,
     finalText: draft.finalText,
     registered: false,
     draftDirty: false,
@@ -153,21 +163,31 @@ export function getPreviousStepId(currentStepId: WriteLetterStepId): WriteLetter
 }
 
 export function markTextBasisChanged(state: WriteLetterWizardState): WriteLetterWizardState {
+  const shouldClearFinalText = state.finalTextFromDraft || state.finalText.trim() === state.scribeDraft.trim();
+
   return {
     ...state,
+    scribeDraft: "",
+    readAloudText: "",
+    draftSource: undefined,
+    generationMeta: undefined,
+    finalText: shouldClearFinalText ? "" : state.finalText,
     draftDirty: state.oralText.trim().length > 0,
-    finalTextFromDraft: state.finalTextFromDraft || state.finalText.trim().length === 0
+    finalTextFromDraft: shouldClearFinalText || state.finalText.trim().length === 0
   };
 }
 
-export function markDraftGenerated(state: WriteLetterWizardState, scribeDraft: string): WriteLetterWizardState {
-  const normalizedDraft = scribeDraft.trim();
+export function markDraftGenerated(state: WriteLetterWizardState, generatedDraft: string | ScribeDraftResult): WriteLetterWizardState {
+  const draftFields = normalizeGeneratedDraft(generatedDraft);
   const shouldReplaceFinalText = state.finalTextFromDraft || state.finalText.trim().length === 0;
 
   return {
     ...state,
-    scribeDraft: normalizedDraft,
-    finalText: shouldReplaceFinalText ? normalizedDraft : state.finalText,
+    scribeDraft: draftFields.scribeDraft,
+    readAloudText: draftFields.readAloudText,
+    draftSource: draftFields.draftSource,
+    generationMeta: draftFields.generationMeta,
+    finalText: shouldReplaceFinalText ? draftFields.scribeDraft : state.finalText,
     draftDirty: false,
     finalTextFromDraft: shouldReplaceFinalText
   };
@@ -187,4 +207,32 @@ export function getStepIndex(stepId: WriteLetterStepId): number {
 
 function hasFreshDraft(state: WriteLetterWizardState): boolean {
   return state.oralText.trim().length > 0 && state.scribeDraft.trim().length > 0 && !state.draftDirty;
+}
+
+function normalizeGeneratedDraft(generatedDraft: string | ScribeDraftResult): {
+  scribeDraft: string;
+  readAloudText: string;
+  draftSource: DraftSource | undefined;
+  generationMeta: ScribeGenerationMeta | undefined;
+} {
+  if (typeof generatedDraft === "string") {
+    const scribeDraft = generatedDraft.trim();
+
+    return {
+      scribeDraft,
+      readAloudText: scribeDraft,
+      draftSource: undefined,
+      generationMeta: undefined
+    };
+  }
+
+  const scribeDraft = generatedDraft.scribeDraft.trim();
+  const readAloudText = generatedDraft.readAloudText.trim() || scribeDraft;
+
+  return {
+    scribeDraft,
+    readAloudText,
+    draftSource: generatedDraft.draftSource,
+    generationMeta: generatedDraft.generationMeta
+  };
 }
