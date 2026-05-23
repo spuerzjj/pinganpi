@@ -112,13 +112,13 @@ npx cap doctor
 
 已验证基线记录在：
 
-- `docs/superpowers/plans/2026-05-23-pinganpi-next-roadmap.md`
+- `docs/pinganpi-roadmap.md`
 
 ## 后续路线
 
 以后开始新任务前，优先读取：
 
-- `docs/superpowers/plans/2026-05-23-pinganpi-next-roadmap.md`
+- `docs/pinganpi-roadmap.md`
 - `docs/superpowers/plans/2026-05-23-pinganpi-mobile-capacitor-shell.md`
 - `docs/superpowers/plans/2026-05-23-pinganpi-domain-foundation.md`
 
@@ -213,8 +213,9 @@ npm audit --omit=dev
 
 截至该记录：
 
-- Android 原生调试环境已可用，`pinganpi_api36` 模拟器已创建，App 已成功安装并启动过。
-- 完整 Xcode 尚未安装完成，iOS 仍需用户通过 Mac App Store 安装 Xcode 后继续验证。
+- Android 原生调试环境已可用，App 已成功安装并启动过。
+- Xcode 26.5 已可用，iOS Simulator 已成功安装并启动 App。
+- iOS Safari Web Inspector 的 WebView console 仍需手工确认。
 
 ## Git 与发布状态
 
