@@ -11,7 +11,7 @@ import {
   type RouteClass,
   type Scribe
 } from "../domain/index.js";
-import { createDefaultAppState, settleAppState, type AppState, type PersistedLetter } from "./app-state.js";
+import { createDefaultAppState, settleAppState, type AppState, type DraftPaper, type PersistedLetter } from "./app-state.js";
 import { type MemberProfile } from "./mock-data.js";
 import { createScribeDraft } from "./write-letter-service.js";
 
@@ -48,6 +48,7 @@ export interface WriteLetterModel {
   routeClassText: string;
   sampleOralText: string;
   sampleDraftText: string;
+  drafts: WriteLetterDraftSummary[];
 }
 
 export interface WriteLetterScribeOption {
@@ -55,6 +56,15 @@ export interface WriteLetterScribeOption {
   name: string;
   feeText: string;
   styleText: string;
+}
+
+export interface WriteLetterDraftSummary {
+  id: string;
+  updatedAtText: string;
+  recipientName: string;
+  writingMethodText: string;
+  statusText: string;
+  excerpt: string;
 }
 
 export interface ScribeDeskModel {
@@ -135,6 +145,13 @@ const stateText: Record<LetterState, string> = {
   archived: "归档"
 };
 
+const draftStatusText: Record<DraftPaper["status"], string> = {
+  draft: "草稿",
+  scribed: "先生初稿",
+  revised: "已校改",
+  sealed: "已封缄"
+};
+
 const scribeStyleText: Record<Scribe["style"], string> = {
   street: "街口代书",
   "old-scholar": "老先生",
@@ -213,7 +230,11 @@ export function buildAppModel(
       sampleDraftText: createScribeDraft(state, {
         oralText: sampleOralText,
         scribeId: defaultScribeId
-      })
+      }),
+      drafts: state.draftPapers
+        .slice()
+        .sort((left, right) => Date.parse(right.updatedAtIso) - Date.parse(left.updatedAtIso))
+        .map((draft) => summarizeDraftPaper(draft, state))
     },
     scribeDesk: {
       city: currentMember.city,
@@ -260,6 +281,20 @@ function summarizeScribe(scribe: Scribe): ScribeSummary {
   };
 }
 
+function summarizeDraftPaper(draft: DraftPaper, state: AppState): WriteLetterDraftSummary {
+  const recipient = findMember(state, draft.recipientMemberId);
+  const scribe = draft.scribeId === null ? null : state.scribes.find((candidate) => candidate.id === draft.scribeId);
+
+  return {
+    id: draft.id,
+    updatedAtText: formatEraDate(new Date(draft.updatedAtIso)),
+    recipientName: recipient.dailyName,
+    writingMethodText: scribe === null ? "亲笔" : `${scribe?.name ?? "代笔先生"}代笔`,
+    statusText: draftStatusText[draft.status],
+    excerpt: makeTextExcerpt(draft.finalText || draft.scribeDraft || draft.oralText)
+  };
+}
+
 function summarizeLetter(letter: PersistedLetter, currentMemberIdValue: string, state: AppState): LetterSummary {
   const deliveryWindow = estimateDeliveryWindow(letter.distanceKm);
   const sender = findMember(state, letter.senderId);
@@ -300,4 +335,9 @@ function formatSignedFen(amountFen: Fen): string {
   }
 
   return `+${formatFen(amountFen)}`;
+}
+
+function makeTextExcerpt(text: string): string {
+  const normalized = text.replace(/\s+/g, " ").trim();
+  return normalized.length > 42 ? `${normalized.slice(0, 42)}...` : normalized;
 }

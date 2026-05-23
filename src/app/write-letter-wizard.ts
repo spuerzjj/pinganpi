@@ -1,3 +1,5 @@
+import type { DraftPaper } from "./app-state.js";
+
 export type WriteLetterStepId = "method" | "oral" | "draft" | "revise" | "post";
 
 export interface WriteLetterStep {
@@ -44,6 +46,22 @@ export function createInitialWriteLetterWizardState(input: CreateInitialWriteLet
     registered: false,
     draftDirty: input.sampleOralText.trim().length > 0 && input.sampleDraftText.trim().length === 0,
     finalTextFromDraft: true
+  };
+}
+
+export function createWriteLetterWizardStateFromDraft(draft: DraftPaper): WriteLetterWizardState {
+  const freshDraftAvailable = draft.oralText.trim().length > 0 && draft.scribeDraft.trim().length > 0;
+  const finalTextAvailable = draft.finalText.trim().length > 0;
+
+  return {
+    currentStepId: freshDraftAvailable && finalTextAvailable ? "revise" : "draft",
+    selectedScribeId: draft.scribeId,
+    oralText: draft.oralText,
+    scribeDraft: draft.scribeDraft,
+    finalText: draft.finalText,
+    registered: false,
+    draftDirty: false,
+    finalTextFromDraft: draft.finalText.trim() === draft.scribeDraft.trim()
   };
 }
 

@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
+import type { DraftPaper } from "./app-state.js";
 import {
   canContinueFromStep,
   canEnterStep,
   createInitialWriteLetterWizardState,
+  createWriteLetterWizardStateFromDraft,
   getNextStepId,
   markDraftGenerated,
   markTextBasisChanged,
@@ -65,5 +67,34 @@ describe("write letter wizard", () => {
     expect(canEnterStep(changed, "revise")).toBe(false);
     expect(canEnterStep(changed, "post")).toBe(false);
     expect(getNextStepId(changed, "oral")).toBe("draft");
+  });
+
+  it("restores wizard state from an existing draft paper", () => {
+    const draft: DraftPaper = {
+      id: "draft-1",
+      authorMemberId: "member-zhou",
+      recipientMemberId: "member-lan",
+      createdAtIso: "2026-05-23T04:00:00.000Z",
+      updatedAtIso: "2026-05-23T05:00:00.000Z",
+      oralText: "今日雨停。",
+      scribeId: "scribe-xu",
+      scribeDraft: "兰卿：今日雨停。",
+      finalText: "兰卿：今日雨停，心里记挂你。",
+      status: "revised"
+    };
+
+    const restored = createWriteLetterWizardStateFromDraft(draft);
+
+    expect(restored).toMatchObject({
+      currentStepId: "revise",
+      selectedScribeId: "scribe-xu",
+      oralText: "今日雨停。",
+      scribeDraft: "兰卿：今日雨停。",
+      finalText: "兰卿：今日雨停，心里记挂你。",
+      registered: false,
+      draftDirty: false,
+      finalTextFromDraft: false
+    });
+    expect(canEnterStep(restored, "post")).toBe(true);
   });
 });

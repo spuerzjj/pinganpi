@@ -73,4 +73,48 @@ describe("app model", () => {
       note: "平信邮票"
     });
   });
+
+  it("summarizes draft papers newest first", () => {
+    const state = createDefaultAppState();
+    state.draftPapers.push(
+      {
+        id: "draft-old",
+        authorMemberId: "member-zhou",
+        recipientMemberId: "member-lan",
+        createdAtIso: "2026-05-23T02:00:00.000Z",
+        updatedAtIso: "2026-05-23T02:30:00.000Z",
+        oralText: "旧草稿口述",
+        scribeId: null,
+        scribeDraft: "旧草稿正文",
+        finalText: "旧草稿正文",
+        status: "draft"
+      },
+      {
+        id: "draft-new",
+        authorMemberId: "member-zhou",
+        recipientMemberId: "member-lan",
+        createdAtIso: "2026-05-23T03:00:00.000Z",
+        updatedAtIso: "2026-05-23T03:30:00.000Z",
+        oralText: "新草稿口述",
+        scribeId: "scribe-xu",
+        scribeDraft: "新草稿初稿",
+        finalText: "新草稿正文",
+        status: "revised"
+      }
+    );
+
+    const model = buildAppModel(now, state);
+
+    expect(model.writeLetter.drafts.map((draft) => draft.id)).toEqual(["draft-new", "draft-old"]);
+    expect(model.writeLetter.drafts[0]).toMatchObject({
+      recipientName: "阿兰",
+      writingMethodText: "许鹤年代笔",
+      statusText: "已校改",
+      excerpt: "新草稿正文"
+    });
+    expect(model.writeLetter.drafts[1]).toMatchObject({
+      writingMethodText: "亲笔",
+      statusText: "草稿"
+    });
+  });
 });
