@@ -119,8 +119,14 @@ npx cap doctor
 以后开始新任务前，优先读取：
 
 - `docs/pinganpi-roadmap.md`
+- `docs/pinganpi-roadmap-dashboard.html`
 - `docs/superpowers/plans/2026-05-23-pinganpi-mobile-capacitor-shell.md`
 - `docs/superpowers/plans/2026-05-23-pinganpi-domain-foundation.md`
+
+路线图维护规则：
+
+- 每次阶段完成、下一阶段推荐顺序变化、验证基线变化或集中 UI 问题变化时，必须同步更新 `docs/pinganpi-roadmap.md` 和 `docs/pinganpi-roadmap-dashboard.html`。
+- `docs/pinganpi-roadmap.md` 是详细文字源；`docs/pinganpi-roadmap-dashboard.html` 是给用户日常查看的静态可视化看板，不属于正式 App。
 
 推荐开发顺序：
 

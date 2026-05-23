@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>平安批开发进度看板</title>
+    <style>
+      :root {
+        color: #2b261d;
+        background: #e7dfce;
+        font-family:
+          "Noto Serif SC",
+          "Songti SC",
+          "STSong",
+          "SimSun",
+          serif;
+        --paper: #f7f0df;
+        --paper-soft: #fbf5e8;
+        --paper-deep: #e7dfce;
+        --ink: #2b261d;
+        --muted: #716957;
+        --rule: #cfc2a8;
+        --blue: #253b5b;
+        --red: #9b2f24;
+        --green: #406343;
+        --amber: #8b6f32;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-width: 320px;
+        margin: 0;
+        background:
+          linear-gradient(90deg, rgb(80 63 39 / 0.04) 1px, transparent 1px),
+          linear-gradient(180deg, rgb(80 63 39 / 0.04) 1px, transparent 1px),
+          var(--paper-deep);
+        background-size: 22px 22px;
+        color: var(--ink);
+      }
+
+      a {
+        color: var(--blue);
+        text-decoration-thickness: 1px;
+        text-underline-offset: 0.2em;
+      }
+
+      .page {
+        width: min(1180px, calc(100% - 28px));
+        margin: 0 auto;
+        padding: 28px 0 44px;
+      }
+
+      .header {
+        display: grid;
+        gap: 18px;
+        grid-template-columns: 1fr auto;
+        align-items: end;
+        border-bottom: 1px solid var(--rule);
+        padding-bottom: 20px;
+      }
+
+      .eyebrow,
+      .label {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        margin-top: 6px;
+        font-size: clamp(34px, 6vw, 64px);
+        font-weight: 700;
+        letter-spacing: 0;
+        line-height: 1.05;
+      }
+
+      h2 {
+        font-size: 24px;
+        line-height: 1.25;
+      }
+
+      h3 {
+        font-size: 18px;
+        line-height: 1.35;
+      }
+
+      .stamp {
+        display: grid;
+        width: 78px;
+        height: 78px;
+        place-items: center;
+        border: 2px solid var(--red);
+        border-radius: 50%;
+        color: var(--red);
+        font-weight: 700;
+      }
+
+      .summary {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .panel,
+      .metric,
+      .stage-card,
+      .note {
+        border: 1px solid var(--rule);
+        background:
+          linear-gradient(180deg, rgb(255 255 255 / 0.38), rgb(255 255 255 / 0)),
+          var(--paper);
+        box-shadow: 0 8px 20px rgb(68 54 32 / 0.08);
+      }
+
+      .metric {
+        min-height: 112px;
+        padding: 15px;
+      }
+
+      .metric strong {
+        display: block;
+        margin-top: 10px;
+        font-size: 28px;
+        line-height: 1.15;
+      }
+
+      .metric span {
+        display: block;
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .section {
+        margin-top: 22px;
+      }
+
+      .section-title {
+        display: flex;
+        gap: 12px;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+
+      .timeline {
+        display: grid;
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .phase {
+        min-height: 86px;
+        border: 1px solid var(--rule);
+        background: var(--paper-soft);
+        padding: 10px;
+      }
+
+      .phase.done {
+        border-color: rgb(64 99 67 / 0.45);
+        background: #eef0df;
+      }
+
+      .phase.next {
+        border-color: rgb(139 111 50 / 0.6);
+        background: #f6eccd;
+      }
+
+      .phase.future {
+        color: var(--muted);
+      }
+
+      .phase-number {
+        display: inline-grid;
+        width: 26px;
+        height: 26px;
+        place-items: center;
+        border: 1px solid currentColor;
+        border-radius: 50%;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .phase-title {
+        display: block;
+        margin-top: 8px;
+        font-size: 14px;
+        line-height: 1.45;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 16px;
+      }
+
+      .panel {
+        padding: 18px;
+      }
+
+      .stage-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 14px;
+      }
+
+      .stage-card {
+        padding: 15px;
+      }
+
+      .stage-card p,
+      .panel li,
+      .note {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.75;
+      }
+
+      .tag-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-top: 12px;
+      }
+
+      .tag {
+        display: inline-flex;
+        min-height: 28px;
+        align-items: center;
+        border: 1px solid var(--rule);
+        background: #efe4cc;
+        padding: 3px 8px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .tag.done {
+        border-color: rgb(64 99 67 / 0.4);
+        background: #e7eddb;
+        color: var(--green);
+      }
+
+      .tag.warn {
+        border-color: rgb(139 111 50 / 0.5);
+        background: #f4e6bd;
+        color: var(--amber);
+      }
+
+      .tag.blocked {
+        border-color: rgb(155 47 36 / 0.45);
+        background: #f1dfd8;
+        color: var(--red);
+      }
+
+      ul {
+        margin: 12px 0 0;
+        padding-left: 1.2em;
+      }
+
+      .links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .link-button {
+        display: inline-flex;
+        min-height: 38px;
+        align-items: center;
+        border: 1px solid var(--blue);
+        background: var(--blue);
+        padding: 6px 12px;
+        color: #f7f0df;
+        text-decoration: none;
+      }
+
+      .link-button.secondary {
+        background: transparent;
+        color: var(--blue);
+      }
+
+      .footer {
+        margin-top: 24px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.7;
+      }
+
+      @media (max-width: 900px) {
+        .summary,
+        .grid,
+        .stage-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .timeline {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 560px) {
+        .page {
+          width: min(100% - 20px, 1180px);
+          padding-top: 18px;
+        }
+
+        .header {
+          grid-template-columns: 1fr;
+        }
+
+        .stamp {
+          width: 62px;
+          height: 62px;
+        }
+
+        .timeline {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header class="header">
+        <div>
+          <p class="eyebrow">平安批 / 开发进度</p>
+          <h1>路线图看板</h1>
+        </div>
+        <div class="stamp">阶段 7</div>
+      </header>
+
+      <section class="summary" aria-label="当前摘要">
+        <div class="metric">
+          <p class="label">当前基线</p>
+          <strong>阶段 7 完成</strong>
+          <span>写信已拆为 5 步可回看流程。</span>
+        </div>
+        <div class="metric">
+          <p class="label">工作分支</p>
+          <strong>main</strong>
+          <span>日常开发直接在主目录进行。</span>
+        </div>
+        <div class="metric">
+          <p class="label">验证状态</p>
+          <strong>通过</strong>
+          <span>最近通过 test / typecheck / build。</span>
+        </div>
+        <div class="metric">
+          <p class="label">下一重点</p>
+          <strong>草稿 / 送达</strong>
+          <span>建议先做草稿管理或真实时间送达推进。</span>
+        </div>
+      </section>
+
+      <section class="section" aria-label="阶段时间线">
+        <div class="section-title">
+          <h2>阶段进度</h2>
+          <p class="label">最近更新：2026-05-23</p>
+        </div>
+        <div class="timeline">
+          <div class="phase done">
+            <span class="phase-number">1</span>
+            <span class="phase-title">领域层基础</span>
+          </div>
+          <div class="phase done">
+            <span class="phase-number">2</span>
+            <span class="phase-title">Capacitor 壳层</span>
+          </div>
+          <div class="phase done">
+            <span class="phase-number">3</span>
+            <span class="phase-title">原生调试基线</span>
+          </div>
+          <div class="phase done">
+            <span class="phase-number">4</span>
+            <span class="phase-title">本地持久化</span>
+          </div>
+          <div class="phase done">
+            <span class="phase-number">5</span>
+            <span class="phase-title">写信主流程</span>
+          </div>
+          <div class="phase done">
+            <span class="phase-number">6</span>
+            <span class="phase-title">模板代书引擎</span>
+          </div>
+          <div class="phase done">
+            <span class="phase-number">7</span>
+            <span class="phase-title">写信分步流程</span>
+          </div>
+          <div class="phase next">
+            <span class="phase-number">8</span>
+            <span class="phase-title">下一阶段待定</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section grid">
+        <article class="panel">
+          <div class="section-title">
+            <h2>已完成能力</h2>
+            <p class="label">可作为后续开发基础</p>
+          </div>
+          <div class="stage-grid">
+            <div class="stage-card">
+              <h3>领域规则</h3>
+              <p>66 年时间映射、上海时区日历边界、旧币制、代笔先生出勤、钱匣结算、邮资和信件状态机。</p>
+              <div class="tag-row">
+                <span class="tag done">src/domain</span>
+                <span class="tag done">Vitest</span>
+              </div>
+            </div>
+            <div class="stage-card">
+              <h3>移动壳层</h3>
+              <p>Vue 3、Vite、Tailwind CSS、Varlet、Capacitor iOS / Android 工程和首批页面。</p>
+              <div class="tag-row">
+                <span class="tag done">iOS</span>
+                <span class="tag done">Android</span>
+              </div>
+            </div>
+            <div class="stage-card">
+              <h3>本地状态</h3>
+              <p>AppState、localStorage、钱包、账本、草稿、信件和邮政记录已经接入。</p>
+              <div class="tag-row">
+                <span class="tag done">localStorage</span>
+                <span class="tag done">坏数据回退</span>
+              </div>
+            </div>
+            <div class="stage-card">
+              <h3>写信闭环</h3>
+              <p>口述、起稿、校改、存草稿、封缄投寄、扣款、记账、生成存根和邮政记录。</p>
+              <div class="tag-row">
+                <span class="tag done">5 步流程</span>
+                <span class="tag done">非 AI 模板</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <aside class="panel">
+          <h2>当前验证</h2>
+          <div class="tag-row">
+            <span class="tag done">npm test</span>
+            <span class="tag done">typecheck</span>
+            <span class="tag done">build</span>
+            <span class="tag warn">Varlet chunk warning</span>
+          </div>
+          <ul>
+            <li>最近测试：10 个测试文件，105 个测试通过。</li>
+            <li>浏览器冒烟：写信步骤、挂号费用、存草稿、投寄、扣款、档案新增可用。</li>
+            <li>构建提示：Varlet 首包超过 500 KB，当前不是阻塞项。</li>
+          </ul>
+        </aside>
+      </section>
+
+      <section class="section grid">
+        <article class="panel">
+          <h2>下一步候选</h2>
+          <div class="stage-grid">
+            <div class="stage-card">
+              <h3>草稿管理</h3>
+              <p>展示草稿列表，支持继续编辑和删除。这个会完善当前写信闭环，风险较低。</p>
+              <div class="tag-row">
+                <span class="tag warn">推荐优先</span>
+              </div>
+            </div>
+            <div class="stage-card">
+              <h3>真实时间送达推进</h3>
+              <p>按真实经过时间改变信件是否可拆，并补齐延误、迷失、找回、退回的邮政记录。</p>
+              <div class="tag-row">
+                <span class="tag warn">核心体验</span>
+              </div>
+            </div>
+            <div class="stage-card">
+              <h3>UI 提示增强</h3>
+              <p>把写信成功 / 失败提示升级为更明显的 toast 或 snackbar，保证移动端可见。</p>
+              <div class="tag-row">
+                <span class="tag warn">已记录问题</span>
+              </div>
+            </div>
+            <div class="stage-card">
+              <h3>云端同步准备</h3>
+              <p>本地流程稳定后再设计双人账户、同步模型、冲突策略、附件和系统推送。</p>
+              <div class="tag-row">
+                <span class="tag">后置阶段</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <aside class="panel">
+          <h2>仍未完成</h2>
+          <ul>
+            <li>真机验证。</li>
+            <li>iOS Safari Web Inspector 最终确认。</li>
+            <li>照片附件流程。</li>
+            <li>两人账户绑定和云端同步。</li>
+            <li>系统推送。</li>
+            <li>生产级 App 图标和启动页。</li>
+          </ul>
+        </aside>
+      </section>
+
+      <section class="section panel">
+        <h2>文档入口</h2>
+        <p class="label">这个看板是快速查看用，详细计划仍以 Markdown 文档为准。</p>
+        <div class="links">
+          <a class="link-button" href="./pinganpi-roadmap.md">查看详细路线图</a>
+          <a class="link-button secondary" href="./superpowers/specs/2026-05-23-pinganpi-design.md">查看产品设计</a>
+          <a class="link-button secondary" href="./superpowers/plans/2026-05-23-pinganpi-write-letter-wizard.md">查看最近实施计划</a>
+        </div>
+      </section>
+
+      <p class="footer">
+        维护规则：每次阶段完成、下一阶段调整、验证基线变化或已知问题变化时，同步更新本看板与
+        <code>docs/pinganpi-roadmap.md</code>。
+      </p>
+    </main>
+  </body>
+</html>
