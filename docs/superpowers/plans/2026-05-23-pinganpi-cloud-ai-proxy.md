@@ -18,6 +18,7 @@
 - `npm run ai-proxy:check` 已真实连通 Xiaomi MiMo。
 - 本地 `POST /ai/scribe-draft` 已能返回 AI 初稿。
 - 写信页真实 AI 起稿烟测已通过。
+- 代理核心逻辑已抽为 `server/ai-scribe-proxy/handler.ts`，本地 dev server 已复用该 handler。
 - 本地代理已加入费用护栏：
   - `PINGANPI_AI_MAX_ORAL_TEXT_CHARS` 默认 800。
   - `MIMO_MAX_COMPLETION_TOKENS` 默认 900。
@@ -105,7 +106,8 @@ VITE_PINGANPI_AI_PROXY_URL=https://<your-cloud-ai-proxy-domain>
 - Modify: `docs/pinganpi-roadmap.md`
 - Modify: `docs/pinganpi-roadmap-dashboard.html`
 
-- [ ] 让云函数入口复用 `server/ai-scribe-proxy/` 的校验、prompt、MiMo client 和错误归一逻辑。
+- [x] 抽出 `server/ai-scribe-proxy/handler.ts`，集中校验、prompt、MiMo client 和错误归一逻辑。
+- [ ] 新增具体云函数入口，让 CloudBase / 云函数复用 `handleAiProxyRequest`。
 - [ ] 部署 `GET /health`，确认返回 `{ "ok": true }`。
 - [ ] 部署 `POST /ai/scribe-draft`，用非敏感口述烟测 AI 起稿。
 - [ ] 配置 `VITE_PINGANPI_AI_PROXY_URL` 指向云端代理。

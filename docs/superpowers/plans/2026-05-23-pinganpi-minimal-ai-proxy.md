@@ -52,6 +52,7 @@ export MIMO_API_KEY="replace-with-secret-from-subscription-page"
 - 代码审查后已补充本地 Origin 限制、32 KB 请求体限制和固定 provider 错误响应，避免任意网页借用本机代理消耗 MiMo 额度或看到 provider 原始错误。
 - 阶段 13 已配置本机真实 MiMo env，并跑通 `npm run ai-proxy:check`、本地代理 `/ai/scribe-draft` 和写信页真实 AI 起稿烟测。
 - Prompt 已补充约束：禁止模型编造日期、农历、干支或未给出的具体时间。
+- 阶段 13 已抽出 `server/ai-scribe-proxy/handler.ts`，供本地 dev server 和后续云函数入口复用。
 - 费用告警和 CloudBase / 云函数落点仍在阶段 13 独立推进。
 
 ## File Structure

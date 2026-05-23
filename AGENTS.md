@@ -59,7 +59,7 @@ npx cap doctor
 
 ## 当前代码状态
 
-当前主线开发基于 `main`，最新路线图基线为：**已完成阶段 12 的 App 侧 AI 起稿链路；阶段 13 已跑通本机 Xiaomi MiMo 连通、本地 AI 代理起稿接口、写信页真实 AI 起稿烟测和本地费用护栏配置，云端费用告警和云端落点配置仍待完成**。继续开发前以 `git log --oneline --decorate -5` 为准。
+当前主线开发基于 `main`，最新路线图基线为：**已完成阶段 12 的 App 侧 AI 起稿链路；阶段 13 已跑通本机 Xiaomi MiMo 连通、本地 AI 代理起稿接口、写信页真实 AI 起稿烟测、本地费用护栏配置和可复用 handler 边界，云端费用告警和云端落点配置仍待完成**。继续开发前以 `git log --oneline --decorate -5` 为准。
 
 最新关键提交包括：
 
@@ -130,9 +130,9 @@ npx cap doctor
 - 草稿管理 / 信纸匣：续写、覆盖保存、删除、从草稿投寄。
 - 信箱真实时间送达推进：`in_transit -> arrived`、到达前不可拆、拆阅写记录、邮政档案记录簿。
 - AI 代笔接入设计：明确 AI 只负责代笔先生起稿，模板转为提示词素材，失败保存口述草稿。
-- 本地最小 AI 代理脚手架：`server/ai-scribe-proxy/`、MiMo config/client、`GET /health`、`POST /ai/scribe-draft`、本地 Origin 限制、32 KB 请求体限制、`npm run ai-proxy:check`、`npm run ai-proxy:dev`。
+- 本地最小 AI 代理脚手架：`server/ai-scribe-proxy/`、MiMo config/client、可复用 handler、`GET /health`、`POST /ai/scribe-draft`、本地 Origin 限制、32 KB 请求体限制、`npm run ai-proxy:check`、`npm run ai-proxy:dev`。
 - App 侧 AI 起稿链路：`src/app/ai-scribe-adapter.ts`、`VITE_PINGANPI_AI_PROXY_URL` 代理配置、写信页异步起稿、AI metadata 持久化、失败不回退模板正文。
-- 阶段 13 正在进行：`npm run ai-proxy:check` / `npm run ai-proxy:dev` 已读取本机 `.env.ai.local` 并跑通真实 Xiaomi MiMo；本地代理 `/ai/scribe-draft`、写信页真实 AI 起稿烟测和本地费用护栏已通过；云端费用告警、CloudBase 或其他云端落点仍需确认。
+- 阶段 13 正在进行：`npm run ai-proxy:check` / `npm run ai-proxy:dev` 已读取本机 `.env.ai.local` 并跑通真实 Xiaomi MiMo；本地代理 `/ai/scribe-draft`、写信页真实 AI 起稿烟测、本地费用护栏和可复用 handler 边界已通过；云端费用告警、CloudBase 或其他云端落点仍需确认。
 
 已验证基线记录在：
 
@@ -174,6 +174,7 @@ npx cap doctor
    - 本机优先使用 `.env.ai.local` 保存 MiMo env；该文件已被 Git 忽略，脚本会自动读取。真实 key 已在本机文件中配置，不要打印、发到聊天或提交到 Git。
    - Prompt 已补充约束：禁止 AI 编造日期、农历、干支或未给出的具体时间。
    - 本地代理已加入费用护栏：`PINGANPI_AI_MAX_ORAL_TEXT_CHARS` 默认 800，`MIMO_MAX_COMPLETION_TOKENS` 默认 900；这不能替代云端预算和 MiMo 控制台费用告警。
+   - `server/ai-scribe-proxy/handler.ts` 是云端代理入口应复用的核心边界；不要在 CloudBase / 云函数入口复制一套校验、prompt 或错误处理。
    - 需要用户从 Xiaomi MiMo 订阅页确认 `MIMO_API_BASE_URL`、`MIMO_MODEL_ID`、key 类型是 `tp-` 还是 `sk-`、额度和费用提醒方式。
    - 优先评估腾讯云 CloudBase 是否适合承载最小 AI 服务端代理，不默认购买 CVM 或高规格包年资源。
    - 同步数据库、文件存储、身份认证和推送资源本阶段只做评估，不正式购买 / 初始化。
