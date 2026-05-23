@@ -7,6 +7,7 @@ import {
   type LetterState,
   type Scribe
 } from "../domain/index.js";
+import type { AiScribeDraftInput } from "./ai-scribe-adapter.js";
 import { cloneAppState, type AppState, type DraftPaper, type LedgerEntry, type PersistedLetter, type PostalRecord } from "./app-state.js";
 import { generateScribeDraft, type DraftSource, type ScribeDraftResult, type ScribeGenerationMeta } from "./scribe-template-engine.js";
 
@@ -165,6 +166,36 @@ export function createScribeDraft(state: AppState, input: Pick<WriteLetterInput,
     ...input,
     registered: false
   }).scribeDraft;
+}
+
+export function createScribeDraftResult(state: AppState, input: Pick<WriteLetterInput, "oralText" | "scribeId" | "registered">): ScribeDraftResult {
+  return createDraftResult(state, input);
+}
+
+export function createAiScribeDraftInput(
+  state: AppState,
+  input: Pick<WriteLetterInput, "oralText" | "scribeId" | "registered">
+): AiScribeDraftInput | null {
+  const sender = findMember(state, state.currentMemberId);
+  const recipient = findMember(state, state.recipientMemberId);
+  const scribe = findScribe(state, input.scribeId);
+
+  if (scribe === null) {
+    return null;
+  }
+
+  const localDraft = createDraftResult(state, input);
+
+  return {
+    oralText: localDraft.oralText,
+    scribe,
+    sender,
+    recipient,
+    senderCity: sender.city,
+    recipientCity: recipient.city,
+    letterType: input.registered ? "registered" : "ordinary",
+    sceneTags: localDraft.generationMeta.sceneTags
+  };
 }
 
 type DraftResultInput = Pick<

@@ -1,10 +1,16 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { createDefaultAppState, settleAppState } from "../app-state.js";
 import type { AppModel } from "../app-model.js";
-import type { DraftPaper } from "../app-state.js";
+import { settleAppState, type AppState, type DraftPaper } from "../app-state.js";
+import { createHttpAiScribeAdapter } from "../ai-scribe-adapter.js";
 import { formatFen } from "../../domain/index.js";
-import { calculateWriteLetterCost, createScribeDraft, type WriteLetterInput } from "../write-letter-service.js";
+import { readAiProxyUrl } from "../runtime-config.js";
+import {
+  calculateWriteLetterCost,
+  createAiScribeDraftInput,
+  createScribeDraftResult,
+  type WriteLetterInput
+} from "../write-letter-service.js";
 import {
   canContinueFromStep,
   canEnterStep,
@@ -24,6 +30,7 @@ import {
 
 const props = defineProps<{
   model: AppModel;
+  appState: AppState;
   editingDraft?: DraftPaper | null;
   composeResetKey?: number;
   composeSaveKey?: number;
@@ -42,18 +49,22 @@ const emit = defineEmits<{
 }>();
 
 const handwrittenValue = "__handwritten";
+const aiScribeAdapter = createHttpAiScribeAdapter({ proxyUrl: readAiProxyUrl() });
 const activeDraftId = ref<string | undefined>(props.editingDraft?.id);
 const wizard = ref(createFreshWizardState());
-const serviceState = computed(() => settleAppState(createDefaultAppState(), new Date()).state);
+const draftPending = ref(false);
+const draftErrorText = ref("");
+const serviceState = computed(() => settleAppState(props.appState, new Date()).state);
 const currentStep = computed(() => writeLetterSteps.find((step) => step.id === wizard.value.currentStepId) ?? writeLetterSteps[0]);
 const currentStepEyebrow = computed(() => currentStep.value?.eyebrow ?? "");
 const currentStepTitle = computed(() => currentStep.value?.title ?? "");
 const currentStepIndex = computed(() => getStepIndex(wizard.value.currentStepId));
 const selectedScribe = computed(() => props.model.writeLetter.scribeOptions.find((option) => option.id === wizard.value.selectedScribeId));
 const draftNotice = computed(() => (wizard.value.draftDirty ? "口述或写法已有改动，请重新起稿后再校改投寄。" : ""));
-const canSave = computed(() => canSaveDraft(wizard.value));
-const canGoNext = computed(() => canContinueFromStep(wizard.value, wizard.value.currentStepId));
-const canPost = computed(() => canContinueFromStep(wizard.value, "post"));
+const canSave = computed(() => canSaveDraft(wizard.value) && !draftPending.value);
+const canGoNext = computed(() => canContinueFromStep(wizard.value, wizard.value.currentStepId) && !draftPending.value);
+const canPost = computed(() => canContinueFromStep(wizard.value, "post") && !draftPending.value);
+const canGenerateDraft = computed(() => wizard.value.oralText.trim().length > 0 && !draftPending.value);
 const selectedScribeFeeText = computed(() => selectedScribe.value?.feeText ?? "免代书费");
 const currentPostageText = computed(() => (wizard.value.registered ? props.model.writeLetter.registeredPostageText : props.model.writeLetter.plainPostageText));
 const postingCost = computed(() =>
@@ -99,6 +110,10 @@ watch(
 );
 
 function setStep(stepId: WriteLetterStepId): void {
+  if (draftPending.value) {
+    return;
+  }
+
   if (!canEnterStep(wizard.value, stepId)) {
     return;
   }
@@ -110,6 +125,10 @@ function setStep(stepId: WriteLetterStepId): void {
 }
 
 function goPrevious(): void {
+  if (draftPending.value) {
+    return;
+  }
+
   wizard.value = {
     ...wizard.value,
     currentStepId: getPreviousStepId(wizard.value.currentStepId)
@@ -117,10 +136,6 @@ function goPrevious(): void {
 }
 
 function goNext(): void {
-  if (wizard.value.currentStepId === "draft") {
-    generateDraft();
-  }
-
   if (!canContinueFromStep(wizard.value, wizard.value.currentStepId)) {
     return;
   }
@@ -142,6 +157,7 @@ function handleScribeChange(event: Event): void {
     return;
   }
 
+  draftErrorText.value = "";
   wizard.value = markTextBasisChanged({
     ...wizard.value,
     selectedScribeId: nextScribeId
@@ -153,6 +169,7 @@ function handleOralInput(event: Event): void {
     return;
   }
 
+  draftErrorText.value = "";
   wizard.value = markTextBasisChanged({
     ...wizard.value,
     oralText: event.target.value
@@ -167,26 +184,75 @@ function handleFinalInput(event: Event): void {
   wizard.value = markFinalTextEdited(wizard.value, event.target.value);
 }
 
-function generateDraft(): void {
-  if (wizard.value.oralText.trim().length === 0) {
+async function generateDraft(): Promise<void> {
+  if (!canGenerateDraft.value) {
     return;
   }
 
-  const draft = createScribeDraft(serviceState.value, {
+  const requestMarker = {
     oralText: wizard.value.oralText,
-    scribeId: wizard.value.selectedScribeId
-  });
+    scribeId: wizard.value.selectedScribeId,
+    registered: wizard.value.registered
+  };
 
-  wizard.value = markDraftGenerated(wizard.value, draft);
+  draftPending.value = true;
+  draftErrorText.value = "";
+  wizard.value = markTextBasisChanged(wizard.value);
+
+  try {
+    const draft =
+      requestMarker.scribeId === null
+        ? createScribeDraftResult(serviceState.value, requestMarker)
+        : await generateAiScribeDraft(requestMarker);
+
+    if (wizard.value.oralText !== requestMarker.oralText || wizard.value.selectedScribeId !== requestMarker.scribeId) {
+      return;
+    }
+
+    wizard.value = markDraftGenerated(wizard.value, draft);
+  } catch {
+    if (wizard.value.oralText === requestMarker.oralText && wizard.value.selectedScribeId === requestMarker.scribeId) {
+      draftErrorText.value = "先生暂未起成稿，口述已留在信纸上，稍后可再请先生起稿。";
+    }
+  } finally {
+    draftPending.value = false;
+  }
+}
+
+async function generateAiScribeDraft(input: Pick<WriteLetterInput, "oralText" | "scribeId" | "registered">) {
+  const aiInput = createAiScribeDraftInput(serviceState.value, input);
+
+  if (aiInput === null) {
+    return createScribeDraftResult(serviceState.value, input);
+  }
+
+  return aiScribeAdapter.generateDraft(aiInput);
 }
 
 function buildInput(): WriteLetterInput {
-  return {
+  const baseInput: WriteLetterInput = {
     oralText: wizard.value.oralText,
     scribeId: wizard.value.selectedScribeId,
     finalText: wizard.value.finalText,
     registered: wizard.value.registered
   };
+
+  if (
+    !wizard.value.draftDirty &&
+    wizard.value.scribeDraft.trim().length > 0 &&
+    wizard.value.draftSource !== undefined &&
+    wizard.value.generationMeta !== undefined
+  ) {
+    return {
+      ...baseInput,
+      scribeDraft: wizard.value.scribeDraft,
+      readAloudText: wizard.value.readAloudText,
+      draftSource: wizard.value.draftSource,
+      generationMeta: wizard.value.generationMeta
+    };
+  }
+
+  return baseInput;
 }
 
 function buildSubmitPayload(): WriteLetterSubmitPayload {
@@ -288,10 +354,16 @@ function deleteDraft(draftId: string): void {
           <p v-if="draftNotice" class="border border-dashed border-[var(--app-rule)] bg-[#f7f0df] p-3 text-sm text-[var(--app-muted)]">
             {{ draftNotice }}
           </p>
+          <p v-if="draftErrorText" class="border border-[#9b2f24] bg-[#fff3ed] p-3 text-sm text-[#7a241b]" role="alert">
+            {{ draftErrorText }}
+          </p>
+          <p v-if="draftPending" class="border border-dashed border-[var(--app-rule)] bg-[#f7f0df] p-3 text-sm text-[var(--app-muted)]">
+            先生正在照口述斟酌字句。
+          </p>
           <div class="paper-input min-h-40 whitespace-pre-wrap">
-            {{ wizard.scribeDraft || "点下一步前，先生会依口述起一份初稿。" }}
+            {{ wizard.scribeDraft || "请先生依口述起一份初稿。" }}
           </div>
-          <var-button plain color="#253b5b" :disabled="wizard.oralText.trim().length === 0" @click="generateDraft">重新起稿</var-button>
+          <var-button plain color="#253b5b" :loading="draftPending" :disabled="!canGenerateDraft" @click="generateDraft">重新起稿</var-button>
         </div>
 
         <div v-else-if="wizard.currentStepId === 'revise'" class="mt-4">
@@ -336,7 +408,7 @@ function deleteDraft(draftId: string): void {
       </div>
 
       <div class="mt-5 flex flex-wrap gap-2">
-        <var-button plain color="#253b5b" :disabled="wizard.currentStepId === 'method'" @click="goPrevious">上一步</var-button>
+        <var-button plain color="#253b5b" :disabled="wizard.currentStepId === 'method' || draftPending" @click="goPrevious">上一步</var-button>
         <var-button plain color="#253b5b" :disabled="!canSave" @click="saveDraft">存作草稿</var-button>
         <var-button v-if="wizard.currentStepId !== 'post'" color="#253b5b" text-color="#f7f0df" :disabled="!canGoNext" @click="goNext">下一步</var-button>
         <var-button v-else color="#253b5b" text-color="#f7f0df" :disabled="!canPost" @click="postLetter">封缄投寄</var-button>

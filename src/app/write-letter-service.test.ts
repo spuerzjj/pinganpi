@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createDefaultAppState, settleAppState } from "./app-state.js";
-import { postLetter, saveDraftPaper } from "./write-letter-service.js";
+import { createAiScribeDraftInput, createScribeDraftResult, postLetter, saveDraftPaper } from "./write-letter-service.js";
 
 describe("write letter service", () => {
   const now = new Date("2026-05-23T04:00:00.000Z");
@@ -30,6 +30,69 @@ describe("write letter service", () => {
       engine: "local-template-v1",
       scribeId: "scribe-xu"
     });
+  });
+
+  it("creates a local handwritten draft result without using AI", () => {
+    const state = settleAppState(createDefaultAppState(), now).state;
+
+    const result = createScribeDraftResult(state, {
+      oralText: "今日雨停，心里记挂你。",
+      scribeId: null,
+      registered: false
+    });
+
+    expect(result).toMatchObject({
+      oralText: "今日雨停，心里记挂你。",
+      scribeDraft: "兰卿：今日雨停，心里记挂你。\n明远",
+      readAloudText: "兰卿：今日雨停，心里记挂你。\n明远",
+      draftSource: "handwritten",
+      generationMeta: {
+        engine: "local-template-v1",
+        scribeId: null,
+        letterType: "ordinary"
+      }
+    });
+  });
+
+  it("creates AI scribe draft input from app state and selected scribe", () => {
+    const state = settleAppState(createDefaultAppState(), now).state;
+
+    const result = createAiScribeDraftInput(state, {
+      oralText: "请替我问她近来安好。",
+      scribeId: "scribe-xu",
+      registered: false
+    });
+
+    expect(result).toMatchObject({
+      oralText: "请替我问她近来安好。",
+      scribe: {
+        id: "scribe-xu",
+        name: "许鹤年"
+      },
+      sender: {
+        id: "member-zhou",
+        letterGreeting: "兰卿"
+      },
+      recipient: {
+        id: "member-lan"
+      },
+      senderCity: "杭州",
+      recipientCity: "西安",
+      letterType: "ordinary"
+    });
+    expect(result?.sceneTags).toEqual(["问安"]);
+  });
+
+  it("does not create AI input for handwritten letters", () => {
+    const state = settleAppState(createDefaultAppState(), now).state;
+
+    expect(
+      createAiScribeDraftInput(state, {
+        oralText: "今日雨停，心里记挂你。",
+        scribeId: null,
+        registered: false
+      })
+    ).toBeNull();
   });
 
   it("saves a draft with provided AI scribe result", () => {

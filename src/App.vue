@@ -199,6 +199,7 @@ function buildSaveDraftInput(payload: WriteLetterSubmitPayload): SaveDraftPaperI
         <component
           :is="activePage.component"
           :model="model"
+          :app-state="appState"
           :editing-draft="editingDraft"
           :compose-reset-key="composeResetKey"
           :compose-save-key="composeSaveKey"
