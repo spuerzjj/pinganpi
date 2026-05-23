@@ -8,6 +8,12 @@ export interface DeliveryWindow {
   routeClass: RouteClass;
 }
 
+export interface DeliveryDueRange {
+  earliestArrivalAt: Date;
+  latestArrivalAt: Date;
+  window: DeliveryWindow;
+}
+
 export interface PostageInput {
   local: boolean;
   registered: boolean;
@@ -98,6 +104,30 @@ export function estimateDeliveryWindow(distanceKm: number): DeliveryWindow {
   }
 
   return { minDays: 20, maxDays: 45, routeClass: "oversea" };
+}
+
+const dayMs = 24 * 60 * 60 * 1000;
+
+export function estimateDeliveryDueRange(sentAt: Date, distanceKm: number): DeliveryDueRange {
+  if (Number.isNaN(sentAt.getTime())) {
+    throw new Error(`Invalid sent time: ${sentAt.toString()}`);
+  }
+
+  const window = estimateDeliveryWindow(distanceKm);
+
+  return {
+    earliestArrivalAt: new Date(sentAt.getTime() + window.minDays * dayMs),
+    latestArrivalAt: new Date(sentAt.getTime() + window.maxDays * dayMs),
+    window
+  };
+}
+
+export function canArriveBy(sentAt: Date, distanceKm: number, now: Date): boolean {
+  if (Number.isNaN(now.getTime())) {
+    throw new Error(`Invalid current time: ${now.toString()}`);
+  }
+
+  return now.getTime() >= estimateDeliveryDueRange(sentAt, distanceKm).earliestArrivalAt.getTime();
 }
 
 export function nextLetterState(current: LetterState, event: LetterEvent): LetterState {

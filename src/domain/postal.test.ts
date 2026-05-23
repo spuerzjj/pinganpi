@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  canArriveBy,
   calculatePostage,
+  estimateDeliveryDueRange,
   estimateDeliveryWindow,
   nextLetterState
 } from "./postal.js";
@@ -33,6 +35,22 @@ describe("postal rules", () => {
 
   it.each([-1, Number.NaN, Number.POSITIVE_INFINITY])("rejects invalid distance %s", (distanceKm) => {
     expect(() => estimateDeliveryWindow(distanceKm)).toThrow("Invalid distance");
+  });
+
+  it("estimates delivery due range from sent time and distance", () => {
+    const sentAt = new Date("2026-05-23T02:00:00.000Z");
+    const due = estimateDeliveryDueRange(sentAt, 1200);
+
+    expect(due.window).toEqual({ minDays: 7, maxDays: 12, routeClass: "cross-region" });
+    expect(due.earliestArrivalAt.toISOString()).toBe("2026-05-30T02:00:00.000Z");
+    expect(due.latestArrivalAt.toISOString()).toBe("2026-06-04T02:00:00.000Z");
+  });
+
+  it("checks whether a letter can arrive by the current real time", () => {
+    const sentAt = new Date("2026-05-23T02:00:00.000Z");
+
+    expect(canArriveBy(sentAt, 1200, new Date("2026-05-30T01:59:59.999Z"))).toBe(false);
+    expect(canArriveBy(sentAt, 1200, new Date("2026-05-30T02:00:00.000Z"))).toBe(true);
   });
 
   it.each([
