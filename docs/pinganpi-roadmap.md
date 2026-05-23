@@ -122,6 +122,25 @@
 - `src/app/write-letter-service.test.ts`
 - `src/app/app-model.test.ts`
 
+### 阶段 6：模板代书引擎
+
+状态：第一版非 AI 模板引擎已完成。
+
+已实现：
+
+- 新增 `src/app/scribe-template-engine.ts` 作为可替换的 template engine 边界。
+- `write-letter-service` 已改为调用模板引擎，不再内置代书模板 switch。
+- 模板引擎输入包含 oral text、scribe、sender / recipient、城市、letter type、reply context、emotion tags。
+- 模板引擎输出包含 scribe draft、read-aloud text、signature、draft source、generation metadata。
+- 不同代笔先生会产生可感知不同的草稿风格。
+- 草稿和投寄信件会保存 `oralText`、`scribeDraft`、`finalText`、`draftSource`、`generationMeta`。
+- 生成来源当前为 `template` / `handwritten`，为后续 AI 接入预留 `ai`。
+
+当前测试覆盖：
+
+- `src/app/scribe-template-engine.test.ts`
+- `src/app/write-letter-service.test.ts`
+
 ## 验证基线
 
 以下命令曾在 `/Users/zhujunjie/code/pinganpi` 下通过：
@@ -148,7 +167,7 @@ npx cap doctor
 - 真机验证。
 - iOS Safari Web Inspector 的 WebView console 手工确认。
 - 草稿列表、草稿继续编辑和草稿删除。
-- 完整可替换的模板代书引擎。
+- 更丰富的模板内容库和场景覆盖。
 - 照片附件流程。
 - 基于持久化时间戳的真实等待和送达推进。
 - 延误、迷失、找回、退回状态在 App UI 中的完整呈现。

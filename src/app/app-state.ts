@@ -9,6 +9,7 @@ import {
   writingRoute,
   type MemberProfile
 } from "./mock-data.js";
+import type { DraftSource, ScribeGenerationMeta } from "./scribe-template-engine.js";
 
 export const APP_STATE_SCHEMA_VERSION = 1;
 
@@ -60,6 +61,9 @@ export interface DraftPaper {
   scribeId: string | null;
   scribeDraft: string;
   finalText: string;
+  readAloudText?: string;
+  draftSource?: DraftSource;
+  generationMeta?: ScribeGenerationMeta;
   status: "draft" | "scribed" | "revised" | "sealed";
 }
 
@@ -76,6 +80,13 @@ export interface PersistedLetter {
   important: boolean;
   excerpt: string;
   body: string;
+  oralText?: string;
+  scribeId?: string | null;
+  scribeDraft?: string;
+  finalText?: string;
+  readAloudText?: string;
+  draftSource?: DraftSource;
+  generationMeta?: ScribeGenerationMeta;
 }
 
 export interface PostalRecord {
@@ -309,6 +320,9 @@ function isDraftPaper(value: unknown): value is DraftPaper {
     (value.scribeId === null || isString(value.scribeId)) &&
     isString(value.scribeDraft) &&
     isString(value.finalText) &&
+    isOptionalString(value.readAloudText) &&
+    isOptionalDraftSource(value.draftSource) &&
+    isOptionalGenerationMeta(value.generationMeta) &&
     isDraftPaperStatus(value.status)
   );
 }
@@ -330,7 +344,14 @@ function isPersistedLetter(value: unknown): value is PersistedLetter {
     typeof value.hasPhoto === "boolean" &&
     typeof value.important === "boolean" &&
     isString(value.excerpt) &&
-    isString(value.body)
+    isString(value.body) &&
+    isOptionalString(value.oralText) &&
+    (value.scribeId === undefined || value.scribeId === null || isString(value.scribeId)) &&
+    isOptionalString(value.scribeDraft) &&
+    isOptionalString(value.finalText) &&
+    isOptionalString(value.readAloudText) &&
+    isOptionalDraftSource(value.draftSource) &&
+    isOptionalGenerationMeta(value.generationMeta)
   );
 }
 
@@ -352,6 +373,10 @@ function isArrayOf<T>(value: unknown, guard: (item: unknown) => item is T): valu
 
 function isString(value: unknown): value is string {
   return typeof value === "string";
+}
+
+function isOptionalString(value: unknown): value is string | undefined {
+  return value === undefined || isString(value);
 }
 
 function isFen(value: unknown): value is Fen {
@@ -382,6 +407,30 @@ function isLedgerEntryKind(value: unknown): value is LedgerEntryKind {
 
 function isDraftPaperStatus(value: unknown): value is DraftPaper["status"] {
   return value === "draft" || value === "scribed" || value === "revised" || value === "sealed";
+}
+
+function isOptionalDraftSource(value: unknown): value is DraftSource | undefined {
+  return value === undefined || value === "template" || value === "handwritten" || value === "ai";
+}
+
+function isOptionalGenerationMeta(value: unknown): value is ScribeGenerationMeta | undefined {
+  if (value === undefined) {
+    return true;
+  }
+
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return (
+    value.engine === "local-template-v1" &&
+    isString(value.templateId) &&
+    (value.scribeId === null || isString(value.scribeId)) &&
+    isArrayOf(value.sceneTags, isString) &&
+    (value.letterType === "ordinary" || value.letterType === "registered") &&
+    isString(value.senderCity) &&
+    isString(value.recipientCity)
+  );
 }
 
 function isLetterState(value: unknown): value is LetterState {

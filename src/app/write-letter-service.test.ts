@@ -25,6 +25,11 @@ describe("write letter service", () => {
       status: "revised"
     });
     expect(result.state.draftPapers[0]?.scribeDraft).toContain("兰卿");
+    expect(result.state.draftPapers[0]?.draftSource).toBe("template");
+    expect(result.state.draftPapers[0]?.generationMeta).toMatchObject({
+      engine: "local-template-v1",
+      scribeId: "scribe-xu"
+    });
   });
 
   it("posts a local letter, deducts costs, and records the post office events", () => {
@@ -50,7 +55,15 @@ describe("write letter service", () => {
       state: "in_transit",
       registered: false,
       hasPhoto: false,
-      important: false
+      important: false,
+      oralText: "今日雨停，心里记挂你。",
+      scribeId: "scribe-xu",
+      finalText: "兰卿：今日雨停，心里记挂你。",
+      draftSource: "template"
+    });
+    expect(postedLetter?.generationMeta).toMatchObject({
+      engine: "local-template-v1",
+      scribeId: "scribe-xu"
     });
     expect(result.state.wallet.balanceFen).toBe(219);
     expect(result.state.ledgerEntries.slice(-2)).toEqual([

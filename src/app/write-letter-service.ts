@@ -8,6 +8,7 @@ import {
   type Scribe
 } from "../domain/index.js";
 import { cloneAppState, type AppState, type DraftPaper, type LedgerEntry, type PersistedLetter, type PostalRecord } from "./app-state.js";
+import { generateScribeDraft, type ScribeDraftResult } from "./scribe-template-engine.js";
 
 export interface WriteLetterInput {
   oralText: string;
@@ -43,19 +44,22 @@ export type PostLetterResult =
 export function saveDraftPaper(state: AppState, input: WriteLetterInput, now: Date): SaveDraftResult {
   const nextState = cloneAppState(state);
   const draftId = `draft-${now.getTime()}-${nextState.draftPapers.length + 1}`;
-  const scribeDraft = createScribeDraft(nextState, input);
-  const finalText = normalizeText(input.finalText) || scribeDraft;
+  const draftResult = createDraftResult(nextState, input);
+  const finalText = normalizeText(input.finalText) || draftResult.scribeDraft;
   const draft: DraftPaper = {
     id: draftId,
     authorMemberId: nextState.currentMemberId,
     recipientMemberId: nextState.recipientMemberId,
     createdAtIso: now.toISOString(),
     updatedAtIso: now.toISOString(),
-    oralText: normalizeText(input.oralText),
+    oralText: draftResult.oralText,
     scribeId: input.scribeId,
-    scribeDraft,
+    scribeDraft: draftResult.scribeDraft,
     finalText,
-    status: finalText === scribeDraft ? (input.scribeId === null ? "draft" : "scribed") : "revised"
+    readAloudText: draftResult.readAloudText,
+    draftSource: draftResult.draftSource,
+    generationMeta: draftResult.generationMeta,
+    status: finalText === draftResult.scribeDraft ? (input.scribeId === null ? "draft" : "scribed") : "revised"
   };
 
   nextState.draftPapers.push(draft);
@@ -90,7 +94,8 @@ export function postLetter(state: AppState, input: WriteLetterInput, now: Date):
 
   const sender = findMember(nextState, nextState.currentMemberId);
   const recipient = findMember(nextState, nextState.recipientMemberId);
-  const finalText = normalizeText(input.finalText) || createScribeDraft(nextState, input);
+  const draftResult = createDraftResult(nextState, input);
+  const finalText = normalizeText(input.finalText) || draftResult.scribeDraft;
   const letterId = `letter-${now.getTime()}-${nextState.letters.length + 1}`;
   const postedState = advanceLetterState(["scribe", "revise", "seal", "post", "accept", "send"]);
   const letter: PersistedLetter = {
@@ -105,7 +110,14 @@ export function postLetter(state: AppState, input: WriteLetterInput, now: Date):
     hasPhoto: false,
     important: input.registered,
     excerpt: makeExcerpt(finalText),
-    body: finalText
+    body: finalText,
+    oralText: draftResult.oralText,
+    scribeId: input.scribeId,
+    scribeDraft: draftResult.scribeDraft,
+    finalText,
+    readAloudText: draftResult.readAloudText,
+    draftSource: draftResult.draftSource,
+    generationMeta: draftResult.generationMeta
   };
   const ledgerEntries = createPostingLedgerEntries(nextState, letterId, scribe, cost, now);
   const postalRecords = createPostingRecords(nextState, letterId, now);
@@ -142,25 +154,28 @@ export function calculateWriteLetterCost(state: AppState, input: Pick<WriteLette
 }
 
 export function createScribeDraft(state: AppState, input: Pick<WriteLetterInput, "oralText" | "scribeId">): string {
+  return createDraftResult(state, {
+    ...input,
+    registered: false
+  }).scribeDraft;
+}
+
+function createDraftResult(state: AppState, input: Pick<WriteLetterInput, "oralText" | "scribeId" | "registered">): ScribeDraftResult {
   const sender = findMember(state, state.currentMemberId);
-  const oralText = normalizeText(input.oralText) || "近来平安，只是心里记挂。";
+  const recipient = findMember(state, state.recipientMemberId);
   const scribe = findScribe(state, input.scribeId);
-  const greeting = sender.letterGreeting;
 
-  if (scribe === null) {
-    return `${greeting}：${oralText}\n${sender.signatureName}`;
-  }
-
-  switch (scribe.style) {
-    case "old-scholar":
-      return `${greeting}：见字如晤。${oralText}。路远信迟，惟愿珍重。\n${sender.signatureName}`;
-    case "clerk":
-      return `${greeting}：兹托${scribe.name}代书一纸，告知${oralText}。盼收信后回音。\n${sender.signatureName}`;
-    case "schoolmaster":
-      return `${greeting}：展信安好。${oralText}。诸事慢慢说来，切勿挂怀。\n${sender.signatureName}`;
-    case "street":
-      return `${greeting}：${oralText}。我这里尚好，你那里也要安心。得空请回一纸。\n${sender.signatureName}`;
-  }
+  return generateScribeDraft({
+    oralText: input.oralText,
+    scribe,
+    sender,
+    recipient,
+    senderCity: sender.city,
+    recipientCity: recipient.city,
+    letterType: input.registered ? "registered" : "ordinary",
+    replyContext: null,
+    emotionTags: []
+  });
 }
 
 function findMember(state: AppState, memberId: string) {
