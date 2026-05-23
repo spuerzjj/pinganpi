@@ -1,0 +1,153 @@
+@import "tailwindcss";
+
+:root {
+  color: #27231c;
+  background: #e7dfce;
+  font-family:
+    "Noto Serif SC",
+    "Songti SC",
+    "STSong",
+    "SimSun",
+    serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  --app-paper: #f7f0df;
+  --app-paper-deep: #e7dfce;
+  --app-ink: #27231c;
+  --app-muted: #716957;
+  --app-rule: #cfc2a8;
+  --app-red: #9b2f24;
+  --app-blue: #253b5b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  min-width: 320px;
+  background:
+    linear-gradient(90deg, rgb(80 63 39 / 0.04) 1px, transparent 1px),
+    linear-gradient(180deg, rgb(80 63 39 / 0.04) 1px, transparent 1px),
+    var(--app-paper-deep);
+  background-size: 22px 22px;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.var-button {
+  font-family: inherit;
+}
+
+@layer components {
+  .archive-panel {
+    border: 1px solid var(--app-rule);
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 0.38), rgb(255 255 255 / 0)),
+      var(--app-paper);
+    padding: 1rem;
+    box-shadow: 0 8px 20px rgb(68 54 32 / 0.08);
+  }
+
+  .thin-label {
+    display: inline-flex;
+    min-height: 1.75rem;
+    align-items: center;
+    border: 1px solid var(--app-rule);
+    background: #efe4cc;
+    padding: 0.25rem 0.55rem;
+    color: var(--app-muted);
+    font-size: 0.75rem;
+    line-height: 1;
+  }
+
+  .ledger-cell {
+    min-height: 4.75rem;
+    border: 1px solid var(--app-rule);
+    background: #fbf5e8;
+    padding: 0.75rem;
+  }
+
+  .ledger-cell dt {
+    color: var(--app-muted);
+    font-size: 0.75rem;
+  }
+
+  .ledger-cell dd {
+    margin: 0.35rem 0 0;
+    line-height: 1.55;
+  }
+
+  .ledger-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    border-bottom: 1px solid var(--app-rule);
+    padding: 0.8rem 0;
+  }
+
+  .ledger-row:first-child {
+    border-top: 1px solid var(--app-rule);
+  }
+
+  .record-card,
+  .letter-card {
+    border: 1px solid var(--app-rule);
+    background: #fbf5e8;
+    padding: 0.9rem;
+  }
+
+  .letter-card {
+    background:
+      linear-gradient(135deg, transparent 0 84%, rgb(155 47 36 / 0.11) 84%),
+      #fbf5e8;
+  }
+
+  .stamp-small {
+    display: inline-grid;
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+    place-items: center;
+    border: 1px solid var(--app-red);
+    border-radius: 50%;
+    color: var(--app-red);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .form-label {
+    display: block;
+    margin-bottom: 0.45rem;
+    color: var(--app-muted);
+    font-size: 0.8rem;
+  }
+
+  .paper-input {
+    width: 100%;
+    resize: vertical;
+    border: 1px solid var(--app-rule);
+    border-radius: 0;
+    background: #fbf5e8;
+    padding: 0.8rem;
+    color: var(--app-ink);
+    line-height: 1.8;
+    outline: none;
+  }
+
+  .paper-input:focus {
+    border-color: var(--app-blue);
+    box-shadow: 0 0 0 2px rgb(37 59 91 / 0.12);
+  }
+}
