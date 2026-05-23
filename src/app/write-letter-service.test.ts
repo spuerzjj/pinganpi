@@ -32,6 +32,50 @@ describe("write letter service", () => {
     });
   });
 
+  it("saves a draft with provided AI scribe result", () => {
+    const state = settleAppState(createDefaultAppState(), now).state;
+
+    const result = saveDraftPaper(
+      state,
+      {
+        oralText: "请替我问她近来安好。",
+        scribeId: "scribe-xu",
+        scribeDraft: "兰卿：见字如晤。近来安好否。",
+        readAloudText: "兰卿：见字如晤。近来安好否。",
+        draftSource: "ai",
+        generationMeta: {
+          engine: "ai-scribe-v1",
+          provider: "xiaomi-mimo",
+          model: "mimo-v2.5",
+          promptVersion: "ai-scribe-prompt-v1",
+          scribeId: "scribe-xu",
+          sceneTags: ["问安"],
+          letterType: "ordinary",
+          senderCity: "杭州",
+          recipientCity: "西安",
+          latencyMs: 1200
+        },
+        finalText: "兰卿：见字如晤。近来安好否。",
+        registered: false
+      },
+      now
+    );
+
+    expect(result.state.draftPapers[0]).toMatchObject({
+      oralText: "请替我问她近来安好。",
+      scribeDraft: "兰卿：见字如晤。近来安好否。",
+      finalText: "兰卿：见字如晤。近来安好否。",
+      readAloudText: "兰卿：见字如晤。近来安好否。",
+      draftSource: "ai",
+      status: "scribed"
+    });
+    expect(result.state.draftPapers[0]?.generationMeta).toMatchObject({
+      engine: "ai-scribe-v1",
+      provider: "xiaomi-mimo",
+      scribeId: "scribe-xu"
+    });
+  });
+
   it("does not persist registered posting choice into a draft paper", () => {
     const state = settleAppState(createDefaultAppState(), now).state;
 
@@ -99,6 +143,52 @@ describe("write letter service", () => {
       "一九六〇年五月二十三日，清波门邮政代办处收寄。",
       "一九六〇年五月二十三日，杭州封发，寄往西安。"
     ]);
+  });
+
+  it("posts a letter with provided AI scribe result", () => {
+    const state = settleAppState(createDefaultAppState(), now).state;
+
+    const result = postLetter(
+      state,
+      {
+        oralText: "请替我问她近来安好。",
+        scribeId: "scribe-xu",
+        scribeDraft: "兰卿：见字如晤。近来安好否。",
+        readAloudText: "兰卿：见字如晤。近来安好否。",
+        draftSource: "ai",
+        generationMeta: {
+          engine: "ai-scribe-v1",
+          provider: "xiaomi-mimo",
+          model: "mimo-v2.5",
+          promptVersion: "ai-scribe-prompt-v1",
+          scribeId: "scribe-xu",
+          sceneTags: ["问安"],
+          letterType: "ordinary",
+          senderCity: "杭州",
+          recipientCity: "西安",
+          latencyMs: 1200
+        },
+        finalText: "兰卿：见字如晤。近来安好否。",
+        registered: false
+      },
+      now
+    );
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error(result.reason);
+
+    expect(result.state.letters.find((letter) => letter.id === result.letterId)).toMatchObject({
+      oralText: "请替我问她近来安好。",
+      scribeDraft: "兰卿：见字如晤。近来安好否。",
+      finalText: "兰卿：见字如晤。近来安好否。",
+      readAloudText: "兰卿：见字如晤。近来安好否。",
+      draftSource: "ai"
+    });
+    expect(result.state.letters.find((letter) => letter.id === result.letterId)?.generationMeta).toMatchObject({
+      engine: "ai-scribe-v1",
+      provider: "xiaomi-mimo",
+      scribeId: "scribe-xu"
+    });
   });
 
   it("blocks posting when the wallet cannot cover the costs", () => {

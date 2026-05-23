@@ -8,11 +8,15 @@ import {
   type Scribe
 } from "../domain/index.js";
 import { cloneAppState, type AppState, type DraftPaper, type LedgerEntry, type PersistedLetter, type PostalRecord } from "./app-state.js";
-import { generateScribeDraft, type ScribeDraftResult } from "./scribe-template-engine.js";
+import { generateScribeDraft, type DraftSource, type ScribeDraftResult, type ScribeGenerationMeta } from "./scribe-template-engine.js";
 
 export interface WriteLetterInput {
   oralText: string;
   scribeId: string | null;
+  scribeDraft?: string;
+  readAloudText?: string;
+  draftSource?: DraftSource;
+  generationMeta?: ScribeGenerationMeta;
   finalText: string;
   registered: boolean;
 }
@@ -163,10 +167,28 @@ export function createScribeDraft(state: AppState, input: Pick<WriteLetterInput,
   }).scribeDraft;
 }
 
-function createDraftResult(state: AppState, input: Pick<WriteLetterInput, "oralText" | "scribeId" | "registered">): ScribeDraftResult {
+type DraftResultInput = Pick<
+  WriteLetterInput,
+  "oralText" | "scribeId" | "registered" | "scribeDraft" | "readAloudText" | "draftSource" | "generationMeta"
+>;
+
+function createDraftResult(state: AppState, input: DraftResultInput): ScribeDraftResult {
   const sender = findMember(state, state.currentMemberId);
   const recipient = findMember(state, state.recipientMemberId);
   const scribe = findScribe(state, input.scribeId);
+
+  if (hasProvidedDraftResult(input)) {
+    const scribeDraft = normalizeText(input.scribeDraft);
+
+    return {
+      oralText: normalizeText(input.oralText),
+      scribeDraft,
+      readAloudText: normalizeText(input.readAloudText ?? "") || scribeDraft,
+      signature: sender.signatureName,
+      draftSource: input.draftSource,
+      generationMeta: input.generationMeta
+    };
+  }
 
   return generateScribeDraft({
     oralText: input.oralText,
@@ -179,6 +201,19 @@ function createDraftResult(state: AppState, input: Pick<WriteLetterInput, "oralT
     replyContext: null,
     emotionTags: []
   });
+}
+
+function hasProvidedDraftResult(input: DraftResultInput): input is DraftResultInput & {
+  scribeDraft: string;
+  draftSource: DraftSource;
+  generationMeta: ScribeGenerationMeta;
+} {
+  return (
+    input.scribeDraft !== undefined &&
+    normalizeText(input.scribeDraft) !== "" &&
+    input.draftSource !== undefined &&
+    input.generationMeta !== undefined
+  );
 }
 
 function findMember(state: AppState, memberId: string) {
