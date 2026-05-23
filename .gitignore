@@ -3,3 +3,7 @@
 node_modules/
 dist/
 coverage/
+
+# Native IDE and package-manager state
+android/.idea/
+ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
