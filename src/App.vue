@@ -4,6 +4,7 @@ import { settleAppState, type DraftPaper } from "./app/app-state.js";
 import { createBrowserAppStateStore } from "./app/app-state-storage.js";
 import { buildAppModel } from "./app/app-model.js";
 import { deleteDraftPaper, postDraftPaper, saveDraftPaper, type SaveDraftPaperInput } from "./app/draft-paper-service.js";
+import { openLetter } from "./app/mailbox-service.js";
 import MailboxArchivePage from "./app/pages/MailboxArchivePage.vue";
 import ScribesPage from "./app/pages/ScribesPage.vue";
 import TodayPage from "./app/pages/TodayPage.vue";
@@ -69,6 +70,24 @@ function persistState(nextState: typeof appState.value): void {
   appStateStore.save(nextState);
 }
 
+function settleAndPersist(now = new Date()): void {
+  const result = settleAppState(appState.value, now);
+
+  if (!result.changed) {
+    return;
+  }
+
+  persistState(result.state);
+}
+
+function handleNavClick(key: NavKey): void {
+  activeKey.value = key;
+
+  if (key === "mailbox") {
+    settleAndPersist();
+  }
+}
+
 function handleEditDraft(draftId: string): void {
   if (!appState.value.draftPapers.some((draft) => draft.id === draftId)) {
     noticeText.value = "没有找到这张草稿。";
@@ -130,6 +149,19 @@ function handlePostLetter(payload: WriteLetterSubmitPayload): void {
   noticeText.value = "信已封缄投寄，邮政存根已入档。";
 }
 
+function handleOpenLetter(letterId: string): void {
+  const result = openLetter(appState.value, letterId, new Date());
+
+  if (!result.ok) {
+    persistState(result.state);
+    noticeText.value = result.reason;
+    return;
+  }
+
+  persistState(result.state);
+  noticeText.value = "信已拆阅，归入旧信匣。";
+}
+
 function buildSaveDraftInput(payload: WriteLetterSubmitPayload): SaveDraftPaperInput {
   if (payload.draftId === undefined) {
     return payload.input;
@@ -156,7 +188,12 @@ function buildSaveDraftInput(payload: WriteLetterSubmitPayload): SaveDraftPaperI
       </header>
 
       <main class="flex-1 py-4">
-        <div v-if="noticeText" class="mb-4 border border-[var(--app-rule)] bg-[#fbf5e8] px-4 py-3 text-sm text-[var(--app-muted)]">
+        <div
+          v-if="noticeText"
+          class="mb-4 border border-[var(--app-rule)] bg-[#fbf5e8] px-4 py-3 text-sm text-[var(--app-muted)]"
+          role="status"
+          aria-live="polite"
+        >
           {{ noticeText }}
         </div>
         <component
@@ -169,6 +206,7 @@ function buildSaveDraftInput(payload: WriteLetterSubmitPayload): SaveDraftPaperI
           @delete-draft="handleDeleteDraft"
           @save-draft="handleSaveDraft"
           @post-letter="handlePostLetter"
+          @open-letter="handleOpenLetter"
         />
       </main>
 
@@ -180,7 +218,8 @@ function buildSaveDraftInput(payload: WriteLetterSubmitPayload): SaveDraftPaperI
             type="button"
             class="flex min-h-16 flex-col items-center justify-center gap-1 border-r border-[var(--app-rule)] px-1 text-xs text-[var(--app-muted)] last:border-r-0"
             :class="item.key === activeKey ? 'bg-[#ead8b5] text-[var(--app-ink)]' : 'bg-transparent'"
-            @click="activeKey = item.key"
+            :aria-current="item.key === activeKey ? 'page' : undefined"
+            @click="handleNavClick(item.key)"
           >
             <span class="grid size-7 place-items-center rounded-full border border-current text-sm">{{ item.mark }}</span>
             <span>{{ item.label }}</span>
