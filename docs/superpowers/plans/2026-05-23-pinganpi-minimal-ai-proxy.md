@@ -45,7 +45,7 @@ export MIMO_API_KEY="replace-with-secret-from-subscription-page"
 - MiMo client 已加入默认 30 秒超时，可通过 `MIMO_REQUEST_TIMEOUT_MS` 调整。
 - 本地代理已补充 `prompt.test.ts` 和 `dev-server.test.ts`，用 fake requester 覆盖 prompt、health、CORS 预检、成功响应和校验错误。
 - 代码审查后已补充本地 Origin 限制、32 KB 请求体限制和固定 provider 错误响应，避免任意网页借用本机代理消耗 MiMo 额度或看到 provider 原始错误。
-- 当前仓库只完成本地可测代理脚手架；真实 MiMo env 连通验证、费用告警和 CloudBase / 云函数落点仍待用户确认后继续。
+- 当前仓库只完成阶段 11 本地可测代理脚手架；真实 MiMo env 连通验证、费用告警和 CloudBase / 云函数落点已拆到阶段 13 独立推进。
 
 ## File Structure
 
@@ -785,7 +785,7 @@ After implementation and local no-secret checks pass, update:
   - Record stage 10 as complete and stage 11 as in progress until real MiMo check and cloud placement pass.
   - Add a note under stage 11 that local proxy scaffolding exists.
 - `docs/pinganpi-roadmap-dashboard.html`
-  - Keep progress at `10 / 18` while stage 11 waits for real MiMo env and cloud placement.
+  - Keep progress at `11 / 19`; stage 11 is complete, and real MiMo env / cloud placement is tracked as stage 13.
   - Add “MiMo 代理脚手架已建，等待真实 key 连通验证” to risk or next-step text.
 - `AGENTS.md`
   - Add the exact scripts:
