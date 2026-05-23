@@ -479,7 +479,7 @@
           </p>
         </div>
         <div class="meta">
-          <span class="badge info">当前：阶段 12 完成</span>
+          <span class="badge info">当前：阶段 13 配置中</span>
           <span class="badge done">main</span>
           <span class="badge">更新：2026-05-23</span>
         </div>
@@ -488,8 +488,8 @@
       <section class="grid-4" aria-label="关键状态">
         <article class="metric">
           <p class="metric-label">当前基线</p>
-          <p class="metric-value">阶段 12 完成</p>
-          <p class="metric-note">App 侧 AI 起稿链路已接入，真实云端配置进入阶段 13。</p>
+          <p class="metric-value">阶段 13 进行中</p>
+          <p class="metric-note">App 侧 AI 起稿链路已接入，本机 MiMo env 配置入口已准备。</p>
         </article>
         <article class="metric">
           <p class="metric-label">验证状态</p>
@@ -499,7 +499,7 @@
         <article class="metric">
           <p class="metric-label">下一推荐</p>
           <p class="metric-value">云端 AI</p>
-          <p class="metric-note">下一步确认 MiMo env、费用告警、云函数 / CloudBase 落点。</p>
+          <p class="metric-note">下一步填写 .env.ai.local 里的 MIMO_API_KEY，跑通 MiMo 连通检查。</p>
         </article>
         <article class="metric">
           <p class="metric-label">主要风险</p>
@@ -512,7 +512,7 @@
         <div class="card-header">
           <div>
             <h2>阶段进度</h2>
-            <p class="muted">12 / 19 个主阶段已有可用基线，下一步进入阶段 13 云端 AI 代理与费用配置。</p>
+            <p class="muted">12 / 19 个主阶段已有可用基线，阶段 13 正在配置 MiMo env、费用告警与云端 AI 代理。</p>
           </div>
           <span class="badge done">63%</span>
         </div>
@@ -688,7 +688,7 @@
         <article class="card">
           <div class="card-header">
             <h2>后续主线</h2>
-            <span class="badge info">建议进入阶段 13</span>
+            <span class="badge info">阶段 13 进行中</span>
           </div>
           <div class="card-body priority-grid">
             <div class="priority">
@@ -714,10 +714,10 @@
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge info">当前推荐</span>
+                <span class="badge info">当前</span>
               </div>
               <h3>云端 AI 配置</h3>
-              <p>确认 MiMo base URL、model、key 类型、费用告警、CloudBase / 云函数落点和 secret。</p>
+              <p>本机 .env.ai.local 已按官方文档填入 base URL 和 mimo-v2.5-pro；接下来填写 key 并验证连通。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
@@ -736,7 +736,7 @@
           </div>
           <div class="card-body">
             <ul class="plain-list">
-              <li>真实 MiMo env、云端代理地址、费用限额和真实 AI 起稿烟测仍未完成。</li>
+              <li>真实 MiMo API key 尚未填写，云端代理地址、费用限额和真实 AI 起稿烟测仍未完成。</li>
               <li>云端同步、双人账户绑定和真实双设备同步尚未实现。</li>
               <li>阶段 13 尚未配置真实 MiMo env、费用限额、云端权限和部署凭据。</li>
               <li>延误、迷失、找回、退回尚未接入自动确定性推进规则。</li>

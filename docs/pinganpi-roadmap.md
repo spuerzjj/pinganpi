@@ -6,7 +6,7 @@
 
 **当前分支：** `main`
 
-**当前开发基线：** 已完成阶段 12 的 App 侧 AI 起稿链路；真实 MiMo env、费用告警和云端落点配置仍在独立阶段 13。精确提交以 `git log --oneline --decorate -5` 为准。
+**当前开发基线：** 已完成阶段 12 的 App 侧 AI 起稿链路；阶段 13 已开始本地 MiMo env 配置准备，真实 MiMo 连通、费用告警和云端落点配置仍待完成。精确提交以 `git log --oneline --decorate -5` 为准。
 
 **工作区策略：** 日常开发直接在 `/Users/zhujunjie/code/pinganpi` 进行。除非用户明确要求隔离开发，否则不要创建或使用 `.worktrees/`。
 
@@ -224,7 +224,7 @@
 | 10 | AI 代笔接入设计 | 已完成 | 明确 AI 生成正文的边界、提示词素材、隐私、失败处理和测试策略。 |
 | 11 | 本地 AI 代理基础 | 已完成 | 本地最小 AI 代理脚手架已完成，用于开发期验证 MiMo 调用和响应结构。 |
 | 12 | AI 生成信件正文落地 | 已完成 App 侧链路 | 已接入 AI adapter、写信页异步起稿、AI metadata 保存和失败提示；真实云端配置在阶段 13。 |
-| 13 | 云端 AI 代理与费用配置 | 下一推荐 | 真实 MiMo env、云函数 / CloudBase 落点、费用告警、secret 和回滚删除步骤。 |
+| 13 | 云端 AI 代理与费用配置 | 进行中 | 已准备本机 `.env.ai.local` 入口；真实 MiMo env、云函数 / CloudBase 落点、费用告警、secret 和回滚删除步骤待完成。 |
 | 14 | 云端同步准备 | 未开始 | 远端模型、同步边界、账户绑定和冲突策略设计，不接真实云 SDK。 |
 | 15 | 双人真实同步 MVP | 未开始 | 两台设备共享信件、草稿、账本与邮政记录。 |
 | 16 | 邮政异常规则 | 未开始 | 延误、错分、迷失、找回、退回的确定性推进。 |
@@ -436,6 +436,23 @@ npx cap doctor
 - 不做多人或公开模型运营后台。
 
 ### 阶段 13：云端 AI 代理与费用配置
+
+状态：进行中。本次先完成本机 MiMo env 配置入口，尚未跑通真实 MiMo 连通。
+
+当前已完成：
+
+- `npm run ai-proxy:check` 和 `npm run ai-proxy:dev` 会自动读取本机 `.env.ai.local`。
+- `.env.ai.local` 已在 `.gitignore` 中忽略，适合保存本机真实 MiMo env。
+- 本机 `.env.ai.local` 已创建为私有权限 `600`，已按官方文档填入非密钥默认值 `MIMO_API_BASE_URL=https://api.xiaomimimo.com/v1` 和 `MIMO_MODEL_ID=mimo-v2.5-pro`，真实 `MIMO_API_KEY` 仍未填写。
+- `.env.example` 已补充说明：`MIMO_API_BASE_URL` 和 `MIMO_MODEL_ID` 必须以 Xiaomi MiMo 订阅页实际显示为准；当前示例值来自官方 OpenAI API 文档。
+- MiMo client 请求体已按官方 OpenAI API 文档显式设置 `thinking: { type: "disabled" }`。
+
+下一步：
+
+- 用户在本机 `.env.ai.local` 填写 `MIMO_API_KEY`；如订阅页显示的 base URL 或 model 与当前文件不同，同时改 `MIMO_API_BASE_URL` 和 `MIMO_MODEL_ID`。
+- 运行 `npm run ai-proxy:check` 验证真实 MiMo 连通。
+- 连通后启动 `npm run ai-proxy:dev`，再用写信页起稿做一次浏览器烟测。
+- 再进入费用告警、云函数 / CloudBase 落点和 secret 管理配置。
 
 目标：把阶段 11 剩余的真实 MiMo 配置、云端代理落点、费用告警、secret 管理和资源删除 / 回滚步骤独立完成，为长期真机使用提供生产级 AI 调用边界。
 

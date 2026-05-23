@@ -4,7 +4,7 @@ import type { AiProxyConfig } from "./config.js";
 
 const config: AiProxyConfig = {
   baseUrl: "https://api.xiaomimimo.com/v1",
-  modelId: "mimo-v2.5",
+  modelId: "mimo-v2.5-pro",
   apiKey: "tp-test-key",
   port: 8787,
   requestTimeoutMs: 30000
@@ -36,8 +36,9 @@ describe("MiMo client", () => {
       "api-key": "tp-test-key"
     });
     expect(JSON.parse(String(calls[0]?.init.body))).toMatchObject({
-      model: "mimo-v2.5",
+      model: "mimo-v2.5-pro",
       stream: false,
+      thinking: { type: "disabled" },
       temperature: 0.8,
       max_completion_tokens: 900
     });

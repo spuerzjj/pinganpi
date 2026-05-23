@@ -16,13 +16,16 @@
 
 - `docs/superpowers/specs/2026-05-23-pinganpi-ai-scribe-design.md`
 - `docs/pinganpi-roadmap.md`
+- Xiaomi MiMo OpenAI API 文档：`https://platform.xiaomimimo.com/docs/zh-CN/api/chat/openai-api`
 - Xiaomi MiMo 官方 FAQ：`https://platform.xiaomimimo.com/docs/en-US/faq`
 
-官方 FAQ 说明：
+官方文档说明：
 
-- Base URL 以订阅管理页提供为准，并区分 OpenAI-compatible 和 Anthropic-compatible 两类。
-- OpenAI-compatible 接口使用 `/v1/chat/completions`。
+- OpenAI-compatible 接口示例为 `https://api.xiaomimimo.com/v1/chat/completions`。
 - API key 可通过 `api-key: $MIMO_API_KEY` 或 `Authorization: Bearer $MIMO_API_KEY` 请求头传递。
+- 当前示例模型为 `mimo-v2.5-pro`。
+- 请求体可显式设置 `thinking: { type: "disabled" }` 关闭思考模式，本地代理采用该配置，保持短文本起稿响应稳定。
+- Base URL 仍应以订阅管理页提供为准，并区分 OpenAI-compatible 和 Anthropic-compatible 两类。
 - Token Plan key 格式通常为 `tp-xxxxx`，按量 key 格式通常为 `sk-xxxxx`，两者不能混用。
 - 国内 / 海外账号返回不同 Base URL 和 Key，不能互通。
 
@@ -30,7 +33,7 @@
 
 ```bash
 export MIMO_API_BASE_URL="https://api.xiaomimimo.com/v1"
-export MIMO_MODEL_ID="mimo-v2.5"
+export MIMO_MODEL_ID="mimo-v2.5-pro"
 export MIMO_API_KEY="replace-with-secret-from-subscription-page"
 ```
 

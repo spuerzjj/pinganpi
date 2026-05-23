@@ -45,6 +45,7 @@ export async function requestMimoChatCompletion(
         model: config.modelId,
         messages,
         stream: false,
+        thinking: { type: "disabled" },
         temperature: 0.8,
         max_completion_tokens: 900
       })
