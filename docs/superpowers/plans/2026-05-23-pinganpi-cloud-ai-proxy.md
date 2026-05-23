@@ -29,11 +29,13 @@
 - 已新增 CloudBase 部署脚本：`CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:deploy:ai`。
 - CloudBase 环境 ID 已确认为 `pinganpi-d7gml1f6sbcc172ea`，区域为 `ap-shanghai`。
 - CloudBase HTTP 函数 `ai-scribe-proxy` 已部署，默认访问地址为 `https://pinganpi-d7gml1f6sbcc172ea-1258361524.ap-shanghai.app.tcloudbase.com/api`。
+- CloudBase HTTP 路由已收敛为只保留 `/api`，历史遗留 `/*` 路由已删除；`/health` 根路径继续由网关返回 404。
 - `GET /api/health` 已返回 `{ "ok": true }`。
 - 云端 `POST /api/ai/scribe-draft` 已通过非敏感口述烟测，返回 `xiaomi-mimo / mimo-v2.5-pro` 的 AI 初稿。
 - 浏览器写信页已通过真实云端 AI 起稿烟测。
 - 禁用云端 `MIMO_API_KEY` 后，云端 `POST /api/ai/scribe-draft` 已验证返回受控 `502 proxy_unavailable`，不会生成正文或暴露 provider 原始错误；随后已恢复真实 env 并重新验证 HTTP 200。
 - CloudBase 用量基线已读取：当前计费周期 `2026-05-23 ~ 2026-06-23`，`usedCredits: 0.04`，其中 Cloud function `0.01`、API calls `0.03`。
+- 云函数公开面初步检查完成：函数类型为 HTTP，运行时 `Nodejs20.19`，状态 Available，触发器数量为 0，VPC 未配置，云端 env 仅包含 6 个 AI 代理所需变量。CloudBase 默认角色仍为 `TCB_QcsRole`，后续如平台支持更细 IAM，应继续收敛。
 - 本地代理已加入费用护栏：
   - `PINGANPI_AI_MAX_ORAL_TEXT_CHARS` 默认 800。
   - `MIMO_MAX_COMPLETION_TOKENS` 默认 900。
@@ -42,7 +44,7 @@
 
 - MiMo 订阅页的额度、余额提醒、费用告警和 key 类型。
 - CloudBase 函数调用量、出网流量、错误率和费用告警。
-- 云端最小权限状态和控制台告警策略。
+- CloudBase 控制台告警策略，以及是否可替换 `TCB_QcsRole` 为更细粒度角色。
 
 ## 环境命名
 
@@ -106,7 +108,8 @@ VITE_PINGANPI_AI_PROXY_URL=https://pinganpi-d7gml1f6sbcc172ea-1258361524.ap-shan
 
 - [x] 在云平台 secret / 环境变量中配置 `MIMO_API_BASE_URL`、`MIMO_MODEL_ID`、`MIMO_API_KEY`、`MIMO_REQUEST_TIMEOUT_MS`、`PINGANPI_AI_MAX_ORAL_TEXT_CHARS`、`MIMO_MAX_COMPLETION_TOKENS`。
 - [x] 确认配置脚本和验证命令不会打印 env 真实值；当前云函数代码不打印 env。
-- [ ] 为云函数配置最小权限，不授予数据库、文件存储、推送等暂未使用的权限。
+- [x] 初步检查云函数公开面：仅保留 `/api` HTTP 路由，函数无触发器、无 VPC、env 仅包含 AI 代理变量；数据库、文件存储、推送未初始化。
+- [ ] 检查 CloudBase 控制台是否可把默认 `TCB_QcsRole` 收敛为更细粒度角色。
 - [x] 记录 secret 更新和禁用步骤：
   - 更新 / 恢复：`CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:configure:ai-env`
   - 临时禁用：`CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:disable:ai-env`
@@ -134,6 +137,7 @@ VITE_PINGANPI_AI_PROXY_URL=https://pinganpi-d7gml1f6sbcc172ea-1258361524.ap-shan
 - [x] 部署 `POST /api/ai/scribe-draft`，用非敏感口述烟测 AI 起稿。
 - [x] 配置 `VITE_PINGANPI_AI_PROXY_URL` 指向云端代理并完成本地启动验证。
 - [x] 浏览器写信页完成一次真实云端 AI 起稿烟测。
+- [x] 删除历史遗留 `/*` HTTP 路由，只保留 App 使用的 `/api` 路由，并重新验证 `/api/health` 与 `/api/ai/scribe-draft`。
 
 验收标准：
 
