@@ -13,5 +13,12 @@
     "outDir": "dist",
     "types": ["node", "vite/client"]
   },
-  "include": ["src/**/*.ts", "src/**/*.vue", "vite.config.ts", "vitest.config.ts", "capacitor.config.ts"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.vue",
+    "server/**/*.ts",
+    "vite.config.ts",
+    "vitest.config.ts",
+    "capacitor.config.ts"
+  ]
 }

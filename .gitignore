@@ -5,6 +5,11 @@ dist/
 coverage/
 .superpowers/
 
+# Local secrets
+.env.local
+.env.*.local
+.env.ai.local
+
 # Native IDE and package-manager state
 android/.idea/
 ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
