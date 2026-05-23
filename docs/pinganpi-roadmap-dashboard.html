@@ -489,17 +489,17 @@
         <article class="metric">
           <p class="metric-label">当前基线</p>
           <p class="metric-value">阶段 13 进行中</p>
-          <p class="metric-note">CloudBase HTTP 函数、云端 secret、云端起稿和浏览器烟测已通过。</p>
+          <p class="metric-note">云端起稿、禁用 key 安全失败和恢复验证已通过。</p>
         </article>
         <article class="metric">
           <p class="metric-label">验证状态</p>
           <p class="metric-value">189 tests</p>
-          <p class="metric-note">test / typecheck / build / 云端 health / 云端起稿最近通过。</p>
+          <p class="metric-note">test / typecheck / build / 云端 health / 云端起稿 / 禁用验证最近通过。</p>
         </article>
         <article class="metric">
           <p class="metric-label">下一推荐</p>
           <p class="metric-value">云端 AI → 流式</p>
-          <p class="metric-note">先收口费用告警、禁用 key 验证和回滚删除清单。</p>
+          <p class="metric-note">先收口 MiMo / CloudBase 控制台费用告警和最小权限检查。</p>
         </article>
         <article class="metric">
           <p class="metric-label">主要风险</p>
@@ -512,7 +512,7 @@
         <div class="card-header">
           <div>
             <h2>阶段进度</h2>
-            <p class="muted">12 / 20 个主阶段已有可用基线，阶段 13 已跑通 CloudBase 云端 AI 代理，正在收口费用告警和回滚删除步骤。</p>
+            <p class="muted">12 / 20 个主阶段已有可用基线，阶段 13 已跑通 CloudBase 云端 AI 代理、禁用 key 安全失败和恢复验证，正在收口费用告警与权限检查。</p>
           </div>
           <span class="badge done">60%</span>
         </div>
@@ -665,7 +665,7 @@
               </li>
               <li class="list-item">
                 <strong>云端 AI 代理</strong>
-                <span>CloudBase HTTP 函数、`/api` 路由、云端 secret、云端 AI 起稿和浏览器写信页云端烟测已通过。</span>
+                <span>CloudBase HTTP 函数、`/api` 路由、云端 secret、云端 AI 起稿、浏览器云端烟测、禁用 key 安全失败和恢复验证已通过。</span>
                 <span class="badge info">阶段 13</span>
               </li>
             </ul>
@@ -688,6 +688,8 @@
               <li>21 个测试文件，189 个测试通过。</li>
               <li>测试覆盖草稿、写信、模板代书、邮政推进、拆阅服务、AI 代理、AppModel 和持久化结算。</li>
               <li>CloudBase `/api/health` 返回 ok，云端 `/api/ai/scribe-draft` 非敏感烟测返回 AI 初稿。</li>
+              <li>禁用云端 `MIMO_API_KEY` 后返回 `502 proxy_unavailable`，恢复后云端起稿重新返回 200。</li>
+              <li>CloudBase 当前计费周期 `2026-05-23 ~ 2026-06-23`，已用 credits 为 0.04。</li>
               <li>Varlet 首包超过 500 KB 是优化项，当前不阻塞。</li>
             </ul>
           </div>
@@ -727,7 +729,7 @@
                 <span class="badge info">当前</span>
               </div>
               <h3>云端 AI 配置</h3>
-              <p>CloudBase HTTP 函数、云端 secret、`/api` 代理地址、云端起稿和浏览器写信页云端烟测已通过。</p>
+              <p>CloudBase HTTP 函数、云端 secret、`/api` 代理地址、云端起稿、禁用 key 失败关闭和恢复验证已通过。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
@@ -756,7 +758,7 @@
               <li>CloudBase / MiMo 费用告警、月费用上限或人工检查频率仍需配置和记录。</li>
               <li>AI 起稿流式输出已拆为独立优化阶段，尚未实现。</li>
               <li>云端同步、双人账户绑定和真实双设备同步尚未实现。</li>
-              <li>阶段 13 尚未完成云端最小权限检查、禁用 key 安全失败验证、secret 轮换和回滚删除清单。</li>
+              <li>阶段 13 尚未完成云端最小权限检查、控制台告警配置和 MiMo 控制台 key 轮换入口记录。</li>
               <li>延误、迷失、找回、退回尚未接入自动确定性推进规则。</li>
               <li>系统推送和照片附件尚未开始。</li>
               <li>iOS Safari Web Inspector 和真机验证还需手工确认。</li>

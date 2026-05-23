@@ -25,12 +25,15 @@
 - 已新增 CloudBase Web Server 启动入口：`server/ai-scribe-proxy/cloudbase-bootstrap.ts` 和 `server/ai-scribe-proxy/cloudbase-http-server.ts`。
 - 已新增 CloudBase 构建脚本：`npm run cloudbase:build:ai`。
 - 已新增 CloudBase secret 配置脚本：`CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:configure:ai-env`，从 `.env.ai.local` 读取变量并脱敏输出。
+- 已新增 CloudBase secret 禁用脚本：`CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:disable:ai-env`，移除云端 `MIMO_API_KEY`，用于验证代理安全失败和临时停用 AI 起稿。
 - 已新增 CloudBase 部署脚本：`CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:deploy:ai`。
 - CloudBase 环境 ID 已确认为 `pinganpi-d7gml1f6sbcc172ea`，区域为 `ap-shanghai`。
 - CloudBase HTTP 函数 `ai-scribe-proxy` 已部署，默认访问地址为 `https://pinganpi-d7gml1f6sbcc172ea-1258361524.ap-shanghai.app.tcloudbase.com/api`。
 - `GET /api/health` 已返回 `{ "ok": true }`。
 - 云端 `POST /api/ai/scribe-draft` 已通过非敏感口述烟测，返回 `xiaomi-mimo / mimo-v2.5-pro` 的 AI 初稿。
 - 浏览器写信页已通过真实云端 AI 起稿烟测。
+- 禁用云端 `MIMO_API_KEY` 后，云端 `POST /api/ai/scribe-draft` 已验证返回受控 `502 proxy_unavailable`，不会生成正文或暴露 provider 原始错误；随后已恢复真实 env 并重新验证 HTTP 200。
+- CloudBase 用量基线已读取：当前计费周期 `2026-05-23 ~ 2026-06-23`，`usedCredits: 0.04`，其中 Cloud function `0.01`、API calls `0.03`。
 - 本地代理已加入费用护栏：
   - `PINGANPI_AI_MAX_ORAL_TEXT_CHARS` 默认 800。
   - `MIMO_MAX_COMPLETION_TOKENS` 默认 900。
@@ -39,7 +42,7 @@
 
 - MiMo 订阅页的额度、余额提醒、费用告警和 key 类型。
 - CloudBase 函数调用量、出网流量、错误率和费用告警。
-- 云端回滚删除步骤，以及禁用 key 后的受控失败验证。
+- 云端最小权限状态和控制台告警策略。
 
 ## 环境命名
 
@@ -86,7 +89,8 @@ VITE_PINGANPI_AI_PROXY_URL=https://pinganpi-d7gml1f6sbcc172ea-1258361524.ap-shan
 - [x] 登录腾讯云控制台，确认已购买 CloudBase；阶段 13 云端落点确定为 CloudBase HTTP 云函数，不购买 CVM 或长期包年资源。
 - [x] 记录最终选择的云端落点、区域和环境 ID：CloudBase HTTP 云函数，`ap-shanghai`，`pinganpi-d7gml1f6sbcc172ea`。
 - [x] 更新 roadmap / dashboard / AGENTS，明确阶段 13 的云端落点决策。
-- [ ] 记录预计月费用上限或人工检查频率。
+- [x] 记录预计费用控制方式：阶段 13 期间不购买 CVM 或长期包年资源；CloudBase 每周用 `cloudbase env usage --json` 人工检查一次；MiMo 控制台未配置告警前，每次真实云端烟测后人工检查余额 / 用量。
+- [ ] 记录 MiMo 与 CloudBase 控制台中的实际告警配置结果。
 
 验收标准：
 
@@ -103,7 +107,11 @@ VITE_PINGANPI_AI_PROXY_URL=https://pinganpi-d7gml1f6sbcc172ea-1258361524.ap-shan
 - [x] 在云平台 secret / 环境变量中配置 `MIMO_API_BASE_URL`、`MIMO_MODEL_ID`、`MIMO_API_KEY`、`MIMO_REQUEST_TIMEOUT_MS`、`PINGANPI_AI_MAX_ORAL_TEXT_CHARS`、`MIMO_MAX_COMPLETION_TOKENS`。
 - [x] 确认配置脚本和验证命令不会打印 env 真实值；当前云函数代码不打印 env。
 - [ ] 为云函数配置最小权限，不授予数据库、文件存储、推送等暂未使用的权限。
-- [ ] 记录 secret 更新、禁用和轮换步骤；更新入口暂为 `CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:configure:ai-env`。
+- [x] 记录 secret 更新和禁用步骤：
+  - 更新 / 恢复：`CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:configure:ai-env`
+  - 临时禁用：`CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:disable:ai-env`
+  - 本机轮换：更新 `.env.ai.local` 后重新运行配置脚本，不把真实 key 写入 Git。
+- [ ] 记录 MiMo 控制台撤销 / 轮换 key 的实际入口。
 
 验收标准：
 
@@ -161,6 +169,20 @@ PINGANPI_AI_MAX_ORAL_TEXT_CHARS=800
 MIMO_MAX_COMPLETION_TOKENS=900
 ```
 
+安全失败验证命令：
+
+```bash
+CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:disable:ai-env
+curl -i \
+  -H 'Origin: http://localhost:5173' \
+  -H 'Content-Type: application/json' \
+  --data '{"oralText":"请替我问她近来安好。","scribeName":"陈启明","scribeStyle":"语气温和，字句端正","senderGreeting":"兰卿","senderSignature":"阿平","senderCity":"广州","recipientCity":"上海","letterType":"ordinary"}' \
+  https://pinganpi-d7gml1f6sbcc172ea-1258361524.ap-shanghai.app.tcloudbase.com/api/ai/scribe-draft
+CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:configure:ai-env
+```
+
+预期：禁用后返回 `502`，body 为 `{"ok":false,"reason":"proxy_unavailable","message":"AI proxy is not configured."}`；恢复后同一类非敏感请求返回 `200`。
+
 ## Task 4: 费用告警与回滚删除
 
 **Files:**
@@ -170,9 +192,13 @@ MIMO_MAX_COMPLETION_TOKENS=900
 
 - [ ] 在 MiMo 控制台配置余额提醒、额度提醒或人工检查流程。
 - [ ] 在云平台配置函数调用量、出网流量、错误率和费用告警。
-- [ ] 记录关闭入口：禁用云函数、删除环境变量、撤销 MiMo key。
-- [ ] 记录删除入口：删除云函数、删除 CloudBase 环境、删除日志或设置日志保留期。
-- [ ] 做一次“禁用 key 后代理安全失败”的验证。
+- [x] 记录关闭入口：`CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:disable:ai-env` 可移除云端 `MIMO_API_KEY`，让 AI 起稿失败关闭；恢复用 `cloudbase:configure:ai-env`。
+- [x] 记录删除入口：
+  - 预览删除函数：`CLOUDBASE_ENV_ID=<env-id> cloudbase fn delete ai-scribe-proxy --dry-run`
+  - 删除路由预览：`CLOUDBASE_ENV_ID=<env-id> cloudbase routes delete <domain> -p /api --dry-run`
+  - 删除环境预览：`cloudbase env delete --env-id <env-id> --dry-run`
+  - 真正删除前必须再次确认，因为这会破坏云端 AI 代理。
+- [x] 做一次“禁用 key 后代理安全失败”的验证。
 
 验收标准：
 

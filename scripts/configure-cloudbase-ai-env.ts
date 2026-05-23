@@ -8,14 +8,12 @@ const cloudbaseConfigPath = resolve(projectRoot, "cloudbaserc.json");
 const functionName = "ai-scribe-proxy";
 
 const envId = readRequiredEnv("CLOUDBASE_ENV_ID");
-const envVariables = {
-  MIMO_API_BASE_URL: readRequiredEnv("MIMO_API_BASE_URL"),
-  MIMO_MODEL_ID: readRequiredEnv("MIMO_MODEL_ID"),
-  MIMO_API_KEY: readRequiredEnv("MIMO_API_KEY"),
-  MIMO_REQUEST_TIMEOUT_MS: readOptionalEnv("MIMO_REQUEST_TIMEOUT_MS", "30000"),
-  PINGANPI_AI_MAX_ORAL_TEXT_CHARS: readOptionalEnv("PINGANPI_AI_MAX_ORAL_TEXT_CHARS", "800"),
-  MIMO_MAX_COMPLETION_TOKENS: readOptionalEnv("MIMO_MAX_COMPLETION_TOKENS", "900")
-};
+const mode = readMode();
+const envVariables = buildEnvVariables(mode);
+
+if (mode === "disabled") {
+  console.log("Configuring CloudBase AI proxy in disabled mode: MIMO_API_KEY will be removed.");
+}
 
 const tempDir = await mkdtemp(resolve(tmpdir(), "pinganpi-cloudbase-ai-env-"));
 
@@ -48,6 +46,38 @@ try {
   );
 } finally {
   await rm(tempDir, { recursive: true, force: true });
+}
+
+type ConfigureMode = "enabled" | "disabled";
+
+function buildEnvVariables(configureMode: ConfigureMode): Record<string, string> {
+  const variables: Record<string, string> = {
+    MIMO_API_BASE_URL: readRequiredEnv("MIMO_API_BASE_URL"),
+    MIMO_MODEL_ID: readRequiredEnv("MIMO_MODEL_ID"),
+    MIMO_REQUEST_TIMEOUT_MS: readOptionalEnv("MIMO_REQUEST_TIMEOUT_MS", "30000"),
+    PINGANPI_AI_MAX_ORAL_TEXT_CHARS: readOptionalEnv("PINGANPI_AI_MAX_ORAL_TEXT_CHARS", "800"),
+    MIMO_MAX_COMPLETION_TOKENS: readOptionalEnv("MIMO_MAX_COMPLETION_TOKENS", "900")
+  };
+
+  if (configureMode === "enabled") {
+    variables.MIMO_API_KEY = readRequiredEnv("MIMO_API_KEY");
+  }
+
+  return variables;
+}
+
+function readMode(): ConfigureMode {
+  const modeValue = process.env.PINGANPI_CLOUDBASE_AI_ENV_MODE?.trim();
+
+  if (modeValue === undefined || modeValue.length === 0 || modeValue === "enabled") {
+    return "enabled";
+  }
+
+  if (modeValue === "disabled") {
+    return "disabled";
+  }
+
+  throw new Error("PINGANPI_CLOUDBASE_AI_ENV_MODE must be enabled or disabled.");
 }
 
 interface CloudBaseConfig {
