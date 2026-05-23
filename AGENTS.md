@@ -130,7 +130,7 @@ npx cap doctor
 - 草稿管理 / 信纸匣：续写、覆盖保存、删除、从草稿投寄。
 - 信箱真实时间送达推进：`in_transit -> arrived`、到达前不可拆、拆阅写记录、邮政档案记录簿。
 - AI 代笔接入设计：明确 AI 只负责代笔先生起稿，模板转为提示词素材，失败保存口述草稿。
-- 本地最小 AI 代理脚手架：`server/ai-scribe-proxy/`、MiMo config/client、`GET /health`、`POST /ai/scribe-draft`、`npm run ai-proxy:check`、`npm run ai-proxy:dev`。
+- 本地最小 AI 代理脚手架：`server/ai-scribe-proxy/`、MiMo config/client、`GET /health`、`POST /ai/scribe-draft`、本地 Origin 限制、32 KB 请求体限制、`npm run ai-proxy:check`、`npm run ai-proxy:dev`。
 - 阶段 11 尚未完成真实云配置：MiMo 真实 base URL / model / key 类型、费用告警、CloudBase 或其他云端落点仍需确认。
 
 已验证基线记录在：

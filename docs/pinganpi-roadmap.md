@@ -333,6 +333,8 @@ npx cap doctor
 - 新增本地 HTTP 代理：
   - `GET /health`
   - `POST /ai/scribe-draft`
+- 本地 HTTP 代理只接受无 Origin 的命令行请求、本地开发 Origin 和 Capacitor / Ionic localhost Origin；拒绝外站网页借用本机代理消耗 MiMo 额度。
+- 本地 HTTP 代理限制请求体不超过 32 KB，provider 失败响应不会回传原始错误详情。
 - 新增连接检查命令：`npm run ai-proxy:check`。
 - 新增本地代理启动命令：`npm run ai-proxy:dev`。
 - 新增 `.env.example`，真实 key 仍不得入库。

@@ -1,6 +1,6 @@
 # 平安批最小 AI 服务端代理实施计划
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** 为已购买的 Xiaomi MiMo 模型建立一个本地可测、后续可迁移到云函数的最小 AI 服务端代理，确保 AI key 不进入移动端 / Vite 客户端。
 
@@ -44,6 +44,7 @@ export MIMO_API_KEY="replace-with-secret-from-subscription-page"
 - `server/ai-scribe-proxy/dev-server.ts` 使用 `IncomingMessage` / `ServerResponse` 类型，避免 `Parameters<typeof createServer>` 类型错误。
 - MiMo client 已加入默认 30 秒超时，可通过 `MIMO_REQUEST_TIMEOUT_MS` 调整。
 - 本地代理已补充 `prompt.test.ts` 和 `dev-server.test.ts`，用 fake requester 覆盖 prompt、health、CORS 预检、成功响应和校验错误。
+- 代码审查后已补充本地 Origin 限制、32 KB 请求体限制和固定 provider 错误响应，避免任意网页借用本机代理消耗 MiMo 额度或看到 provider 原始错误。
 - 当前仓库只完成本地可测代理脚手架；真实 MiMo env 连通验证、费用告警和 CloudBase / 云函数落点仍待用户确认后继续。
 
 ## File Structure
@@ -88,7 +89,7 @@ export MIMO_API_KEY="replace-with-secret-from-subscription-page"
 - Modify: `.gitignore`
 - Create: `.env.example`
 
-- [ ] **Step 1: Update `package.json` scripts and dev dependency**
+- [x] **Step 1: Update `package.json` scripts and dev dependency**
 
 Add these scripts:
 
@@ -116,7 +117,7 @@ Expected:
 - `package.json` and `package-lock.json` update.
 - No runtime dependency is added.
 
-- [ ] **Step 2: Include server TypeScript in typecheck**
+- [x] **Step 2: Include server TypeScript in typecheck**
 
 Modify `tsconfig.json` include:
 
@@ -131,7 +132,7 @@ Modify `tsconfig.json` include:
 ]
 ```
 
-- [ ] **Step 3: Ignore local secret env files**
+- [x] **Step 3: Ignore local secret env files**
 
 Append to `.gitignore`:
 
@@ -142,7 +143,7 @@ Append to `.gitignore`:
 .env.ai.local
 ```
 
-- [ ] **Step 4: Create `.env.example`**
+- [x] **Step 4: Create `.env.example`**
 
 Create `.env.example`:
 
@@ -158,7 +159,7 @@ PINGANPI_AI_PROXY_PORT=8787
 MIMO_REQUEST_TIMEOUT_MS=30000
 ```
 
-- [ ] **Step 5: Verify package scripts are visible**
+- [x] **Step 5: Verify package scripts are visible**
 
 Run:
 
@@ -171,7 +172,7 @@ Expected:
 - Output lists `ai-proxy:dev`.
 - Output lists `ai-proxy:check`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add package.json package-lock.json tsconfig.json .gitignore .env.example
@@ -186,7 +187,7 @@ git commit -m "build: 添加 AI 代理开发脚本"
 - Create: `server/ai-scribe-proxy/config.ts`
 - Create: `server/ai-scribe-proxy/config.test.ts`
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 Create `server/ai-scribe-proxy/config.test.ts`:
 
@@ -232,7 +233,7 @@ describe("AI proxy config", () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -244,7 +245,7 @@ Expected:
 
 - FAIL because `server/ai-scribe-proxy/config.ts` does not exist.
 
-- [ ] **Step 3: Implement config reader**
+- [x] **Step 3: Implement config reader**
 
 Create `server/ai-scribe-proxy/config.ts`:
 
@@ -301,7 +302,7 @@ function readPort(value: string | undefined): number {
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run:
 
@@ -313,7 +314,7 @@ Expected:
 
 - PASS for 3 tests.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add server/ai-scribe-proxy/config.ts server/ai-scribe-proxy/config.test.ts
@@ -328,7 +329,7 @@ git commit -m "feat(ai): 添加 MiMo 代理配置读取"
 - Create: `server/ai-scribe-proxy/mimo-client.ts`
 - Create: `server/ai-scribe-proxy/mimo-client.test.ts`
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 Create `server/ai-scribe-proxy/mimo-client.test.ts`:
 
@@ -401,7 +402,7 @@ describe("MiMo client", () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -413,7 +414,7 @@ Expected:
 
 - FAIL because `server/ai-scribe-proxy/mimo-client.ts` does not exist.
 
-- [ ] **Step 3: Implement MiMo client**
+- [x] **Step 3: Implement MiMo client**
 
 Create `server/ai-scribe-proxy/mimo-client.ts`:
 
@@ -486,7 +487,7 @@ export async function requestMimoChatCompletion(
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run:
 
@@ -498,7 +499,7 @@ Expected:
 
 - PASS for 2 tests.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add server/ai-scribe-proxy/mimo-client.ts server/ai-scribe-proxy/mimo-client.test.ts
@@ -513,7 +514,7 @@ git commit -m "feat(ai): 添加 MiMo 调用客户端"
 - Create: `server/ai-scribe-proxy/prompt.ts`
 - Create: `server/ai-scribe-proxy/dev-server.ts`
 
-- [ ] **Step 1: Create prompt material builder**
+- [x] **Step 1: Create prompt material builder**
 
 Create `server/ai-scribe-proxy/prompt.ts`:
 
@@ -554,7 +555,7 @@ export function buildScribeMessages(input: AiScribeProxyRequest) {
 }
 ```
 
-- [ ] **Step 2: Create local HTTP proxy**
+- [x] **Step 2: Create local HTTP proxy**
 
 Create `server/ai-scribe-proxy/dev-server.ts`:
 
@@ -667,7 +668,7 @@ function sendJson(response: ServerResponse, statusCode: number, body: unknown): 
 }
 ```
 
-- [ ] **Step 3: Run typecheck**
+- [x] **Step 3: Run typecheck**
 
 Run:
 
@@ -679,7 +680,7 @@ Expected:
 
 - PASS.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add server/ai-scribe-proxy/prompt.ts server/ai-scribe-proxy/dev-server.ts
@@ -693,7 +694,7 @@ git commit -m "feat(ai): 添加本地 AI 代笔代理"
 **Files:**
 - Create: `server/ai-scribe-proxy/check-mimo.ts`
 
-- [ ] **Step 1: Create check command**
+- [x] **Step 1: Create check command**
 
 Create `server/ai-scribe-proxy/check-mimo.ts`:
 
@@ -730,7 +731,7 @@ console.log(
 );
 ```
 
-- [ ] **Step 2: Run without env to verify failure is safe**
+- [x] **Step 2: Run without env to verify failure is safe**
 
 Run:
 
@@ -759,7 +760,7 @@ Expected:
 - PASS with JSON containing `ok: true`.
 - Output does not include API key.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add server/ai-scribe-proxy/check-mimo.ts
@@ -776,7 +777,7 @@ git commit -m "feat(ai): 添加 MiMo 连通性检查"
 - Modify: `docs/pinganpi-roadmap-dashboard.html`
 - Modify: `AGENTS.md`
 
-- [ ] **Step 1: Update roadmap status**
+- [x] **Step 1: Update roadmap status**
 
 After implementation and local no-secret checks pass, update:
 
@@ -791,7 +792,7 @@ After implementation and local no-secret checks pass, update:
     - `npm run ai-proxy:check`
     - `npm run ai-proxy:dev`
 
-- [ ] **Step 2: Run full verification**
+- [x] **Step 2: Run full verification**
 
 Run:
 
@@ -809,7 +810,7 @@ Expected:
 - `npm run typecheck`: exit 0.
 - `npm run build`: exit 0, existing Varlet chunk warning may appear.
 
-- [ ] **Step 3: Secret scan**
+- [x] **Step 3: Secret scan**
 
 Run:
 
@@ -823,7 +824,7 @@ Expected:
 - No real key.
 - `VITE_MIMO_API_KEY` only appears in tests or docs as a deliberate leak-prevention sentinel.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add .

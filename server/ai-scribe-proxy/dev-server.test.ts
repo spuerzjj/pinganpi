@@ -53,7 +53,7 @@ describe("AI proxy dev server", () => {
 
     const response = await fetch(`${baseUrl(server)}/ai/scribe-draft`, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", origin: "http://localhost:5173" },
       body: JSON.stringify({
         oralText: "请替我问她近来安好。",
         scribeName: "陈启明",
@@ -86,7 +86,7 @@ describe("AI proxy dev server", () => {
     const server = await listen(neverCalledRequester);
     const response = await fetch(`${baseUrl(server)}/ai/scribe-draft`, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", origin: "http://127.0.0.1:5173" },
       body: JSON.stringify({ oralText: "缺少字段" })
     });
 
@@ -98,14 +98,89 @@ describe("AI proxy dev server", () => {
     });
   });
 
-  it("allows browser preflight requests", async () => {
+  it("allows local browser preflight requests", async () => {
     const server = await listen(neverCalledRequester);
     const response = await fetch(`${baseUrl(server)}/ai/scribe-draft`, {
-      method: "OPTIONS"
+      method: "OPTIONS",
+      headers: { origin: "http://localhost:5173" }
     });
 
     expect(response.status).toBe(204);
-    expect(response.headers.get("access-control-allow-origin")).toBe("*");
+    expect(response.headers.get("access-control-allow-origin")).toBe("http://localhost:5173");
+  });
+
+  it("rejects browser requests from non-local origins before calling the provider", async () => {
+    let called = false;
+    const server = await listen(async () => {
+      called = true;
+      throw new Error("Requester should not be called.");
+    });
+    const response = await fetch(`${baseUrl(server)}/ai/scribe-draft`, {
+      method: "POST",
+      headers: { "content-type": "application/json", origin: "https://example.com" },
+      body: JSON.stringify({
+        oralText: "请替我问她近来安好。",
+        scribeName: "陈启明",
+        scribeStyle: "语气温和，字句端正",
+        senderGreeting: "兰卿",
+        senderSignature: "阿平",
+        senderCity: "广州",
+        recipientCity: "上海",
+        letterType: "ordinary"
+      })
+    });
+
+    expect(response.status).toBe(403);
+    expect(response.headers.get("access-control-allow-origin")).toBeNull();
+    expect(await response.json()).toEqual({
+      ok: false,
+      reason: "origin_forbidden",
+      message: "AI proxy only accepts local development origins."
+    });
+    expect(called).toBe(false);
+  });
+
+  it("limits request body size", async () => {
+    const server = await listen(neverCalledRequester);
+    const response = await fetch(`${baseUrl(server)}/ai/scribe-draft`, {
+      method: "POST",
+      headers: { "content-type": "application/json", origin: "http://localhost:5173" },
+      body: JSON.stringify({ oralText: "一".repeat(33000) })
+    });
+
+    expect(response.status).toBe(413);
+    expect(await response.json()).toEqual({
+      ok: false,
+      reason: "request_too_large",
+      message: "Request body must be 32768 bytes or fewer."
+    });
+  });
+
+  it("does not return provider error details", async () => {
+    const server = await listen(async () => {
+      throw new Error("bad key: tp-secret");
+    });
+    const response = await fetch(`${baseUrl(server)}/ai/scribe-draft`, {
+      method: "POST",
+      headers: { "content-type": "application/json", origin: "capacitor://localhost" },
+      body: JSON.stringify({
+        oralText: "请替我问她近来安好。",
+        scribeName: "陈启明",
+        scribeStyle: "语气温和，字句端正",
+        senderGreeting: "兰卿",
+        senderSignature: "阿平",
+        senderCity: "广州",
+        recipientCity: "上海",
+        letterType: "ordinary"
+      })
+    });
+
+    expect(response.status).toBe(502);
+    expect(await response.json()).toEqual({
+      ok: false,
+      reason: "provider_error",
+      message: "AI provider request failed."
+    });
   });
 });
 
