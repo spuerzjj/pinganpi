@@ -240,7 +240,7 @@
       }
 
       .progress-fill {
-        width: 50%;
+        width: 55.5%;
         height: 100%;
         border-radius: inherit;
         background: linear-gradient(90deg, #2563eb, #059669);
@@ -479,7 +479,7 @@
           </p>
         </div>
         <div class="meta">
-          <span class="badge info">当前：阶段 9</span>
+          <span class="badge info">当前：阶段 11</span>
           <span class="badge done">main</span>
           <span class="badge">更新：2026-05-23</span>
         </div>
@@ -488,23 +488,23 @@
       <section class="grid-4" aria-label="关键状态">
         <article class="metric">
           <p class="metric-label">当前基线</p>
-          <p class="metric-value">阶段 9 完成</p>
-          <p class="metric-note">本地慢通信核心闭环已接入。</p>
+          <p class="metric-value">阶段 10 完成</p>
+          <p class="metric-note">阶段 11 本地 AI 代理脚手架已接入。</p>
         </article>
         <article class="metric">
           <p class="metric-label">验证状态</p>
-          <p class="metric-value">141 tests</p>
+          <p class="metric-value">153 tests</p>
           <p class="metric-note">test / typecheck / build 最近通过。</p>
         </article>
         <article class="metric">
           <p class="metric-label">下一推荐</p>
-          <p class="metric-value">AI 代笔</p>
-          <p class="metric-note">本期目标是接入 AI 能力生成信件正文。</p>
+          <p class="metric-value">MiMo 连通</p>
+          <p class="metric-note">下一步确认真实 env、费用告警和云端落点。</p>
         </article>
         <article class="metric">
           <p class="metric-label">主要风险</p>
           <p class="metric-value">8 项</p>
-          <p class="metric-note">AI 正文、最小代理、同步、异常、推送、附件、真机、发布质量。</p>
+          <p class="metric-note">AI 正文、云配置、同步、异常、推送、附件、真机、发布质量。</p>
         </article>
       </section>
 
@@ -512,9 +512,9 @@
         <div class="card-header">
           <div>
             <h2>阶段进度</h2>
-            <p class="muted">9 / 18 个主阶段已有可用基线，本期优先推进 AI 代笔生成信件正文。</p>
+            <p class="muted">10 / 18 个主阶段已有可用基线，阶段 11 本地代理已完成，等待真实 MiMo 与云配置。</p>
           </div>
-          <span class="badge done">50%</span>
+          <span class="badge done">55%</span>
         </div>
         <div class="card-body progress">
           <div class="progress-track" aria-hidden="true">
@@ -557,11 +557,11 @@
               <span class="phase-number">9</span>
               <span class="phase-title">真实送达</span>
             </div>
-            <div class="phase next">
+            <div class="phase done">
               <span class="phase-number">10</span>
               <span class="phase-title">AI 接入设计</span>
             </div>
-            <div class="phase">
+            <div class="phase next">
               <span class="phase-number">11</span>
               <span class="phase-title">最小 AI 代理</span>
             </div>
@@ -640,6 +640,16 @@
                 <span>真实时间推进、到达前不可拆、拆阅记录和邮政档案已接入信箱。</span>
                 <span class="badge done">完成</span>
               </li>
+              <li class="list-item">
+                <strong>AI 接入设计</strong>
+                <span>正文全部由 AI 生成，模板转为提示词素材，key 只在服务端代理使用。</span>
+                <span class="badge done">完成</span>
+              </li>
+              <li class="list-item">
+                <strong>本地 AI 代理</strong>
+                <span>MiMo 配置读取、调用 client、本地 HTTP 代理和连通检查命令已接入。</span>
+                <span class="badge info">阶段 11</span>
+              </li>
             </ul>
           </div>
         </article>
@@ -657,8 +667,8 @@
               <span class="badge warn">chunk warning</span>
             </div>
             <ul class="plain-list" style="margin-top: 12px">
-              <li>13 个测试文件，141 个测试通过。</li>
-              <li>测试覆盖草稿、写信、模板代书、邮政推进、拆阅服务、AppModel 和持久化结算。</li>
+              <li>17 个测试文件，153 个测试通过。</li>
+              <li>测试覆盖草稿、写信、模板代书、邮政推进、拆阅服务、AI 代理、AppModel 和持久化结算。</li>
               <li>Varlet 首包超过 500 KB 是优化项，当前不阻塞。</li>
             </ul>
           </div>
@@ -669,22 +679,22 @@
         <article class="card">
           <div class="card-header">
             <h2>后续主线</h2>
-            <span class="badge info">建议继续阶段 10</span>
+            <span class="badge info">建议继续阶段 11</span>
           </div>
           <div class="card-body priority-grid">
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge info">推荐优先</span>
+                <span class="badge done">阶段 10 完成</span>
               </div>
               <h3>AI 代笔接入设计</h3>
-              <p>定义 AI adapter、提示词素材、隐私、失败处理和测试策略，模板只作为风格样例。</p>
+              <p>AI adapter、提示词素材、隐私、失败处理和测试策略已明确，模板只作为风格样例。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge">阶段 11</span>
+                <span class="badge info">当前</span>
               </div>
               <h3>最小 AI 服务端代理</h3>
-              <p>只创建 AI 所需服务端代理，配置额度、费用告警、权限和密钥；AI key 不进客户端。</p>
+              <p>本地代理已建；下一步确认 MiMo base URL、model、key 类型、费用告警，并决定 CloudBase 落点。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
@@ -717,9 +727,9 @@
           </div>
           <div class="card-body">
             <ul class="plain-list">
-              <li>AI 代笔生成信件正文尚未接入；阶段 11 默认优先接入已购买的 Xiaomi MiMo 模型。</li>
+              <li>AI 代笔生成信件正文尚未接入写信页；阶段 11 默认优先接入已购买的 Xiaomi MiMo 模型。</li>
               <li>云端同步、双人账户绑定和真实双设备同步尚未实现。</li>
-              <li>最小 AI 服务端代理、AI 能力额度、费用限额、权限、环境变量和部署凭据尚未配置。</li>
+              <li>本地 AI 代理脚手架已完成，但真实 MiMo env、费用限额、云端权限和部署凭据尚未配置。</li>
               <li>延误、迷失、找回、退回尚未接入自动确定性推进规则。</li>
               <li>系统推送和照片附件尚未开始。</li>
               <li>iOS Safari Web Inspector 和真机验证还需手工确认。</li>

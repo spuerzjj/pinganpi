@@ -31,10 +31,20 @@
 ```bash
 export MIMO_API_BASE_URL="https://api.xiaomimimo.com/v1"
 export MIMO_MODEL_ID="mimo-v2.5"
-export MIMO_API_KEY="tp-or-sk-value-from-subscription-page"
+export MIMO_API_KEY="replace-with-secret-from-subscription-page"
 ```
 
 `MIMO_API_BASE_URL` 和 `MIMO_MODEL_ID` 需要以用户订阅管理页实际显示为准。上面的值只用于说明变量格式。
+
+## Implementation Status
+
+本计划已按子 agent 审阅结果做了实施期调整：
+
+- `vitest.config.ts` 已加入 `server/**/*.test.ts`，确保服务端测试会被真实执行。
+- `server/ai-scribe-proxy/dev-server.ts` 使用 `IncomingMessage` / `ServerResponse` 类型，避免 `Parameters<typeof createServer>` 类型错误。
+- MiMo client 已加入默认 30 秒超时，可通过 `MIMO_REQUEST_TIMEOUT_MS` 调整。
+- 本地代理已补充 `prompt.test.ts` 和 `dev-server.test.ts`，用 fake requester 覆盖 prompt、health、CORS 预检、成功响应和校验错误。
+- 当前仓库只完成本地可测代理脚手架；真实 MiMo env 连通验证、费用告警和 CloudBase / 云函数落点仍待用户确认后继续。
 
 ## File Structure
 
@@ -43,6 +53,8 @@ export MIMO_API_KEY="tp-or-sk-value-from-subscription-page"
   - 显式加入 `tsx` dev dependency。
 - Modify: `tsconfig.json`
   - 将 `server/**/*.ts` 纳入 typecheck。
+- Modify: `vitest.config.ts`
+  - 将 `server/**/*.test.ts` 纳入 Vitest。
 - Modify: `.gitignore`
   - 忽略 `.env.local`、`.env.*.local`、`.env.ai.local`。
 - Create: `.env.example`
@@ -61,6 +73,10 @@ export MIMO_API_KEY="tp-or-sk-value-from-subscription-page"
   - 覆盖 env 缺失、`VITE_` key 禁止和正常配置。
 - Create: `server/ai-scribe-proxy/mimo-client.test.ts`
   - 使用 fake fetch 覆盖请求头、路径、成功解析和错误归一。
+- Create: `server/ai-scribe-proxy/prompt.test.ts`
+  - 覆盖提示词素材构造。
+- Create: `server/ai-scribe-proxy/dev-server.test.ts`
+  - 使用 fake requester 覆盖本地代理的 health、CORS、成功响应和校验错误。
 
 ---
 
@@ -137,8 +153,9 @@ Create `.env.example`:
 
 MIMO_API_BASE_URL=https://api.xiaomimimo.com/v1
 MIMO_MODEL_ID=mimo-v2.5
-MIMO_API_KEY=tp-or-sk-value-from-subscription-page
+MIMO_API_KEY=replace-with-secret-from-subscription-page
 PINGANPI_AI_PROXY_PORT=8787
+MIMO_REQUEST_TIMEOUT_MS=30000
 ```
 
 - [ ] **Step 5: Verify package scripts are visible**
@@ -542,7 +559,7 @@ export function buildScribeMessages(input: AiScribeProxyRequest) {
 Create `server/ai-scribe-proxy/dev-server.ts`:
 
 ```ts
-import { createServer } from "node:http";
+import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { readAiProxyConfig } from "./config.js";
 import { requestMimoChatCompletion } from "./mimo-client.js";
 import { buildScribeMessages, type AiScribeProxyRequest } from "./prompt.js";
@@ -557,7 +574,7 @@ server.listen(config.port, () => {
   console.log(`Pinganpi AI proxy listening on http://127.0.0.1:${config.port}`);
 });
 
-async function handleRequest(request: Parameters<typeof createServer>[0], response: Parameters<typeof createServer>[1]) {
+async function handleRequest(request: IncomingMessage, response: ServerResponse) {
   if (request.method === "GET" && request.url === "/health") {
     sendJson(response, 200, { ok: true });
     return;
@@ -634,7 +651,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-async function readBody(request: Parameters<typeof createServer>[0]): Promise<unknown> {
+async function readBody(request: IncomingMessage): Promise<unknown> {
   const chunks: Uint8Array[] = [];
 
   for await (const chunk of request) {
@@ -644,7 +661,7 @@ async function readBody(request: Parameters<typeof createServer>[0]): Promise<un
   return JSON.parse(Buffer.concat(chunks).toString("utf8")) as unknown;
 }
 
-function sendJson(response: Parameters<typeof createServer>[1], statusCode: number, body: unknown): void {
+function sendJson(response: ServerResponse, statusCode: number, body: unknown): void {
   response.writeHead(statusCode, { "content-type": "application/json; charset=utf-8" });
   response.end(JSON.stringify(body));
 }
@@ -764,10 +781,10 @@ git commit -m "feat(ai): 添加 MiMo 连通性检查"
 After implementation and local no-secret checks pass, update:
 
 - `docs/pinganpi-roadmap.md`
-  - Keep current baseline at stage 9 until real MiMo check passes.
+  - Record stage 10 as complete and stage 11 as in progress until real MiMo check and cloud placement pass.
   - Add a note under stage 11 that local proxy scaffolding exists.
 - `docs/pinganpi-roadmap-dashboard.html`
-  - Keep progress at `9 / 18`.
+  - Keep progress at `10 / 18` while stage 11 waits for real MiMo env and cloud placement.
   - Add “MiMo 代理脚手架已建，等待真实 key 连通验证” to risk or next-step text.
 - `AGENTS.md`
   - Add the exact scripts:
@@ -804,7 +821,7 @@ Expected:
 
 - Only dummy values in `.env.example`, docs, tests, or code comments.
 - No real key.
-- No `VITE_MIMO_API_KEY`.
+- `VITE_MIMO_API_KEY` only appears in tests or docs as a deliberate leak-prevention sentinel.
 
 - [ ] **Step 4: Commit**
 

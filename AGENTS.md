@@ -52,21 +52,23 @@ npm test
 npm run typecheck
 npm run build
 npm run cap:sync
+npm run ai-proxy:check
+npm run ai-proxy:dev
 npx cap doctor
 ```
 
 ## 当前代码状态
 
-当前主线开发基于 `main`，最新路线图基线为：**已完成阶段 9 信箱真实时间送达推进**。继续开发前以 `git log --oneline --decorate -5` 为准。
+当前主线开发基于 `main`，最新路线图基线为：**已完成阶段 10 AI 代笔接入设计；阶段 11 本地最小 AI 代理脚手架已完成，真实 MiMo env 连通验证和云端落点配置仍待**。继续开发前以 `git log --oneline --decorate -5` 为准。
 
 最新关键提交包括：
 
-- `71133d3 docs: 更新真实送达推进进度`
-- `3c2d85c feat(app): 接入信箱拆阅界面`
-- `76f325d feat(app): 扩展信箱档案视图模型`
-- `334c304 feat(app): 接入信件送达与拆阅结算`
-- `3e26a29 feat(app): 添加邮政送达推进服务`
-- `4cb07a6 feat(domain): 添加信件送达时间判断`
+- `93a7392 feat(ai): 添加 MiMo 连通性检查`
+- `1fe8924 feat(ai): 添加本地 AI 代笔代理`
+- `c83a8aa feat(ai): 添加 MiMo 调用客户端`
+- `2d32be6 feat(ai): 添加 MiMo 代理配置读取`
+- `9d642ea build: 添加 AI 代理开发脚本`
+- `bbd20b1 docs: 设计 AI 代笔正文生成路线`
 
 已完成阶段：
 
@@ -116,7 +118,7 @@ npx cap doctor
 - `src/app/pages/`
 - `capacitor.config.ts`
 
-### 阶段 3-9：本地慢通信核心闭环
+### 阶段 3-11：本地慢通信核心闭环与 AI 代理准备
 
 已实现：
 
@@ -127,11 +129,16 @@ npx cap doctor
 - 写信分步流程：`选写法 → 口述 → 起稿 → 校改 → 投寄`。
 - 草稿管理 / 信纸匣：续写、覆盖保存、删除、从草稿投寄。
 - 信箱真实时间送达推进：`in_transit -> arrived`、到达前不可拆、拆阅写记录、邮政档案记录簿。
+- AI 代笔接入设计：明确 AI 只负责代笔先生起稿，模板转为提示词素材，失败保存口述草稿。
+- 本地最小 AI 代理脚手架：`server/ai-scribe-proxy/`、MiMo config/client、`GET /health`、`POST /ai/scribe-draft`、`npm run ai-proxy:check`、`npm run ai-proxy:dev`。
+- 阶段 11 尚未完成真实云配置：MiMo 真实 base URL / model / key 类型、费用告警、CloudBase 或其他云端落点仍需确认。
 
 已验证基线记录在：
 
 - `docs/pinganpi-roadmap.md`
 - `docs/pinganpi-roadmap-dashboard.html`
+- `docs/superpowers/specs/2026-05-23-pinganpi-ai-scribe-design.md`
+- `docs/superpowers/plans/2026-05-23-pinganpi-minimal-ai-proxy.md`
 
 ## 后续路线
 
@@ -149,35 +156,26 @@ npx cap doctor
 
 推荐开发顺序：
 
-1. **阶段 10：AI 代笔接入设计**
-   - 本期目标是接入 AI 能力生成信件正文，但 AI 只负责代笔先生起稿。
-   - 复用现有代书流程和数据结构，设计 AI generation adapter、输入输出类型、错误类型和失败处理。
-   - AI 输入限定为用户口述、代笔先生、双方成员、城市、信件类型、情绪标签和必要上下文。
-   - 允许将用户口述发送到第三方模型服务。
-   - 生成结果必须保存 `draftSource: "ai"` 与 `generationMeta`。
-   - 模板不再作为完整正文生成 fallback，只作为 AI 提示词素材、风格样例和约束规则。
-   - AI 失败、超时、额度不足或无网时，保存口述草稿，稍后再起稿。
-   - 用户仍必须手工校改正文，AI 不能自动封缄投寄。
-   - 移动端 / Vite 客户端不得直连 AI 供应商，不得携带 provider key；真实 AI key 只能在云函数或服务端代理中使用。
-   - `src/domain` 不得引入 AI、浏览器、Capacitor 或云服务依赖。
-
-2. **阶段 11：云服务器与 AI 能力最小配置**
-   - 在阶段 10 的 AI 接入设计明确后，基于用户已购买的 Xiaomi MiMo 模型创建最小 AI 服务端代理环境。
+1. **阶段 11：云服务器与 AI 能力最小配置**
+   - 本地最小 AI 服务端代理已创建，下一步确认真实 MiMo 配置并决定云端落点。
+   - 真实 MiMo key 不要在聊天中发送；只能放在本机服务端 env、`.env.local` 或云平台 secret 中。
+   - 需要用户从 Xiaomi MiMo 订阅页确认 `MIMO_API_BASE_URL`、`MIMO_MODEL_ID`、key 类型是 `tp-` 还是 `sk-`、额度和费用提醒方式。
+   - 本地连通检查命令：`npm run ai-proxy:check`。
+   - 本地代理启动命令：`npm run ai-proxy:dev`。
    - 优先评估腾讯云 CloudBase 是否适合承载最小 AI 服务端代理，不默认购买 CVM 或高规格包年资源。
-   - 默认供应商为 Xiaomi MiMo；模型 ID、API base URL、调用协议、额度和费用告警必须在阶段 11 实施时与用户确认。
    - 配置费用限额、余额提醒、AI 调用费用告警、最小代理权限、服务端环境变量和密钥管理。
    - 真实 secret 不入库，不使用 `VITE_` 暴露 AI key；必要时提供 `.env.example`。
    - 同步数据库、文件存储、身份认证和推送资源本阶段只做评估，不正式购买 / 初始化。
    - 输出可复现的最小 AI 代理 / AI 配置文档、连接验证命令和资源删除 / 回滚步骤。
 
-3. **阶段 12：AI 生成信件正文落地**
+2. **阶段 12：AI 生成信件正文落地**
    - 实现 AI generation adapter，并通过阶段 11 确认的调用方式连接真实 AI 能力。
    - 写信流程“起稿”步骤使用 AI 起稿，失败时保存口述草稿，不生成模板正文。
    - 生成结果继续进入校改步骤，最终投寄仍以用户确认的 `finalText` 为准。
    - 增加 fake AI adapter 测试、失败保存口述草稿测试、metadata 保存测试和 UI 起稿流程测试。
    - 构建产物不得包含第三方 AI provider key。
 
-4. **阶段 13：云端与双人同步准备**
+3. **阶段 13：云端与双人同步准备**
    - 定义远端数据模型，不把整个 `AppState` 当成唯一同步单位。
    - 建立 sync adapter 边界，保持 `src/domain` 无云端依赖。
    - 设计 household / pair、members、wallets、ledger entries、draft papers、letters、postal records、sync cursors。
@@ -186,25 +184,25 @@ npx cap doctor
    - 设计 append-only 记录去重、信件状态单向推进、草稿冲突和钱包结算策略。
    - 先使用本地 mock remote adapter 和测试验证双设备合并。
 
-5. **阶段 14：双人真实同步 MVP**
+4. **阶段 14：双人真实同步 MVP**
    - 两台设备共享同一对通信关系的数据。
    - 启动 pull、关键操作 push、回到前台 refresh。
    - 第一版只保证离线草稿；投寄和拆阅必须联网校验后才正式生效。
    - 后续若支持离线投寄 / 拆阅请求，必须作为 command 入队，联网后重新校验钱包、状态机、收件人和到达时间。
 
-6. **阶段 15：邮政异常规则**
+5. **阶段 15：邮政异常规则**
    - 延误、错分、迷失、找回、退回采用确定性种子推进。
    - 所有异常必须产生邮政记录。
 
-7. **阶段 16：系统推送**
+6. **阶段 16：系统推送**
    - 只推重要信、挂号信、迷失信找回、退回等少量事件。
    - 普通信默认不主动推送。
 
-8. **阶段 17：照片附件**
+7. **阶段 17：照片附件**
    - 夹寄照片、费用、附件状态、到达前不泄露。
    - 云端文件存储依赖阶段 13 的规划；具体云存储购买 / 配置在阶段 17 实施。
 
-9. **阶段 18：发布准备与体验打磨**
+8. **阶段 18：发布准备与体验打磨**
    - toast / snackbar、App 图标、启动页、真机验证、bundle 优化、隐私与备份检查。
 
 ## 开发原则
