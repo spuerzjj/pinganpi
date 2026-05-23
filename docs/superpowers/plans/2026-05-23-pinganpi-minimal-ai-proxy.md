@@ -4,7 +4,7 @@
 
 **Goal:** 为已购买的 Xiaomi MiMo 模型建立一个本地可测、后续可迁移到云函数的最小 AI 服务端代理，确保 AI key 不进入移动端 / Vite 客户端。
 
-**Architecture:** 新增 `server/ai-scribe-proxy/`，把 MiMo OpenAI-compatible 调用、环境变量读取、本地 HTTP 代理和连接验证脚本放在服务端目录。客户端暂不接入；阶段 12 再通过 App 层 AI adapter 调用该代理。密钥只从服务端环境变量读取，不使用 `VITE_` 前缀。
+**Architecture:** 新增 `server/ai-scribe-proxy/`，把 MiMo OpenAI-compatible 调用、环境变量读取、本地 HTTP 代理和连接验证脚本放在服务端目录。阶段 12 已通过 App 层 AI adapter 调用该代理；密钥只从服务端环境变量读取，不使用 `VITE_` 前缀。
 
 **Tech Stack:** TypeScript, Node 22 built-in `fetch`, Vitest, `tsx` dev runner, Xiaomi MiMo OpenAI-compatible `/v1/chat/completions` API.
 

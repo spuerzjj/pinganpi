@@ -8,6 +8,16 @@
 
 **Tech Stack:** Vue 3, TypeScript, Vitest, existing `src/app` state/services, local AI proxy `POST /ai/scribe-draft`.
 
+**Implementation status:** 已完成 App 侧本地可测链路。阶段 12 已落地 HTTP AI adapter、AI metadata 持久化、写信服务保存 AI 起稿结果、写信向导 metadata 状态、写信页异步 AI 起稿和失败提示。真实 MiMo env、费用告警、云函数 / CloudBase 落点和真实 AI 起稿烟测移至阶段 13。
+
+**Implementation commits:**
+
+- `2a24509 feat(app): 添加 AI 代笔适配器`
+- `dead3c8 feat(app): 持久化 AI 起稿元数据`
+- `19f12fb feat(app): 保存 AI 起稿结果`
+- `9bc8be7 feat(app): 保留写信向导 AI 起稿元数据`
+- `802ce24 feat(app): 接入写信页 AI 起稿`
+
 ---
 
 ## File Structure

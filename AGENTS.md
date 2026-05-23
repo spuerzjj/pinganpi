@@ -59,16 +59,16 @@ npx cap doctor
 
 ## 当前代码状态
 
-当前主线开发基于 `main`，最新路线图基线为：**已完成阶段 11 本地 AI 代理基础；真实 MiMo env、费用告警和云端落点配置已拆为独立阶段 13**。继续开发前以 `git log --oneline --decorate -5` 为准。
+当前主线开发基于 `main`，最新路线图基线为：**已完成阶段 12 的 App 侧 AI 起稿链路；真实 MiMo env、费用告警和云端落点配置仍在独立阶段 13**。继续开发前以 `git log --oneline --decorate -5` 为准。
 
 最新关键提交包括：
 
-- `93a7392 feat(ai): 添加 MiMo 连通性检查`
-- `1fe8924 feat(ai): 添加本地 AI 代笔代理`
-- `c83a8aa feat(ai): 添加 MiMo 调用客户端`
-- `2d32be6 feat(ai): 添加 MiMo 代理配置读取`
-- `9d642ea build: 添加 AI 代理开发脚本`
-- `bbd20b1 docs: 设计 AI 代笔正文生成路线`
+- `802ce24 feat(app): 接入写信页 AI 起稿`
+- `9bc8be7 feat(app): 保留写信向导 AI 起稿元数据`
+- `19f12fb feat(app): 保存 AI 起稿结果`
+- `dead3c8 feat(app): 持久化 AI 起稿元数据`
+- `2a24509 feat(app): 添加 AI 代笔适配器`
+- `3188339 docs: 制定 App 侧 AI 起稿实施计划`
 
 已完成阶段：
 
@@ -118,7 +118,7 @@ npx cap doctor
 - `src/app/pages/`
 - `capacitor.config.ts`
 
-### 阶段 3-11：本地慢通信核心闭环与 AI 代理准备
+### 阶段 3-12：本地慢通信核心闭环与 AI 起稿链路
 
 已实现：
 
@@ -131,6 +131,7 @@ npx cap doctor
 - 信箱真实时间送达推进：`in_transit -> arrived`、到达前不可拆、拆阅写记录、邮政档案记录簿。
 - AI 代笔接入设计：明确 AI 只负责代笔先生起稿，模板转为提示词素材，失败保存口述草稿。
 - 本地最小 AI 代理脚手架：`server/ai-scribe-proxy/`、MiMo config/client、`GET /health`、`POST /ai/scribe-draft`、本地 Origin 限制、32 KB 请求体限制、`npm run ai-proxy:check`、`npm run ai-proxy:dev`。
+- App 侧 AI 起稿链路：`src/app/ai-scribe-adapter.ts`、`VITE_PINGANPI_AI_PROXY_URL` 代理配置、写信页异步起稿、AI metadata 持久化、失败不回退模板正文。
 - 阶段 13 尚未完成真实云配置：MiMo 真实 base URL / model / key 类型、费用告警、CloudBase 或其他云端落点仍需确认。
 
 已验证基线记录在：
@@ -166,26 +167,14 @@ npx cap doctor
 
 推荐开发顺序：
 
-1. **阶段 11：本地 AI 代理基础**
-   - 本地最小 AI 服务端代理已创建，用于开发期验证 MiMo 调用、prompt、响应结构和失败处理。
-   - 本地连通检查命令：`npm run ai-proxy:check`。
-   - 本地代理启动命令：`npm run ai-proxy:dev`。
-
-2. **阶段 12：AI 生成信件正文落地**
-   - 实现 AI generation adapter；开发期先调用阶段 11 的本地代理或 fake adapter，后续阶段 13 再替换为云端 AI 代理地址。
-   - 写信流程“起稿”步骤使用 AI 起稿，失败时保存口述草稿，不生成模板正文。
-   - 生成结果继续进入校改步骤，最终投寄仍以用户确认的 `finalText` 为准。
-   - 增加 fake AI adapter 测试、失败保存口述草稿测试、metadata 保存测试和 UI 起稿流程测试。
-   - 构建产物不得包含第三方 AI provider key。
-
-3. **阶段 13：云端 AI 代理与费用配置**
+1. **阶段 13：云端 AI 代理与费用配置**
    - 把阶段 11 尚未完成的真实 MiMo env、云函数 / CloudBase 落点、费用告警、密钥 secret 和资源删除 / 回滚步骤独立推进。
    - 真实 MiMo key 不要在聊天中发送；只能放在本机服务端 env、`.env.local` 或云平台 secret 中。
    - 需要用户从 Xiaomi MiMo 订阅页确认 `MIMO_API_BASE_URL`、`MIMO_MODEL_ID`、key 类型是 `tp-` 还是 `sk-`、额度和费用提醒方式。
    - 优先评估腾讯云 CloudBase 是否适合承载最小 AI 服务端代理，不默认购买 CVM 或高规格包年资源。
    - 同步数据库、文件存储、身份认证和推送资源本阶段只做评估，不正式购买 / 初始化。
 
-4. **阶段 14：云端与双人同步准备**
+2. **阶段 14：云端与双人同步准备**
    - 定义远端数据模型，不把整个 `AppState` 当成唯一同步单位。
    - 建立 sync adapter 边界，保持 `src/domain` 无云端依赖。
    - 设计 household / pair、members、wallets、ledger entries、draft papers、letters、postal records、sync cursors。
@@ -194,25 +183,25 @@ npx cap doctor
    - 设计 append-only 记录去重、信件状态单向推进、草稿冲突和钱包结算策略。
    - 先使用本地 mock remote adapter 和测试验证双设备合并。
 
-5. **阶段 15：双人真实同步 MVP**
+3. **阶段 15：双人真实同步 MVP**
    - 两台设备共享同一对通信关系的数据。
    - 启动 pull、关键操作 push、回到前台 refresh。
    - 第一版只保证离线草稿；投寄和拆阅必须联网校验后才正式生效。
    - 后续若支持离线投寄 / 拆阅请求，必须作为 command 入队，联网后重新校验钱包、状态机、收件人和到达时间。
 
-6. **阶段 16：邮政异常规则**
+4. **阶段 16：邮政异常规则**
    - 延误、错分、迷失、找回、退回采用确定性种子推进。
    - 所有异常必须产生邮政记录。
 
-7. **阶段 17：系统推送**
+5. **阶段 17：系统推送**
    - 只推重要信、挂号信、迷失信找回、退回等少量事件。
    - 普通信默认不主动推送。
 
-8. **阶段 18：照片附件**
+6. **阶段 18：照片附件**
    - 夹寄照片、费用、附件状态、到达前不泄露。
    - 云端文件存储依赖阶段 14 的规划；具体云存储购买 / 配置在阶段 18 实施。
 
-9. **阶段 19：发布准备与体验打磨**
+7. **阶段 19：发布准备与体验打磨**
    - toast / snackbar、App 图标、启动页、真机验证、bundle 优化、隐私与备份检查。
 
 ## 开发原则
@@ -223,7 +212,7 @@ npx cap doctor
 - 页面风格保持旧账簿、档案、信件、邮政登记感。
 - 不要把 App 做成网页营销页或现代聊天页。
 - 不要显示现代实时地图。
-- AI 接入是当前本期目标，但必须走既有写信流程边界，保留手工校改；模板只作为提示词素材，不作为完整正文 fallback。
+- AI 起稿已完成 App 侧链路；后续真实生产能力必须走阶段 13 云端代理与费用配置，且保留既有写信流程边界和手工校改。
 - 不要在领域层引入浏览器、Capacitor、云服务或 UI 依赖。
 - 对新增业务规则写测试，优先使用 Vitest。
 - 前端页面可以先浏览器验证，再进行 Capacitor 原生验证。
