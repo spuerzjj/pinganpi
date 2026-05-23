@@ -4,7 +4,7 @@
 
 **当前分支：** `main`
 
-**当前开发基线：** 已完成阶段 5 第一版本地写信投寄流程。精确提交以 `git log --oneline --decorate -5` 为准。
+**当前开发基线：** 已完成阶段 7 写信分步流程。精确提交以 `git log --oneline --decorate -5` 为准。
 
 **工作区策略：** 日常开发直接在 `/Users/zhujunjie/code/pinganpi` 进行。除非用户明确要求隔离开发，否则不要创建或使用 `.worktrees/`。
 
@@ -140,6 +140,22 @@
 
 - `src/app/scribe-template-engine.test.ts`
 - `src/app/write-letter-service.test.ts`
+
+### 阶段 7：写信分步流程
+
+状态：5 步可回看流程已完成。
+
+已实现：
+
+- 写信页拆为 `选写法 → 口述 → 起稿 → 校改 → 投寄`。
+- 已完成步骤可回看，未满足条件的后续步骤不可跳转。
+- 修改口述或写法后需要重新起稿。
+- 起稿、保存草稿、封缄投寄继续复用现有写信服务和模板代书引擎。
+- 投寄页展示邮资、挂号选择、钱匣余额、邮路和誊清预览。
+
+当前测试覆盖：
+
+- `src/app/write-letter-wizard.test.ts`
 
 ## 验证基线
 
