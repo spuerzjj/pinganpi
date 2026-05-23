@@ -5,24 +5,14 @@ import {
   formatFen,
   formatPresentCorrespondence,
   getDailyAttendance,
-  settleWallet,
   type DeliveryWindow,
   type Fen,
   type LetterState,
   type RouteClass,
   type Scribe
 } from "../domain/index.js";
-import {
-  currentMemberId,
-  letters,
-  members,
-  recipientMemberId,
-  scribes,
-  walletSeed,
-  writingRoute,
-  type MemberProfile,
-  type MockLetter
-} from "./mock-data.js";
+import { createDefaultAppState, settleAppState, type AppState, type PersistedLetter } from "./app-state.js";
+import { type MemberProfile } from "./mock-data.js";
 
 export interface AppModel {
   today: TodaySnapshot;
@@ -142,29 +132,25 @@ const scribeStyleText: Record<Scribe["style"], string> = {
   clerk: "账房文书"
 };
 
-export function buildAppModel(now = new Date()): AppModel {
-  const currentMember = findMember(currentMemberId);
-  const recipientMember = findMember(recipientMemberId);
+export function buildAppModel(
+  now = new Date(),
+  state: AppState = settleAppState(createDefaultAppState(), now).state
+): AppModel {
+  const currentMember = findMember(state, state.currentMemberId);
+  const recipientMember = findMember(state, state.recipientMemberId);
   const dailyPresentScribes = getDailyAttendance({
     city: currentMember.city,
     date: now,
-    scribes
+    scribes: state.scribes
   });
   const presentIds = new Set(dailyPresentScribes.map((scribe) => scribe.id));
-  const localScribes = scribes.filter((scribe) => scribe.city === currentMember.city);
-  const deliveryWindow = estimateDeliveryWindow(writingRoute.distanceKm);
+  const localScribes = state.scribes.filter((scribe) => scribe.city === currentMember.city);
+  const deliveryWindow = estimateDeliveryWindow(state.writingRoute.distanceKm);
   const isLocalPost = currentMember.city === recipientMember.city;
   const plainPostageFen = calculatePostage({ local: isLocalPost, registered: false, hasPhoto: false });
   const registeredPostageFen = calculatePostage({ local: isLocalPost, registered: true, hasPhoto: false });
   const photoPostageFen = calculatePostage({ local: isLocalPost, registered: false, hasPhoto: true });
-  const settlement = settleWallet({
-    balanceFen: walletSeed.balanceFen,
-    monthlyIncomeFen: walletSeed.monthlyIncomeFen,
-    dailyLivingCostFen: walletSeed.dailyLivingCostFen,
-    lastSettledAt: walletSeed.lastSettledAt,
-    now
-  });
-  const letterSummaries = letters.map((letter) => summarizeLetter(letter, currentMember.id));
+  const letterSummaries = state.letters.map((letter) => summarizeLetter(letter, currentMember.id, state));
   const arrivedLetters = letterSummaries.filter((letter) => letter.canOpen);
   const outgoingInTransitCount = letterSummaries.filter(
     (letter) => letter.directionText === "寄出" && letter.statusText !== "已拆" && letter.statusText !== "可拆"
@@ -205,12 +191,12 @@ export function buildAppModel(now = new Date()): AppModel {
       absentScribes: localScribes.filter((scribe) => !presentIds.has(scribe.id)).map(summarizeScribe)
     },
     wallet: {
-      balanceText: formatFen(settlement.balanceFen),
-      ledgerPreview: settlement.entries.map((entry) => ({
+      balanceText: formatFen(state.wallet.balanceFen),
+      ledgerPreview: state.ledgerEntries.slice(-6).reverse().map((entry) => ({
         note: entry.note,
         amountText: formatSignedFen(entry.amountFen)
       })),
-      canAffordPlainLetter: settlement.balanceFen >= plainPostageFen,
+      canAffordPlainLetter: state.wallet.balanceFen >= plainPostageFen,
       plainLetterCostText: formatFen(plainPostageFen)
     },
     mailbox: {
@@ -223,8 +209,8 @@ export function buildAppModel(now = new Date()): AppModel {
   };
 }
 
-function findMember(memberId: string): MemberProfile {
-  const member = members.find((candidate) => candidate.id === memberId);
+function findMember(state: AppState, memberId: string): MemberProfile {
+  const member = state.members.find((candidate) => candidate.id === memberId);
 
   if (member === undefined) {
     throw new Error(`Missing member: ${memberId}`);
@@ -243,10 +229,10 @@ function summarizeScribe(scribe: Scribe): ScribeSummary {
   };
 }
 
-function summarizeLetter(letter: MockLetter, currentMemberIdValue: string): LetterSummary {
+function summarizeLetter(letter: PersistedLetter, currentMemberIdValue: string, state: AppState): LetterSummary {
   const deliveryWindow = estimateDeliveryWindow(letter.distanceKm);
-  const sender = findMember(letter.senderId);
-  const recipient = findMember(letter.recipientId);
+  const sender = findMember(state, letter.senderId);
+  const recipient = findMember(state, letter.recipientId);
   const isLocalPost = sender.city === recipient.city;
   const postageFen = calculatePostage({
     local: isLocalPost,
@@ -259,12 +245,15 @@ function summarizeLetter(letter: MockLetter, currentMemberIdValue: string): Lett
     subject: letter.subject,
     directionText: letter.senderId === currentMemberIdValue ? "寄出" : "收进",
     statusText: stateText[letter.state],
-    sentDateText: formatEraDate(letter.sentAt),
+    sentDateText: formatEraDate(new Date(letter.sentAtIso)),
     routeText: `${sender.city}至${recipient.city}`,
     postageText: formatFen(postageFen),
     deliveryWindowText: formatDeliveryWindow(deliveryWindow),
     excerpt: letter.excerpt,
-    records: letter.records,
+    records: state.postalRecords
+      .filter((record) => record.letterId === letter.id)
+      .sort((left, right) => Date.parse(left.atIso) - Date.parse(right.atIso))
+      .map((record) => record.text),
     canOpen: letter.recipientId === currentMemberIdValue && letter.state === "arrived",
     important: letter.important
   };

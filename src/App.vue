@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, type Component } from "vue";
+import { settleAppState } from "./app/app-state.js";
+import { createBrowserAppStateStore } from "./app/app-state-storage.js";
 import { buildAppModel } from "./app/app-model.js";
 import MailboxArchivePage from "./app/pages/MailboxArchivePage.vue";
 import ScribesPage from "./app/pages/ScribesPage.vue";
@@ -16,7 +18,15 @@ interface NavItem {
   component: Component;
 }
 
-const model = buildAppModel();
+const appStateStore = createBrowserAppStateStore();
+const settlement = settleAppState(appStateStore.load(), new Date());
+const appState = ref(settlement.state);
+const model = computed(() => buildAppModel(new Date(), appState.value));
+
+if (settlement.changed) {
+  appStateStore.save(settlement.state);
+}
+
 const activeKey = ref<NavKey>("today");
 const navItems: NavItem[] = [
   { key: "today", label: "今日", mark: "日", component: TodayPage },

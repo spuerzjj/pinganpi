@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { createDefaultAppState, settleAppState } from "./app-state.js";
 import { buildAppModel } from "./app-model.js";
 
 describe("app model", () => {
@@ -43,5 +44,25 @@ describe("app model", () => {
     expect(model.archive.letters.find((letter) => letter.id === "letter-from-lan-0512")?.postageText).toBe(
       "1 角 6 分"
     );
+  });
+
+  it("builds the UI model from a persisted app state", () => {
+    const state = settleAppState(createDefaultAppState(), now).state;
+    state.wallet.balanceFen = 88;
+    state.ledgerEntries.push({
+      id: "ledger-test",
+      atIso: "2026-05-23T04:00:00.000Z",
+      kind: "postage",
+      amountFen: -8,
+      note: "平信邮票"
+    });
+
+    const model = buildAppModel(now, state);
+
+    expect(model.wallet.balanceText).toBe("8 角 8 分");
+    expect(model.wallet.ledgerPreview[0]).toEqual({
+      amountText: "-8 分",
+      note: "平信邮票"
+    });
   });
 });

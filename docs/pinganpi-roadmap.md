@@ -4,7 +4,7 @@
 
 **当前分支：** `main`
 
-**当前提交：** `4253ebb docs: 记录原生调试环境进展`
+**当前提交：** `e815c93 chore: 忽略原生调试生成目录`
 
 **工作区策略：** 日常开发直接在 `/Users/zhujunjie/code/pinganpi` 进行。除非用户明确要求隔离开发，否则不要创建或使用 `.worktrees/`。
 
@@ -82,6 +82,25 @@
 
 - 通过 Safari Web Inspector 确认 iOS WebView console 可检查。
 
+### 阶段 4：本地持久化层
+
+状态：本地存储基础已完成。
+
+已实现：
+
+- `AppState` 本地 schema，覆盖 members、scribes、wallet、ledger entries、draft papers、letters、postal records。
+- 默认状态从现有 seed 数据生成，日期以 ISO 字符串保存。
+- `localStorage` storage adapter 边界，测试环境使用内存 storage。
+- 状态序列化、解析和坏数据安全回退。
+- 钱匣自然结算会写回持久化 wallet，并追加账本记录。
+- `AppModel` 已从持久化 `AppState` 构建 UI model，不再直接依赖 mock-only 全局状态。
+- App 启动时会加载本地状态、执行一次钱匣结算，并在状态变化时保存。
+
+当前测试覆盖：
+
+- `src/app/app-state.test.ts`
+- `src/app/app-model.test.ts`
+
 ## 验证基线
 
 以下命令曾在 `/Users/zhujunjie/code/pinganpi` 下通过：
@@ -107,9 +126,8 @@ npx cap doctor
 
 - 真机验证。
 - iOS Safari Web Inspector 的 WebView console 手工确认。
-- 草稿、信件、钱匣、账本的本地持久化。
 - 可交互的写信状态流转。
-- 信纸草稿保存与恢复。
+- 写信界面里的信纸草稿保存与恢复操作。
 - 基于模板的代书生成。
 - 照片附件流程。
 - 基于持久化时间戳的真实等待和送达推进。
@@ -146,6 +164,8 @@ npx cap doctor
 ### 阶段 4：本地持久化层
 
 目标：把当前静态 mock-only 状态替换为可持久保存的本地 App 状态，同时暂不依赖云端。
+
+当前状态：本地存储基础已完成。后续写信主流程接入时，需要把页面上的“存作草稿”“封缄投寄”连接到 `draftPapers`、`letters`、`postalRecords` 和 `ledgerEntries`。
 
 推荐范围：
 
