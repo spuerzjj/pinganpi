@@ -3,6 +3,7 @@
 node_modules/
 dist/
 coverage/
+.superpowers/
 
 # Native IDE and package-manager state
 android/.idea/
