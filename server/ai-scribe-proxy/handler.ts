@@ -14,6 +14,7 @@ export interface AiProxyHandlerRequest {
   url?: string;
   headers: Record<string, string | string[] | undefined>;
   body?: string;
+  allowMissingOrigin?: boolean;
 }
 
 export interface AiProxyHandlerResponse {
@@ -27,10 +28,10 @@ export async function handleAiProxyRequest(
   request: AiProxyHandlerRequest,
   requestCompletion: CompletionRequester = requestMimoChatCompletion
 ): Promise<AiProxyHandlerResponse> {
-  const pathname = new URL(request.url ?? "/", "http://127.0.0.1").pathname;
+  const pathname = normalizeAiProxyPathname(new URL(request.url ?? "/", "http://127.0.0.1").pathname);
   const origin = readHeader(request.headers, "origin");
 
-  if (pathname !== "/health" && !isAllowedOrigin(origin)) {
+  if (pathname !== "/health" && !isAllowedOrigin(origin, request.allowMissingOrigin ?? true)) {
     return jsonResponse(
       403,
       {
@@ -112,6 +113,33 @@ export async function handleAiProxyRequest(
       origin
     );
   }
+}
+
+export function createProxyUnavailableResponse(
+  headers: Record<string, string | string[] | undefined>,
+  message = "AI proxy is not configured."
+): AiProxyHandlerResponse {
+  return jsonResponse(
+    502,
+    {
+      ok: false,
+      reason: "proxy_unavailable",
+      message
+    },
+    readHeader(headers, "origin")
+  );
+}
+
+export function normalizeAiProxyPathname(pathname: string): string {
+  if (pathname === "/api") {
+    return "/";
+  }
+
+  if (pathname.startsWith("/api/")) {
+    return pathname.slice(4);
+  }
+
+  return pathname;
 }
 
 function readJsonBody(body: string): unknown {
@@ -199,7 +227,7 @@ function corsHeaders(origin: string | undefined): Record<string, string> {
     };
   }
 
-  if (isAllowedOrigin(origin)) {
+  if (isAllowedOrigin(origin, true)) {
     return {
       ...headers,
       "access-control-allow-origin": origin
@@ -219,9 +247,9 @@ function readHeader(headers: Record<string, string | string[] | undefined>, name
   return value;
 }
 
-function isAllowedOrigin(origin: string | undefined): boolean {
+function isAllowedOrigin(origin: string | undefined, allowMissingOrigin: boolean): boolean {
   if (origin === undefined) {
-    return true;
+    return allowMissingOrigin;
   }
 
   try {

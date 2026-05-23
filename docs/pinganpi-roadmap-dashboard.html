@@ -481,7 +481,7 @@
         <div class="meta">
           <span class="badge info">当前：阶段 13 配置中</span>
           <span class="badge done">main</span>
-          <span class="badge">更新：2026-05-23</span>
+          <span class="badge">更新：2026-05-24</span>
         </div>
       </header>
 
@@ -489,17 +489,17 @@
         <article class="metric">
           <p class="metric-label">当前基线</p>
           <p class="metric-value">阶段 13 进行中</p>
-          <p class="metric-note">本机 MiMo、本地代理、费用护栏、handler 和 CloudBase 构建入口已通过。</p>
+          <p class="metric-note">CloudBase HTTP 函数、云端 secret、云端起稿和浏览器烟测已通过。</p>
         </article>
         <article class="metric">
           <p class="metric-label">验证状态</p>
-          <p class="metric-value">179 tests</p>
-          <p class="metric-note">test / typecheck / build 最近通过。</p>
+          <p class="metric-value">189 tests</p>
+          <p class="metric-note">test / typecheck / build / 云端 health / 云端起稿最近通过。</p>
         </article>
         <article class="metric">
           <p class="metric-label">下一推荐</p>
           <p class="metric-value">云端 AI → 流式</p>
-          <p class="metric-note">先确认 CloudBase 环境 ID、云端 secret、费用告警和部署烟测。</p>
+          <p class="metric-note">先收口费用告警、禁用 key 验证和回滚删除清单。</p>
         </article>
         <article class="metric">
           <p class="metric-label">主要风险</p>
@@ -512,7 +512,7 @@
         <div class="card-header">
           <div>
             <h2>阶段进度</h2>
-            <p class="muted">12 / 20 个主阶段已有可用基线，阶段 13 正在配置 CloudBase 环境、云端 secret 与云端 AI 代理。</p>
+            <p class="muted">12 / 20 个主阶段已有可用基线，阶段 13 已跑通 CloudBase 云端 AI 代理，正在收口费用告警和回滚删除步骤。</p>
           </div>
           <span class="badge done">60%</span>
         </div>
@@ -663,6 +663,11 @@
                 <span>写信页已接入 AI 起稿 adapter，生成 metadata 可保存到草稿和投寄信件，失败不回退模板正文。</span>
                 <span class="badge done">完成</span>
               </li>
+              <li class="list-item">
+                <strong>云端 AI 代理</strong>
+                <span>CloudBase HTTP 函数、`/api` 路由、云端 secret、云端 AI 起稿和浏览器写信页云端烟测已通过。</span>
+                <span class="badge info">阶段 13</span>
+              </li>
             </ul>
           </div>
         </article>
@@ -680,8 +685,9 @@
               <span class="badge warn">chunk warning</span>
             </div>
             <ul class="plain-list" style="margin-top: 12px">
-              <li>20 个测试文件，179 个测试通过。</li>
+              <li>21 个测试文件，189 个测试通过。</li>
               <li>测试覆盖草稿、写信、模板代书、邮政推进、拆阅服务、AI 代理、AppModel 和持久化结算。</li>
+              <li>CloudBase `/api/health` 返回 ok，云端 `/api/ai/scribe-draft` 非敏感烟测返回 AI 初稿。</li>
               <li>Varlet 首包超过 500 KB 是优化项，当前不阻塞。</li>
             </ul>
           </div>
@@ -721,7 +727,7 @@
                 <span class="badge info">当前</span>
               </div>
               <h3>云端 AI 配置</h3>
-              <p>本机 MiMo key 已配置，连通检查、本地代理、写信页烟测、费用护栏、handler 和 CloudBase 构建入口已通过。</p>
+              <p>CloudBase HTTP 函数、云端 secret、`/api` 代理地址、云端起稿和浏览器写信页云端烟测已通过。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
@@ -747,10 +753,10 @@
           </div>
           <div class="card-body">
             <ul class="plain-list">
-              <li>CloudBase 环境 ID、云端代理地址、云端费用限额、secret 管理、回滚删除步骤仍未完成。</li>
+              <li>CloudBase / MiMo 费用告警、月费用上限或人工检查频率仍需配置和记录。</li>
               <li>AI 起稿流式输出已拆为独立优化阶段，尚未实现。</li>
               <li>云端同步、双人账户绑定和真实双设备同步尚未实现。</li>
-              <li>阶段 13 尚未完成 CloudBase 登录部署、云端权限、部署凭据和云端费用告警。</li>
+              <li>阶段 13 尚未完成云端最小权限检查、禁用 key 安全失败验证、secret 轮换和回滚删除清单。</li>
               <li>延误、迷失、找回、退回尚未接入自动确定性推进规则。</li>
               <li>系统推送和照片附件尚未开始。</li>
               <li>iOS Safari Web Inspector 和真机验证还需手工确认。</li>

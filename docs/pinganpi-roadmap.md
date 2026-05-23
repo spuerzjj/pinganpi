@@ -6,7 +6,7 @@
 
 **当前分支：** `main`
 
-**当前开发基线：** 已完成阶段 12 的 App 侧 AI 起稿链路；阶段 13 已跑通本机 Xiaomi MiMo 连通、本地 AI 代理起稿接口、写信页真实 AI 起稿烟测、本地费用护栏配置、可复用 handler 边界和 CloudBase CLI 构建入口，CloudBase 环境 ID、云端 secret、云端费用告警和部署烟测仍待完成。精确提交以 `git log --oneline --decorate -5` 为准。
+**当前开发基线：** 已完成阶段 12 的 App 侧 AI 起稿链路；阶段 13 已跑通本机 Xiaomi MiMo、本地代理、App 写信页、CloudBase HTTP 云函数部署、云端 secret 配置、云端 AI 起稿接口和浏览器写信页云端 AI 烟测。阶段 13 仍需完成 MiMo / CloudBase 费用告警、禁用 key 安全失败验证和回滚删除清单。精确提交以 `git log --oneline --decorate -5` 为准。
 
 **工作区策略：** 日常开发直接在 `/Users/zhujunjie/code/pinganpi` 进行。除非用户明确要求隔离开发，否则不要创建或使用 `.worktrees/`。
 
@@ -224,7 +224,7 @@
 | 10 | AI 代笔接入设计 | 已完成 | 明确 AI 生成正文的边界、提示词素材、隐私、失败处理和测试策略。 |
 | 11 | 本地 AI 代理基础 | 已完成 | 本地最小 AI 代理脚手架已完成，用于开发期验证 MiMo 调用和响应结构。 |
 | 12 | AI 生成信件正文落地 | 已完成 App 侧链路 | 已接入 AI adapter、写信页异步起稿、AI metadata 保存和失败提示；真实云端配置在阶段 13。 |
-| 13 | 云端 AI 代理与费用配置 | 进行中 | CloudBase 已购买；本机 MiMo、本地代理、费用护栏、handler 边界和 CloudBase CLI 构建入口已完成；云端 secret、费用告警和部署烟测待完成。 |
+| 13 | 云端 AI 代理与费用配置 | 进行中 | CloudBase HTTP 云函数、云端 secret、`/api` 路由、云端 AI 起稿和浏览器烟测已通过；费用告警、禁用 key 验证和回滚删除清单待完成。 |
 | 14 | AI 起稿流式体验优化 | 未开始 | 让代笔先生起稿边生成边显示，保留非流式兜底和手工校改边界。 |
 | 15 | 云端同步准备 | 未开始 | 远端模型、同步边界、账户绑定和冲突策略设计，不接真实云 SDK。 |
 | 16 | 双人真实同步 MVP | 未开始 | 两台设备共享信件、草稿、账本与邮政记录。 |
@@ -247,13 +247,18 @@
 
 ## 验证基线
 
-最近阶段 13 CloudBase CLI 入口验证记录：
+最近阶段 13 CloudBase 云端代理验证记录：
 
 - `git diff --check`：通过。
-- `npm test`：20 个测试文件，179 个测试通过。
-- `npm run cloudbase:build:ai`：通过，生成的 `cloudbase/functions/` 已被 Git 忽略。
+- `npm test`：21 个测试文件，189 个测试通过。
 - `npm run typecheck`：通过。
 - `npm run build`：通过，保留 Varlet / 首包超过 500 KB 的既有提示。
+- `npm run cloudbase:build:ai`：通过，生成的 `cloudbase/functions/` 已被 Git 忽略。
+- `CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:configure:ai-env`：通过，已写入 6 个云端环境变量，输出不打印真实值。
+- `CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:ai`：通过，函数 `ai-scribe-proxy` 已部署为 CloudBase HTTP 云函数。
+- `GET https://pinganpi-d7gml1f6sbcc172ea-1258361524.ap-shanghai.app.tcloudbase.com/api/health`：返回 `{ "ok": true }`。
+- `POST /api/ai/scribe-draft` 非敏感口述烟测：返回 HTTP 200，provider 为 `xiaomi-mimo`，model 为 `mimo-v2.5-pro`。
+- 浏览器写信页云端 AI 起稿烟测：使用 `VITE_PINGANPI_AI_PROXY_URL=https://pinganpi-d7gml1f6sbcc172ea-1258361524.ap-shanghai.app.tcloudbase.com/api` 启动本地 App，起稿成功且可进入下一步。
 - `rg -n "MIMO_API_KEY|VITE_MIMO|VITE_XIAOMI|tp-|sk-" src --glob '!**/*.test.ts'`：无生产代码命中。
 
 以下命令曾在 `/Users/zhujunjie/code/pinganpi` 下通过：
@@ -277,10 +282,10 @@ npx cap doctor
 
 项目目前还没有完成：
 
-- 生产级 AI 能力：本机 MiMo、本地代理、本地费用护栏、可复用 handler 边界和 CloudBase CLI 构建入口已跑通；CloudBase 环境 ID、云端费用告警、云端代理地址、secret 管理和云端回滚删除步骤仍在阶段 13。
+- 生产级 AI 能力：本机 MiMo、本地代理、本地费用护栏、可复用 handler 边界、CloudBase HTTP 云函数、云端 secret、云端代理地址和浏览器云端起稿烟测已跑通；CloudBase / MiMo 费用告警、禁用 key 安全失败验证和云端回滚删除步骤仍在阶段 13。
 - AI 起稿流式输出尚未实现，已拆为独立阶段 14，不混入阶段 13 的云配置工作。
 - 云端同步、双人账户绑定和真实双设备数据同步。
-- 阶段 13 的云端落点、AI 能力额度、云端费用限额、权限和部署凭据配置。
+- 阶段 13 的 AI 能力额度、云端费用限额、权限检查和部署回滚 / 删除清单。
 - 延误、错分、迷失、找回、退回的自动确定性推进规则。
 - 系统推送：重要信、挂号信、迷失信找回、退回信件。
 - 照片附件：夹寄、费用、存储、展示和隐私控制。
@@ -441,7 +446,7 @@ npx cap doctor
 
 ### 阶段 13：云端 AI 代理与费用配置
 
-状态：进行中。本机 MiMo 连通、本地代理起稿、本地费用护栏、可复用 handler 边界和 CloudBase CLI 构建入口已跑通；CloudBase 环境 ID、云端费用告警和 secret 管理仍待完成。
+状态：进行中。本机 MiMo 连通、本地代理起稿、本地费用护栏、可复用 handler 边界、CloudBase HTTP 云函数、云端 secret、`/api` 路由、云端 AI 起稿接口和浏览器写信页云端 AI 烟测已跑通；CloudBase / MiMo 费用告警、禁用 key 安全失败验证和回滚删除清单仍待完成。
 
 实施计划：
 
@@ -466,15 +471,27 @@ npx cap doctor
 - 已安装 `@cloudbase/cli@3.4.0`，并新增：
   - `npm run cloudbase:login`
   - `npm run cloudbase:build:ai`
+  - `CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:configure:ai-env`
   - `CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:deploy:ai`
 - 已新增 `server/ai-scribe-proxy/cloudbase-entry.ts`，将 CloudBase HTTP event 适配到共享 `handleAiProxyRequest`。
+- 已新增 `server/ai-scribe-proxy/cloudbase-http-server.ts` 和 `server/ai-scribe-proxy/cloudbase-bootstrap.ts`，以 CloudBase Web Server 模式监听 `0.0.0.0:9000`。
+- CloudBase 构建会生成 `scf_bootstrap`，避免 HTTP 函数进程启动后退出。
+- 云端 handler 支持 CloudBase 实际路由前缀 `/api`：`/api/health` 与 `/api/ai/scribe-draft` 会归一到共享代理路径。
+- 云端 env 缺失时 `POST /api/ai/scribe-draft` 会返回受控 `502 proxy_unavailable`，不会泄露 provider body 或导致进程异常退出。
 - 已新增 `cloudbaserc.json`，函数名为 `ai-scribe-proxy`，运行时为 `Nodejs20.19`，构建产物目录为 `cloudbase/functions/ai-scribe-proxy`。
+- CloudBase 环境 ID 已确认为 `pinganpi-d7gml1f6sbcc172ea`，区域为 `ap-shanghai`。
+- CloudBase 默认访问地址为 `https://pinganpi-d7gml1f6sbcc172ea-1258361524.ap-shanghai.app.tcloudbase.com/api`。
+- 函数 `ai-scribe-proxy` 已部署为 HTTP 函数，`GET /api/health` 已返回 `{ "ok": true }`。
+- 云端 secret 已通过 `npm run cloudbase:configure:ai-env` 从本机 `.env.ai.local` 写入 CloudBase 函数环境变量，文档和命令输出只记录变量名，不记录真实值。
+- 云端 `POST /api/ai/scribe-draft` 非敏感口述烟测已返回 HTTP 200，provider 为 `xiaomi-mimo`，model 为 `mimo-v2.5-pro`。
+- 浏览器写信页使用云端代理地址完成一次真实 AI 起稿烟测，页面可进入校改前下一步。
 
 下一步：
 
 - 配置 Xiaomi MiMo 费用告警、额度上限和余额提醒。
-- 确认 CloudBase 环境 ID、区域和 HTTP 函数访问地址。
-- 设计云端 secret 管理、部署验证、回滚方式和资源删除步骤。
+- 配置 CloudBase 函数调用量、出网流量、错误率和费用告警。
+- 记录禁用云函数、删除环境变量、撤销 MiMo key、删除函数和删除环境的回滚 / 删除步骤。
+- 做一次“禁用 key 后代理安全失败”的验证。
 - 根据 `docs/superpowers/plans/2026-05-23-pinganpi-cloud-ai-proxy.md` 执行云端代理配置。
 
 目标：把阶段 11 剩余的真实 MiMo 配置、云端代理落点、费用告警、secret 管理和资源删除 / 回滚步骤独立完成，为长期真机使用提供生产级 AI 调用边界。

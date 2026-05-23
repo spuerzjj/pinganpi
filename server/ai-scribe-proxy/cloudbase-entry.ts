@@ -1,5 +1,11 @@
 import { readAiProxyConfig, type AiProxyConfig } from "./config.js";
-import { handleAiProxyRequest, type AiProxyHandlerResponse, type CompletionRequester } from "./handler.js";
+import {
+  createProxyUnavailableResponse,
+  handleAiProxyRequest,
+  normalizeAiProxyPathname,
+  type AiProxyHandlerResponse,
+  type CompletionRequester
+} from "./handler.js";
 import { requestMimoChatCompletion } from "./mimo-client.js";
 
 export interface CloudBaseHttpEvent {
@@ -27,7 +33,11 @@ export interface CloudBaseHttpResponse {
 }
 
 export async function main(event: CloudBaseHttpEvent): Promise<CloudBaseHttpResponse> {
-  return handleCloudBaseHttpEvent(readAiProxyConfig(process.env), event, requestMimoChatCompletion);
+  try {
+    return handleCloudBaseHttpEvent(readRuntimeConfig(event), event, requestMimoChatCompletion);
+  } catch {
+    return toCloudBaseResponse(createProxyUnavailableResponse(event.headers ?? {}));
+  }
 }
 
 export async function handleCloudBaseHttpEvent(
@@ -41,7 +51,8 @@ export async function handleCloudBaseHttpEvent(
       method: readMethod(event),
       url: readPath(event),
       headers: event.headers ?? {},
-      body: readBody(event)
+      body: readBody(event),
+      allowMissingOrigin: false
     },
     requestCompletion
   );
@@ -76,4 +87,27 @@ function readBody(event: CloudBaseHttpEvent): string {
   }
 
   return event.body;
+}
+
+function readRuntimeConfig(event: CloudBaseHttpEvent): AiProxyConfig {
+  if (isConfigFreeRequest(event)) {
+    return {
+      baseUrl: "https://example.invalid",
+      modelId: "health-check",
+      apiKey: "health-check",
+      port: 8787,
+      requestTimeoutMs: 30000,
+      maxOralTextChars: 800,
+      maxCompletionTokens: 900
+    };
+  }
+
+  return readAiProxyConfig(process.env);
+}
+
+function isConfigFreeRequest(event: CloudBaseHttpEvent): boolean {
+  const method = readMethod(event);
+  const path = normalizeAiProxyPathname(readPath(event));
+
+  return (method === "GET" && path === "/health") || method === "OPTIONS";
 }

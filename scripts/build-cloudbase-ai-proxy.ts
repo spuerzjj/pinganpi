@@ -1,4 +1,4 @@
-import { rm, mkdir, writeFile } from "node:fs/promises";
+import { chmod, rm, mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { build } from "esbuild";
 
@@ -9,7 +9,7 @@ await rm(outDir, { recursive: true, force: true });
 await mkdir(outDir, { recursive: true });
 
 await build({
-  entryPoints: [resolve(projectRoot, "server/ai-scribe-proxy/cloudbase-entry.ts")],
+  entryPoints: [resolve(projectRoot, "server/ai-scribe-proxy/cloudbase-bootstrap.ts")],
   outfile: resolve(outDir, "index.js"),
   bundle: true,
   platform: "node",
@@ -33,6 +33,9 @@ await writeFile(
   )}\n`,
   "utf8"
 );
+
+await writeFile(resolve(outDir, "scf_bootstrap"), "#!/bin/bash\nnode index.js\n", "utf8");
+await chmod(resolve(outDir, "scf_bootstrap"), 0o755);
 
 await writeFile(
   resolve(outDir, "README.md"),

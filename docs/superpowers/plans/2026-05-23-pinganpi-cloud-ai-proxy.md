@@ -22,8 +22,15 @@
 - 用户已购买腾讯云 CloudBase，阶段 13 云端落点确定为 CloudBase HTTP 云函数。
 - 已安装项目级 CloudBase CLI：`@cloudbase/cli@3.4.0`。
 - 已新增 CloudBase HTTP 入口：`server/ai-scribe-proxy/cloudbase-entry.ts`。
+- 已新增 CloudBase Web Server 启动入口：`server/ai-scribe-proxy/cloudbase-bootstrap.ts` 和 `server/ai-scribe-proxy/cloudbase-http-server.ts`。
 - 已新增 CloudBase 构建脚本：`npm run cloudbase:build:ai`。
+- 已新增 CloudBase secret 配置脚本：`CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:configure:ai-env`，从 `.env.ai.local` 读取变量并脱敏输出。
 - 已新增 CloudBase 部署脚本：`CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:deploy:ai`。
+- CloudBase 环境 ID 已确认为 `pinganpi-d7gml1f6sbcc172ea`，区域为 `ap-shanghai`。
+- CloudBase HTTP 函数 `ai-scribe-proxy` 已部署，默认访问地址为 `https://pinganpi-d7gml1f6sbcc172ea-1258361524.ap-shanghai.app.tcloudbase.com/api`。
+- `GET /api/health` 已返回 `{ "ok": true }`。
+- 云端 `POST /api/ai/scribe-draft` 已通过非敏感口述烟测，返回 `xiaomi-mimo / mimo-v2.5-pro` 的 AI 初稿。
+- 浏览器写信页已通过真实云端 AI 起稿烟测。
 - 本地代理已加入费用护栏：
   - `PINGANPI_AI_MAX_ORAL_TEXT_CHARS` 默认 800。
   - `MIMO_MAX_COMPLETION_TOKENS` 默认 900。
@@ -31,8 +38,8 @@
 仍需云端控制台人工确认：
 
 - MiMo 订阅页的额度、余额提醒、费用告警和 key 类型。
-- CloudBase 环境 ID、区域和 HTTP 函数访问地址。
-- 云端 secret、部署凭据、回滚删除步骤。
+- CloudBase 函数调用量、出网流量、错误率和费用告警。
+- 云端回滚删除步骤，以及禁用 key 后的受控失败验证。
 
 ## 环境命名
 
@@ -59,7 +66,7 @@ MIMO_MAX_COMPLETION_TOKENS=900
 客户端只允许配置自有代理地址：
 
 ```bash
-VITE_PINGANPI_AI_PROXY_URL=https://<your-cloud-ai-proxy-domain>
+VITE_PINGANPI_AI_PROXY_URL=https://pinganpi-d7gml1f6sbcc172ea-1258361524.ap-shanghai.app.tcloudbase.com/api
 ```
 
 禁止：
@@ -77,8 +84,9 @@ VITE_PINGANPI_AI_PROXY_URL=https://<your-cloud-ai-proxy-domain>
 
 - [ ] 登录 Xiaomi MiMo 控制台，确认当前模型、key 类型、额度、余额提醒方式和费用告警入口。
 - [x] 登录腾讯云控制台，确认已购买 CloudBase；阶段 13 云端落点确定为 CloudBase HTTP 云函数，不购买 CVM 或长期包年资源。
-- [ ] 记录最终选择的云端落点、区域、环境名和预计月费用上限。
-- [ ] 更新 roadmap / dashboard / AGENTS，明确阶段 13 的云端落点决策。
+- [x] 记录最终选择的云端落点、区域和环境 ID：CloudBase HTTP 云函数，`ap-shanghai`，`pinganpi-d7gml1f6sbcc172ea`。
+- [x] 更新 roadmap / dashboard / AGENTS，明确阶段 13 的云端落点决策。
+- [ ] 记录预计月费用上限或人工检查频率。
 
 验收标准：
 
@@ -92,10 +100,10 @@ VITE_PINGANPI_AI_PROXY_URL=https://<your-cloud-ai-proxy-domain>
 - Modify: `docs/superpowers/plans/2026-05-23-pinganpi-cloud-ai-proxy.md`
 - Modify: `docs/pinganpi-roadmap.md`
 
-- [ ] 在云平台 secret / 环境变量中配置 `MIMO_API_BASE_URL`、`MIMO_MODEL_ID`、`MIMO_API_KEY`、`MIMO_REQUEST_TIMEOUT_MS`、`PINGANPI_AI_MAX_ORAL_TEXT_CHARS`、`MIMO_MAX_COMPLETION_TOKENS`。
-- [ ] 确认云函数日志不会打印 env。
+- [x] 在云平台 secret / 环境变量中配置 `MIMO_API_BASE_URL`、`MIMO_MODEL_ID`、`MIMO_API_KEY`、`MIMO_REQUEST_TIMEOUT_MS`、`PINGANPI_AI_MAX_ORAL_TEXT_CHARS`、`MIMO_MAX_COMPLETION_TOKENS`。
+- [x] 确认配置脚本和验证命令不会打印 env 真实值；当前云函数代码不打印 env。
 - [ ] 为云函数配置最小权限，不授予数据库、文件存储、推送等暂未使用的权限。
-- [ ] 记录 secret 更新、禁用和轮换步骤。
+- [ ] 记录 secret 更新、禁用和轮换步骤；更新入口暂为 `CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:configure:ai-env`。
 
 验收标准：
 
@@ -114,10 +122,10 @@ VITE_PINGANPI_AI_PROXY_URL=https://<your-cloud-ai-proxy-domain>
 - [x] 抽出 `server/ai-scribe-proxy/handler.ts`，集中校验、prompt、MiMo client 和错误归一逻辑。
 - [x] 新增具体云函数入口，让 CloudBase / 云函数复用 `handleAiProxyRequest`。
 - [x] 新增 CloudBase CLI 和构建 / 部署脚本。
-- [ ] 部署 `GET /health`，确认返回 `{ "ok": true }`。
-- [ ] 部署 `POST /ai/scribe-draft`，用非敏感口述烟测 AI 起稿。
-- [ ] 配置 `VITE_PINGANPI_AI_PROXY_URL` 指向云端代理。
-- [ ] 浏览器写信页完成一次真实云端 AI 起稿烟测。
+- [x] 部署 `GET /api/health`，确认返回 `{ "ok": true }`。
+- [x] 部署 `POST /api/ai/scribe-draft`，用非敏感口述烟测 AI 起稿。
+- [x] 配置 `VITE_PINGANPI_AI_PROXY_URL` 指向云端代理并完成本地启动验证。
+- [x] 浏览器写信页完成一次真实云端 AI 起稿烟测。
 
 验收标准：
 
@@ -130,10 +138,19 @@ VITE_PINGANPI_AI_PROXY_URL=https://<your-cloud-ai-proxy-domain>
 
 ```bash
 npm run cloudbase:login
+CLOUDBASE_ENV_ID=<你的 CloudBase 环境 ID> npm run cloudbase:configure:ai-env
 CLOUDBASE_ENV_ID=<你的 CloudBase 环境 ID> npm run cloudbase:deploy:ai
 ```
 
-部署前必须先在 CloudBase 控制台给函数配置服务端环境变量：
+配置脚本会从本机 `.env.ai.local` 读取服务端环境变量，生成临时 CloudBase 配置并脱敏输出；不要把真实 key 写进 `cloudbaserc.json` 或聊天。
+
+云端代理地址：
+
+```bash
+VITE_PINGANPI_AI_PROXY_URL=https://pinganpi-d7gml1f6sbcc172ea-1258361524.ap-shanghai.app.tcloudbase.com/api
+```
+
+CloudBase 函数需要以下服务端环境变量：
 
 ```bash
 MIMO_API_BASE_URL=https://api.xiaomimimo.com/v1
