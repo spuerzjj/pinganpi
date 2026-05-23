@@ -57,14 +57,20 @@ npx cap doctor
 
 ## 当前代码状态
 
-当前主线开发已合并到 `main`，最新关键提交：
+当前主线开发基于 `main`，最新路线图基线为：**已完成阶段 9 信箱真实时间送达推进**。继续开发前以 `git log --oneline --decorate -5` 为准。
 
-- `37a4593 feat(app): 搭建 Capacitor 移动壳层`
-- `4c0d184 docs: 记录当前进度与后续路线`
+最新关键提交包括：
 
-已完成两大阶段：
+- `71133d3 docs: 更新真实送达推进进度`
+- `3c2d85c feat(app): 接入信箱拆阅界面`
+- `76f325d feat(app): 扩展信箱档案视图模型`
+- `334c304 feat(app): 接入信件送达与拆阅结算`
+- `3e26a29 feat(app): 添加邮政送达推进服务`
+- `4cb07a6 feat(domain): 添加信件送达时间判断`
 
-### Phase 1: 领域层基础
+已完成阶段：
+
+### 阶段 1：领域层基础
 
 位置：`src/domain/`
 
@@ -82,7 +88,7 @@ npx cap doctor
 - 后续 UI、持久化、云端、通知等层不要重复实现领域规则。
 - 所有时间、钱、代书先生出勤、邮资、邮路、信件状态计算优先复用 `src/domain`。
 
-### Phase 2: Capacitor 移动壳层
+### 阶段 2：Capacitor 移动壳层
 
 已实现：
 
@@ -110,9 +116,22 @@ npx cap doctor
 - `src/app/pages/`
 - `capacitor.config.ts`
 
+### 阶段 3-9：本地慢通信核心闭环
+
+已实现：
+
+- 原生调试环境基础：Android Emulator 与 iOS Simulator 均已成功启动 App。
+- 本地持久化：`AppState`、localStorage adapter、钱包结算、坏数据回退。
+- 写信主流程：口述、起稿、校改、封缄投寄、扣款、账本、邮政记录。
+- 模板代书引擎：非 AI 模板边界，保存 `draftSource`、`scribeDraft`、`finalText`、`generationMeta`。
+- 写信分步流程：`选写法 → 口述 → 起稿 → 校改 → 投寄`。
+- 草稿管理 / 信纸匣：续写、覆盖保存、删除、从草稿投寄。
+- 信箱真实时间送达推进：`in_transit -> arrived`、到达前不可拆、拆阅写记录、邮政档案记录簿。
+
 已验证基线记录在：
 
 - `docs/pinganpi-roadmap.md`
+- `docs/pinganpi-roadmap-dashboard.html`
 
 ## 后续路线
 
@@ -130,39 +149,32 @@ npx cap doctor
 
 推荐开发顺序：
 
-1. **原生调试环境**
-   - 跑通 Xcode iOS Simulator。
-   - 跑通 Android Studio Emulator。
-   - 确认 Safari Web Inspector 和 Chrome WebView inspect 可用。
+1. **阶段 10：云端与双人同步准备**
+   - 定义远端数据模型，不把整个 `AppState` 当成唯一同步单位。
+   - 建立 sync adapter 边界，保持 `src/domain` 无云端依赖。
+   - 设计 household / pair、members、wallets、ledger entries、draft papers、letters、postal records、sync cursors。
+   - 设计 append-only 记录去重、信件状态单向推进、草稿冲突和钱包结算策略。
+   - 先使用本地 mock remote adapter 和测试验证双设备合并。
 
-2. **本地持久化层**
-   - 定义本地 app state schema。
-   - 保存 members、wallet、ledger、draft papers、letters、postal records。
-   - 建立 storage adapter 边界，为后续云同步留接口。
+2. **阶段 11：双人真实同步 MVP**
+   - 两台设备共享同一对通信关系的数据。
+   - 启动 pull、关键操作 push、回到前台 refresh。
+   - 离线草稿、投寄、拆阅恢复后可幂等合并。
 
-3. **写信主流程**
-   - 选择先生或亲笔。
-   - 输入口述。
-   - 生成先生初稿。
-   - 手工校改。
-   - 计算费用。
-   - 校验余额。
-   - 封缄投寄。
-   - 扣款、记账、生成存根和邮政记录。
+3. **阶段 12：邮政异常规则**
+   - 延误、错分、迷失、找回、退回采用确定性种子推进。
+   - 所有异常必须产生邮政记录。
 
-4. **模板代书引擎**
-   - 第一版不接 AI。
-   - 先实现可替换的 template engine boundary。
-   - 保留 `draftSource`、`oralText`、`scribeDraft`、`finalText`、`scribeId`、`generationMeta`。
+4. **阶段 13：系统推送**
+   - 只推重要信、挂号信、迷失信找回、退回等少量事件。
+   - 普通信默认不主动推送。
 
-5. **信箱与真实时间推进**
-   - 按真实时间判断信件是否可拆。
-   - 到达前不可打开。
-   - 延误、迷失、找回、退回都必须产生邮政记录。
+5. **阶段 14：照片附件**
+   - 夹寄照片、费用、附件状态、到达前不泄露。
+   - 云端文件存储依赖阶段 10 / 11 的边界。
 
-6. **云端与双人同步准备**
-   - 本地流程稳定后再设计云端。
-   - 保持 `src/domain` 无云端依赖。
+6. **阶段 15：发布准备与体验打磨**
+   - toast / snackbar、App 图标、启动页、真机验证、bundle 优化、隐私与备份检查。
 
 ## 开发原则
 

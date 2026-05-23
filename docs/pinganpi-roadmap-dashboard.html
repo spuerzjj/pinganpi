@@ -240,7 +240,7 @@
       }
 
       .progress-fill {
-        width: 90%;
+        width: 60%;
         height: 100%;
         border-radius: inherit;
         background: linear-gradient(90deg, #2563eb, #059669);
@@ -248,7 +248,7 @@
 
       .phase-grid {
         display: grid;
-        grid-template-columns: repeat(10, minmax(0, 1fr));
+        grid-template-columns: repeat(5, minmax(0, 1fr));
         gap: 8px;
       }
 
@@ -431,7 +431,7 @@
         }
 
         .phase-grid {
-          grid-template-columns: repeat(4, minmax(0, 1fr));
+          grid-template-columns: repeat(3, minmax(0, 1fr));
         }
 
         .topbar {
@@ -489,7 +489,7 @@
         <article class="metric">
           <p class="metric-label">当前基线</p>
           <p class="metric-value">阶段 9 完成</p>
-          <p class="metric-note">信箱真实送达与拆阅闭环已接入。</p>
+          <p class="metric-note">本地慢通信核心闭环已接入。</p>
         </article>
         <article class="metric">
           <p class="metric-label">验证状态</p>
@@ -499,12 +499,12 @@
         <article class="metric">
           <p class="metric-label">下一推荐</p>
           <p class="metric-value">云端同步</p>
-          <p class="metric-note">为真实两人使用准备远端数据模型。</p>
+          <p class="metric-note">先做模型、边界、冲突策略，再接真实云端。</p>
         </article>
         <article class="metric">
           <p class="metric-label">主要风险</p>
-          <p class="metric-value">4 项</p>
-          <p class="metric-note">云端未接、提示弱、真机待验、bundle warning。</p>
+          <p class="metric-value">6 项</p>
+          <p class="metric-note">同步、异常、推送、附件、真机、发布质量。</p>
         </article>
       </section>
 
@@ -512,9 +512,9 @@
         <div class="card-header">
           <div>
             <h2>阶段进度</h2>
-            <p class="muted">9 / 10 个主阶段已有可用基线，后续优先推进云端与双人同步准备。</p>
+            <p class="muted">9 / 15 个主阶段已有可用基线，后续优先推进云端与双人同步准备。</p>
           </div>
-          <span class="badge done">90%</span>
+          <span class="badge done">60%</span>
         </div>
         <div class="card-body progress">
           <div class="progress-track" aria-hidden="true">
@@ -560,6 +560,26 @@
             <div class="phase next">
               <span class="phase-number">10</span>
               <span class="phase-title">云端同步</span>
+            </div>
+            <div class="phase">
+              <span class="phase-number">11</span>
+              <span class="phase-title">双人同步 MVP</span>
+            </div>
+            <div class="phase">
+              <span class="phase-number">12</span>
+              <span class="phase-title">邮政异常</span>
+            </div>
+            <div class="phase">
+              <span class="phase-number">13</span>
+              <span class="phase-title">系统推送</span>
+            </div>
+            <div class="phase">
+              <span class="phase-number">14</span>
+              <span class="phase-title">照片附件</span>
+            </div>
+            <div class="phase">
+              <span class="phase-number">15</span>
+              <span class="phase-title">发布准备</span>
             </div>
           </div>
         </div>
@@ -636,7 +656,7 @@
       <section class="section columns">
         <article class="card">
           <div class="card-header">
-            <h2>后续优先级</h2>
+            <h2>后续主线</h2>
             <span class="badge info">建议继续阶段 10</span>
           </div>
           <div class="card-body priority-grid">
@@ -645,21 +665,28 @@
                 <span class="badge info">推荐优先</span>
               </div>
               <h3>云端同步准备</h3>
-              <p>基于本地 schema 设计远端模型、双人账户绑定、冲突策略和附件存储。</p>
+              <p>定义远端模型、同步 adapter、双人账户边界和冲突策略，不直接改慢通信规则。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge warn">已记录问题</span>
+                <span class="badge">阶段 11</span>
               </div>
-              <h3>UI 提示增强</h3>
-              <p>把写信成功 / 失败提示改成更明显的 toast 或 snackbar，解决反馈不明显。</p>
+              <h3>双人真实同步 MVP</h3>
+              <p>两台设备共享信件、草稿、账本和邮政记录；离线操作恢复后可幂等合并。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge">后续增强</span>
+                <span class="badge">阶段 12</span>
               </div>
               <h3>邮政异常规则</h3>
               <p>为延误、错分、迷失、找回、退回设计确定性自动推进规则。</p>
+            </div>
+            <div class="priority">
+              <div class="meta" style="justify-content: flex-start">
+                <span class="badge">阶段 13-15</span>
+              </div>
+              <h3>推送、附件与发布质量</h3>
+              <p>接入克制推送、夹寄照片、toast、真机验证、图标启动页和 bundle 优化。</p>
             </div>
           </div>
         </article>
@@ -671,9 +698,10 @@
           </div>
           <div class="card-body">
             <ul class="plain-list">
+              <li>云端同步、双人账户绑定和真实双设备同步尚未实现。</li>
               <li>延误、迷失、找回、退回尚未接入自动确定性推进规则。</li>
+              <li>系统推送和照片附件尚未开始。</li>
               <li>iOS Safari Web Inspector 和真机验证还需手工确认。</li>
-              <li>照片附件、云端同步、系统推送、两人账户绑定尚未开始。</li>
               <li>生产级 App 图标、启动页和 bundle 拆分仍是后续优化项。</li>
             </ul>
           </div>
