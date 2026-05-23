@@ -240,7 +240,7 @@
       }
 
       .progress-fill {
-        width: 60%;
+        width: 70%;
         height: 100%;
         border-radius: inherit;
         background: linear-gradient(90deg, #2563eb, #059669);
@@ -479,7 +479,8 @@
           </p>
         </div>
         <div class="meta">
-          <span class="badge info">当前：阶段 13 配置中</span>
+          <span class="badge info">工程：阶段 14 已完成</span>
+          <span class="badge warn">人工收口：阶段 13</span>
           <span class="badge done">main</span>
           <span class="badge">更新：2026-05-24</span>
         </div>
@@ -488,23 +489,23 @@
       <section class="grid-4" aria-label="关键状态">
         <article class="metric">
           <p class="metric-label">当前基线</p>
-          <p class="metric-value">阶段 13 进行中</p>
-          <p class="metric-note">云端起稿、禁用 key 安全失败、恢复验证和路由收敛已通过。</p>
+          <p class="metric-value">阶段 14 工程完成</p>
+          <p class="metric-note">本地 / 云端流式起稿、受控 SSE、App partial 预览和云端流式烟测已通过。</p>
         </article>
         <article class="metric">
           <p class="metric-label">验证状态</p>
-          <p class="metric-value">189 tests</p>
-          <p class="metric-note">test / typecheck / build / 云端 health / 云端起稿 / 禁用验证最近通过。</p>
+          <p class="metric-value">209 tests</p>
+          <p class="metric-note">test / typecheck / build / 云端 health / 云端非流式与流式起稿最近通过。</p>
         </article>
         <article class="metric">
           <p class="metric-label">下一推荐</p>
-          <p class="metric-value">云端 AI → 流式</p>
-          <p class="metric-note">先收口 MiMo / CloudBase 控制台费用告警和默认角色收敛检查。</p>
+          <p class="metric-value">同步准备</p>
+          <p class="metric-note">下一工程阶段建议进入阶段 15；控制台费用告警统一最后人工收口。</p>
         </article>
         <article class="metric">
           <p class="metric-label">主要风险</p>
-          <p class="metric-value">8 项</p>
-          <p class="metric-note">云配置、流式起稿、同步、异常、推送、附件、真机、发布质量。</p>
+          <p class="metric-value">7 项</p>
+          <p class="metric-note">控制台收口、GUI 补测、同步、异常、推送、附件、发布质量。</p>
         </article>
       </section>
 
@@ -512,9 +513,9 @@
         <div class="card-header">
           <div>
             <h2>阶段进度</h2>
-            <p class="muted">12 / 20 个主阶段已有可用基线，阶段 13 已跑通 CloudBase 云端 AI 代理、禁用 key 安全失败、恢复验证和路由收敛，正在收口费用告警与默认角色检查。</p>
+            <p class="muted">阶段 14 的工程链路已可用；阶段 13 还剩 MiMo / CloudBase 控制台费用告警、默认角色收敛和 key 轮换入口等人工收口。</p>
           </div>
-          <span class="badge done">60%</span>
+          <span class="badge done">70%</span>
         </div>
         <div class="card-body progress">
           <div class="progress-track" aria-hidden="true">
@@ -571,9 +572,9 @@
             </div>
             <div class="phase next">
               <span class="phase-number">13</span>
-              <span class="phase-title">云端 AI 配置</span>
+              <span class="phase-title">云端 AI 人工收口</span>
             </div>
-            <div class="phase">
+            <div class="phase done">
               <span class="phase-number">14</span>
               <span class="phase-title">流式起稿</span>
             </div>
@@ -668,6 +669,11 @@
                 <span>CloudBase HTTP 函数、`/api` 路由、云端 secret、云端 AI 起稿、浏览器云端烟测、禁用 key 安全失败、恢复验证和 `/*` 路由清理已通过。</span>
                 <span class="badge info">阶段 13</span>
               </li>
+              <li class="list-item">
+                <strong>流式起稿</strong>
+                <span>本地 / 云端受控 SSE、App streaming adapter、写信页 partial 预览、完成前不可投寄和口述草稿保护已接入。</span>
+                <span class="badge done">阶段 14</span>
+              </li>
             </ul>
           </div>
         </article>
@@ -685,12 +691,15 @@
               <span class="badge warn">chunk warning</span>
             </div>
             <ul class="plain-list" style="margin-top: 12px">
-              <li>21 个测试文件，189 个测试通过。</li>
+              <li>21 个测试文件，209 个测试通过。</li>
               <li>测试覆盖草稿、写信、模板代书、邮政推进、拆阅服务、AI 代理、AppModel 和持久化结算。</li>
+              <li>`npx cap sync` 与 `npx cap doctor` 已通过，iOS / Android Capacitor 依赖正常。</li>
               <li>CloudBase `/api/health` 返回 ok，云端 `/api/ai/scribe-draft` 非敏感烟测返回 AI 初稿。</li>
+              <li>云端 `/api/ai/scribe-draft/stream` 非敏感烟测返回多段 `delta` 和最终 `done`，未暴露 provider 原始 `choices` chunk。</li>
               <li>禁用云端 `MIMO_API_KEY` 后返回 `502 proxy_unavailable`，恢复后云端起稿重新返回 200。</li>
               <li>CloudBase HTTP 路由已收敛为只保留 `/api`，历史遗留 `/*` 路由已删除。</li>
-              <li>CloudBase 当前计费周期 `2026-05-23 ~ 2026-06-23`，已用 credits 为 0.04。</li>
+              <li>CloudBase 当前计费周期 `2026-05-23 ~ 2026-06-23`，已用 credits 为 0.56。</li>
+              <li>Chrome GUI 点击验证因 Computer Use 权限未授予，需用户授权后补测。</li>
               <li>Varlet 首包超过 500 KB 是优化项，当前不阻塞。</li>
             </ul>
           </div>
@@ -701,7 +710,7 @@
         <article class="card">
           <div class="card-header">
             <h2>后续主线</h2>
-            <span class="badge info">阶段 13 进行中</span>
+            <span class="badge info">下一工程：阶段 15</span>
           </div>
           <div class="card-body priority-grid">
             <div class="priority">
@@ -727,21 +736,21 @@
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge info">当前</span>
+                <span class="badge warn">人工收口</span>
               </div>
               <h3>云端 AI 配置</h3>
-              <p>CloudBase HTTP 函数、云端 secret、`/api` 代理地址、云端起稿、禁用 key 失败关闭、恢复验证和路由收敛已通过。</p>
+              <p>CloudBase HTTP 函数、云端 secret、`/api` 代理地址、云端起稿、禁用 key 失败关闭、恢复验证和路由收敛已通过；费用告警和默认角色检查待人工确认。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge">阶段 14</span>
+                <span class="badge done">阶段 14 完成</span>
               </div>
               <h3>AI 起稿流式体验</h3>
-              <p>让先生起稿边生成边显字，保留非流式兜底和手工校改边界，不改变慢通信规则。</p>
+              <p>先生起稿可边生成边显字，保留非流式兜底和手工校改边界；GUI 点击验证待权限补测。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge">阶段 15-20</span>
+                <span class="badge info">阶段 15-20</span>
               </div>
               <h3>同步、异常、推送、附件与发布</h3>
               <p>接入双人同步、邮政异常、克制推送、夹寄照片、toast、真机验证和 bundle 优化。</p>
@@ -757,7 +766,7 @@
           <div class="card-body">
             <ul class="plain-list">
               <li>CloudBase / MiMo 费用告警、月费用上限或人工检查频率仍需配置和记录。</li>
-              <li>AI 起稿流式输出已拆为独立优化阶段，尚未实现。</li>
+              <li>Chrome GUI 点击验证需要先授予 Codex Computer Use 的 Accessibility / Screen Recording 权限。</li>
               <li>云端同步、双人账户绑定和真实双设备同步尚未实现。</li>
               <li>阶段 13 尚未完成 CloudBase 默认角色收敛检查、控制台告警配置和 MiMo 控制台 key 轮换入口记录。</li>
               <li>延误、迷失、找回、退回尚未接入自动确定性推进规则。</li>

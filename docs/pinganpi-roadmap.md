@@ -6,7 +6,7 @@
 
 **当前分支：** `main`
 
-**当前开发基线：** 已完成阶段 12 的 App 侧 AI 起稿链路；阶段 13 已跑通本机 Xiaomi MiMo、本地代理、App 写信页、CloudBase HTTP 云函数部署、云端 secret 配置、云端 AI 起稿接口、浏览器写信页云端 AI 烟测、CloudBase 用量基线、禁用 key 安全失败验证和恢复验证，并已删除历史遗留 `/*` 路由，只保留 `/api`。阶段 13 仍需完成 MiMo / CloudBase 控制台费用告警和 CloudBase 默认角色收敛检查。精确提交以 `git log --oneline --decorate -5` 为准。
+**当前开发基线：** 已完成阶段 12 的 App 侧 AI 起稿链路；阶段 13 已跑通本机 Xiaomi MiMo、本地代理、App 写信页、CloudBase HTTP 云函数部署、云端 secret 配置、云端 AI 起稿接口、浏览器写信页云端 AI 烟测、CloudBase 用量基线、禁用 key 安全失败验证和恢复验证，并已删除历史遗留 `/*` 路由，只保留 `/api`。阶段 14 已完成 AI 起稿流式工程链路：本地 / 云端代理支持受控 SSE，App 起稿页可边收边显示，完成前不会进入可投寄正文，云端 `/api/ai/scribe-draft/stream` 已通过非敏感烟测。阶段 13 仍需完成 MiMo / CloudBase 控制台费用告警和 CloudBase 默认角色收敛检查；阶段 14 仍需在用户授予 Computer Use 权限后补一次 GUI 浏览器操作验证。精确提交以 `git log --oneline --decorate -5` 为准。
 
 **工作区策略：** 日常开发直接在 `/Users/zhujunjie/code/pinganpi` 进行。除非用户明确要求隔离开发，否则不要创建或使用 `.worktrees/`。
 
@@ -206,9 +206,9 @@
 
 ## 路线图总览
 
-主线阶段按“本地体验稳定 → AI 接入设计 → 本地 AI 代理 → AI 正文生成 → 云端 AI 配置 → AI 体验优化 → 同步模型 → 双人真实可用 → 异常与附件 → 发布质量”推进。当前完成 12 / 20 个阶段，当前阶段是阶段 13 云端 AI 代理与费用配置。
+主线阶段按“本地体验稳定 → AI 接入设计 → 本地 AI 代理 → AI 正文生成 → 云端 AI 配置 → AI 体验优化 → 同步模型 → 双人真实可用 → 异常与附件 → 发布质量”推进。当前完成阶段 14 的工程实现；阶段 13 还有控制台人工收口事项，下一工程阶段建议进入阶段 15 云端与双人同步准备。
 
-**本期目标：** 收束生产级 AI 调用边界，完成 MiMo 费用护栏、云端代理落点、secret 管理和回滚删除步骤；AI 起稿流式输出已拆为阶段 14 的独立体验优化。AI 仍只负责“代笔先生起稿”，不替用户自动投寄，不绕过手工校改，不改变真实等待、邮资、钱匣和信件状态规则。
+**本期目标：** 收束生产级 AI 调用边界，并完成 AI 起稿流式体验。AI 仍只负责“代笔先生起稿”，不替用户自动投寄，不绕过手工校改，不改变真实等待、邮资、钱匣和信件状态规则。
 
 | 阶段 | 名称 | 状态 | 说明 |
 | --- | --- | --- | --- |
@@ -225,7 +225,7 @@
 | 11 | 本地 AI 代理基础 | 已完成 | 本地最小 AI 代理脚手架已完成，用于开发期验证 MiMo 调用和响应结构。 |
 | 12 | AI 生成信件正文落地 | 已完成 App 侧链路 | 已接入 AI adapter、写信页异步起稿、AI metadata 保存和失败提示；真实云端配置在阶段 13。 |
 | 13 | 云端 AI 代理与费用配置 | 进行中 | CloudBase HTTP 云函数、云端 secret、`/api` 路由、云端 AI 起稿、浏览器烟测、禁用 key 安全失败、恢复验证和 `/*` 路由清理已完成；控制台费用告警和默认角色收敛检查待完成。 |
-| 14 | AI 起稿流式体验优化 | 未开始 | 让代笔先生起稿边生成边显示，保留非流式兜底和手工校改边界。 |
+| 14 | AI 起稿流式体验优化 | 已完成工程实现 | 本地 / 云端受控 SSE、App 流式 adapter、写信页 partial 预览、完成前不可投寄、云端流式烟测已通过；GUI 浏览器操作验证待权限补测。 |
 | 15 | 云端同步准备 | 未开始 | 远端模型、同步边界、账户绑定和冲突策略设计，不接真实云 SDK。 |
 | 16 | 双人真实同步 MVP | 未开始 | 两台设备共享信件、草稿、账本与邮政记录。 |
 | 17 | 邮政异常规则 | 未开始 | 延误、错分、迷失、找回、退回的确定性推进。 |
@@ -238,7 +238,7 @@
 - 阶段 10 是阶段 11 和阶段 12 的前置条件：先明确 AI 起稿边界、提示词素材、失败处理和隐私策略，再实现本地代理与 App 侧 AI adapter。
 - 阶段 11 已提供阶段 12 开发期所需的本地代理边界；阶段 12 已接入 App 侧 AI adapter，不阻塞于云端购买和部署。
 - 阶段 13 是生产级 AI 能力的前置条件：真实 MiMo env、费用告警、服务端 secret、云函数 / CloudBase 落点和回滚删除步骤在本阶段完成。
-- 阶段 14 是体验优化阶段：本地流式原型可基于阶段 11 / 12 先行，云端流式接入依赖阶段 13 的稳定代理边界；它不改变写信、投寄、等待和拆阅规则。
+- 阶段 14 是体验优化阶段：本地 / 云端流式代理和 App partial 预览已实现；它不改变写信、投寄、等待和拆阅规则。
 - 阶段 15 是阶段 16 的前置条件：先定义远端模型与同步协议，再接真实双设备同步；阶段 15 依赖阶段 13 和本地流程稳定，不被阶段 14 阻塞。
 - 阶段 17 可以在阶段 15 后独立设计；若与真实双设备同步并行推进，必须保证邮政事件幂等。
 - 阶段 18 依赖阶段 15 的远端事件边界，也依赖阶段 17 的异常事件定义。
@@ -247,25 +247,30 @@
 
 ## 验证基线
 
-最近阶段 13 CloudBase 云端代理验证记录：
+最近阶段 14 AI 流式起稿验证记录：
 
 - `git diff --check`：通过。
-- `npm test`：21 个测试文件，189 个测试通过。
+- `npm test`：21 个测试文件，209 个测试通过。
 - `npm run typecheck`：通过。
 - `npm run build`：通过，保留 Varlet / 首包超过 500 KB 的既有提示。
+- `npx cap sync`：通过，已同步 iOS / Android Web assets。
+- `npx cap doctor`：通过，iOS / Android Capacitor 依赖正常。
 - `npm run cloudbase:build:ai`：通过，生成的 `cloudbase/functions/` 已被 Git 忽略。
+- `CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:ai`：通过，函数 `ai-scribe-proxy` 已重新部署。
 - `CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:configure:ai-env`：通过，已写入 6 个云端环境变量，输出不打印真实值。
-- `CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:ai`：通过，函数 `ai-scribe-proxy` 已部署为 CloudBase HTTP 云函数。
 - `GET https://pinganpi-d7gml1f6sbcc172ea-1258361524.ap-shanghai.app.tcloudbase.com/api/health`：返回 `{ "ok": true }`。
 - `POST /api/ai/scribe-draft` 非敏感口述烟测：返回 HTTP 200，provider 为 `xiaomi-mimo`，model 为 `mimo-v2.5-pro`。
+- `POST /api/ai/scribe-draft/stream` 非敏感口述烟测：返回多段 `event: delta` 和最终 `event: done`，provider 为 `xiaomi-mimo`，model 为 `mimo-v2.5-pro`，未返回 provider 原始 `choices` chunk。
+- `POST http://127.0.0.1:8787/ai/scribe-draft/stream` 本地非敏感口述烟测：返回多段 `event: delta` 和最终 `event: done`。
 - 浏览器写信页云端 AI 起稿烟测：使用 `VITE_PINGANPI_AI_PROXY_URL=https://pinganpi-d7gml1f6sbcc172ea-1258361524.ap-shanghai.app.tcloudbase.com/api` 启动本地 App，起稿成功且可进入下一步。
 - `CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:disable:ai-env`：通过，云端 env 只保留 5 项，移除 `MIMO_API_KEY`。
 - 禁用 key 后 `POST /api/ai/scribe-draft`：返回 HTTP 502，`reason: "proxy_unavailable"`，无正文。
 - 恢复 env 后 `POST /api/ai/scribe-draft`：返回 HTTP 200，确认云端代理已恢复。
-- `cloudbase env usage --json`：当前计费周期 `2026-05-23 ~ 2026-06-23`，`usedCredits: 0.04`，其中 Cloud function `0.01`、API calls `0.03`。
+- `cloudbase env usage --json`：当前计费周期 `2026-05-23 ~ 2026-06-23`，`usedCredits: 0.56`，其中 NoSQL Database `0.52`、Cloud function `0.01`、API calls `0.03`。
 - CloudBase HTTP 路由：历史遗留 `/*` 已删除，只保留 `/api`；`/api/health` 和 `/api/ai/scribe-draft` 删除后均重新验证通过。
 - 云函数公开面检查：HTTP 函数 `ai-scribe-proxy` 状态 Available，运行时 `Nodejs20.19`，触发器 0，VPC 为空，env 仅包含 6 个 AI 代理变量；默认角色仍为 `TCB_QcsRole`。
 - `rg -n "MIMO_API_KEY|VITE_MIMO|VITE_XIAOMI|tp-|sk-" src --glob '!**/*.test.ts'`：无生产代码命中。
+- GUI 浏览器操作验证：已尝试用 Computer Use 操作 Chrome，但 macOS Accessibility / Screen Recording 权限仍未授予，无法读屏点击；需用户授权后补测。
 
 以下命令曾在 `/Users/zhujunjie/code/pinganpi` 下通过：
 
@@ -288,8 +293,8 @@ npx cap doctor
 
 项目目前还没有完成：
 
-- 生产级 AI 能力：本机 MiMo、本地代理、本地费用护栏、可复用 handler 边界、CloudBase HTTP 云函数、云端 secret、云端代理地址、浏览器云端起稿烟测、禁用 key 安全失败验证、恢复验证和 `/*` 路由清理已跑通；CloudBase / MiMo 控制台费用告警和默认角色收敛检查仍在阶段 13。
-- AI 起稿流式输出尚未实现，已拆为独立阶段 14，不混入阶段 13 的云配置工作。
+- 生产级 AI 能力：本机 MiMo、本地代理、本地费用护栏、可复用 handler 边界、CloudBase HTTP 云函数、云端 secret、云端代理地址、浏览器云端起稿烟测、流式起稿、禁用 key 安全失败验证、恢复验证和 `/*` 路由清理已跑通；CloudBase / MiMo 控制台费用告警和默认角色收敛检查仍在阶段 13。
+- AI 起稿流式输出已完成本地 / 云端工程实现；GUI 浏览器点击验证因 Computer Use 权限未授予，需后续补测。
 - 云端同步、双人账户绑定和真实双设备数据同步。
 - 阶段 13 的 AI 能力额度、云端费用限额和 CloudBase 默认角色收敛检查；回滚 / 删除命令已记录，但控制台告警仍需手工确认。
 - 延误、错分、迷失、找回、退回的自动确定性推进规则。
@@ -298,6 +303,7 @@ npx cap doctor
 - 更丰富的模板内容库和场景覆盖。
 - 真机验证。
 - iOS Safari Web Inspector 的 WebView console 手工确认。
+- Codex Computer Use 对 Chrome 的 Accessibility / Screen Recording 权限未完成，暂无法自动执行 GUI 浏览器点击验证。
 - 生产级 App 图标和启动页。
 - Bundle 拆分与 Varlet 按需优化。
 
@@ -495,7 +501,7 @@ npx cap doctor
 - 浏览器写信页使用云端代理地址完成一次真实 AI 起稿烟测，页面可进入校改前下一步。
 - `npm run cloudbase:disable:ai-env` 已可移除云端 `MIMO_API_KEY`，用于临时停用 AI 起稿和安全失败验证。
 - 禁用云端 `MIMO_API_KEY` 后，`POST /api/ai/scribe-draft` 已验证返回受控 `502 proxy_unavailable`，不会生成正文；恢复 env 后再次验证返回 HTTP 200。
-- CloudBase 用量基线已读取：当前计费周期 `2026-05-23 ~ 2026-06-23`，`usedCredits: 0.04`，其中 Cloud function `0.01`、API calls `0.03`。
+- CloudBase 用量基线已读取：当前计费周期 `2026-05-23 ~ 2026-06-23`，`usedCredits: 0.56`，其中 NoSQL Database `0.52`、Cloud function `0.01`、API calls `0.03`。
 - 关闭 / 恢复入口已明确：
   - 临时关闭 AI 起稿：`CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:disable:ai-env`
   - 恢复 AI 起稿：`CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:configure:ai-env`
@@ -547,6 +553,25 @@ npx cap doctor
 
 ### 阶段 14：AI 起稿流式体验优化
 
+状态：已完成工程实现；GUI 浏览器点击验证待用户授予 Computer Use 权限后补测。
+
+实施计划：
+
+- `docs/superpowers/plans/2026-05-24-pinganpi-ai-scribe-streaming.md`
+
+已完成：
+
+- 新增 `requestMimoChatCompletionStream`，使用 MiMo OpenAI-compatible `stream: true`，复用非流式 URL、header、`thinking: { type: "disabled" }`、token guard 和 timeout。
+- 服务端新增 `POST /ai/scribe-draft/stream`，CloudBase 路由为 `POST /api/ai/scribe-draft/stream`。
+- 服务端只输出受控 SSE：`delta`、`done`、`error`；不透传 provider 原始 chunk、prompt、key 或 provider body。
+- MiMo stream client 必须收到 provider `data: [DONE]` 才会正常完成；如果 partial delta 后 EOF，会转为受控失败，不会把半截正文标记为可投寄成稿。
+- 本地 dev server 和 CloudBase Web Server 入口已将 `AsyncIterable` 真正写为 SSE response。
+- App 侧 `AiScribeAdapter` 新增 `generateDraftStream`，解析受控 SSE，边收边回调累计文本，`done` 后才返回完整 `ScribeDraftResult`。
+- 写信页新增页面级 `streamingDraftText`，只在“起稿”面板显示 partial；右侧誊清预览、校改、保存为有效 AI draft 和投寄仍只读取完成后的 wizard state。
+- 流式失败、中断、空响应或缺失 provider `[DONE]` 不会进入校改 / 投寄，也不会保存成有效 AI draft。
+- 保存口述草稿时不再自动回落成本地模板正文，避免 AI 失败后悄悄生成模板稿。
+- 云端函数已重新部署，云端 `/api/ai/scribe-draft/stream` 非敏感口述烟测已返回多段 `delta` 与最终 `done`。
+
 目标：让代笔先生起稿时边生成边显字，改善等待感，但不改变慢通信规则。
 
 推荐范围：
@@ -554,7 +579,7 @@ npx cap doctor
 - 本地 / 云端代理支持 MiMo OpenAI-compatible `stream: true`。
 - 解析 SSE chunk，只转发正文 delta 和受控 done / error 事件。
 - 保留现有非流式 `/ai/scribe-draft` 作为兜底。
-- App 侧新增 streaming adapter，边收边更新 `scribeDraft`。
+- App 侧新增 streaming adapter，边收边更新页面临时预览文本；只有 `done` 后才写入 `scribeDraft`。
 - 生成中禁用“下一步 / 投寄 / 保存”，完成后才允许进入校改。
 - 流式中断时标记未完成，不自动进入校改；用户可重新请先生起稿。
 - 不把 provider 原始 chunk、完整 prompt、真实 key 暴露给客户端或日志。
@@ -562,12 +587,13 @@ npx cap doctor
 
 验收标准：
 
-- fake stream 测试覆盖 delta、done、error 和中断。
-- 服务端 SSE 解析逻辑可测试。
-- 浏览器中起稿文本逐步出现。
+- fake stream 测试已覆盖 delta、done、error 和中断。
+- 服务端 SSE 解析逻辑已测试，覆盖 chunk 拆分、空 delta、provider 错误、timeout 和坏 JSON。
+- 本地 / 云端 stream endpoint 已用非敏感口述烟测，确认返回受控 delta / done。
 - 完成后 metadata 和最终正文正常保存。
-- 中断不会保存为可投寄正文。
+- 中断不会保存为可投寄正文；保存口述草稿不会回落到模板正文。
 - 非流式接口仍可用。
+- 浏览器 GUI 点击验证待补：当前 Computer Use 缺少 macOS Accessibility / Screen Recording 权限，无法自动操作 Chrome。
 
 非目标：
 

@@ -13,6 +13,17 @@ if (sender === undefined || recipient === undefined || scribe === undefined) {
 }
 
 describe("AI scribe adapter", () => {
+  const draftInput = {
+    oralText: "请替我问她近来安好。",
+    scribe,
+    sender,
+    recipient,
+    senderCity: sender.city,
+    recipientCity: recipient.city,
+    letterType: "ordinary" as const,
+    sceneTags: ["问安"]
+  };
+
   it("calls the local proxy without provider keys", async () => {
     const calls: Array<{ url: string; init: RequestInit }> = [];
     const adapter = createHttpAiScribeAdapter({
@@ -40,16 +51,7 @@ describe("AI scribe adapter", () => {
       }
     });
 
-    const result = await adapter.generateDraft({
-      oralText: "请替我问她近来安好。",
-      scribe,
-      sender,
-      recipient,
-      senderCity: sender.city,
-      recipientCity: recipient.city,
-      letterType: "ordinary",
-      sceneTags: ["问安"]
-    });
+    const result = await adapter.generateDraft(draftInput);
 
     expect(result).toMatchObject({
       oralText: "请替我问她近来安好。",
@@ -86,6 +88,82 @@ describe("AI scribe adapter", () => {
     expect(String(calls[0]?.init.body)).not.toContain("MIMO_API_KEY");
   });
 
+  it("streams progressive draft text and resolves the completed AI draft", async () => {
+    const calls: Array<{ url: string; init: RequestInit }> = [];
+    const adapter = createHttpAiScribeAdapter({
+      proxyUrl: "http://127.0.0.1:8787",
+      fetcher: async (url, init) => {
+        calls.push({ url: String(url), init: init ?? {} });
+
+        return new Response(
+          [
+            'event: delta\ndata: {"delta":"兰卿：","text":"兰卿："}',
+            'event: delta\ndata: {"delta":"见字如晤。","text":"兰卿：见字如晤。"}',
+            'event: done\ndata: {"ok":true,"scribeDraft":"兰卿：见字如晤。","readAloudText":"兰卿：见字如晤。","signature":"阿平","generationMeta":{"engine":"ai-scribe-v1","provider":"xiaomi-mimo","model":"mimo-v2.5","promptVersion":"ai-scribe-prompt-v1","latencyMs":1234}}',
+            ""
+          ].join("\n\n"),
+          { status: 200, headers: { "content-type": "text/event-stream" } }
+        );
+      }
+    });
+
+    const progressiveText: string[] = [];
+    const result = await adapter.generateDraftStream?.(draftInput, {
+      onDelta: (_delta, text) => progressiveText.push(text)
+    });
+
+    expect(progressiveText).toEqual(["兰卿：", "兰卿：见字如晤。"]);
+    expect(result).toMatchObject({
+      oralText: "请替我问她近来安好。",
+      scribeDraft: "兰卿：见字如晤。",
+      readAloudText: "兰卿：见字如晤。",
+      signature: "阿平",
+      draftSource: "ai",
+      generationMeta: {
+        provider: "xiaomi-mimo",
+        model: "mimo-v2.5",
+        scribeId: "scribe-xu",
+        sceneTags: ["问安"],
+        letterType: "ordinary"
+      }
+    });
+    expect(calls).toHaveLength(1);
+    expect(calls[0]?.url).toBe("http://127.0.0.1:8787/ai/scribe-draft/stream");
+    expect(calls[0]?.init.headers).toEqual({ "content-type": "application/json" });
+    expect(String(calls[0]?.init.body)).not.toContain("MIMO_API_KEY");
+  });
+
+  it("normalizes stream error events", async () => {
+    const adapter = createHttpAiScribeAdapter({
+      proxyUrl: "http://127.0.0.1:8787",
+      fetcher: async () =>
+        new Response('event: error\ndata: {"ok":false,"reason":"provider_error","message":"AI provider request failed."}\n\n', {
+          status: 200,
+          headers: { "content-type": "text/event-stream" }
+        })
+    });
+
+    await expect(adapter.generateDraftStream?.(draftInput)).rejects.toMatchObject({
+      code: "provider_error",
+      message: "AI provider request failed."
+    });
+  });
+
+  it("rejects streams that close before the done event", async () => {
+    const adapter = createHttpAiScribeAdapter({
+      proxyUrl: "http://127.0.0.1:8787",
+      fetcher: async () =>
+        new Response('event: delta\ndata: {"delta":"兰卿：","text":"兰卿："}\n\n', {
+          status: 200,
+          headers: { "content-type": "text/event-stream" }
+        })
+    });
+
+    await expect(adapter.generateDraftStream?.(draftInput)).rejects.toMatchObject({
+      code: "invalid_response"
+    });
+  });
+
   it("normalizes proxy failures", async () => {
     const adapter = createHttpAiScribeAdapter({
       proxyUrl: "http://127.0.0.1:8787/",
@@ -101,16 +179,7 @@ describe("AI scribe adapter", () => {
     });
 
     await expect(
-      adapter.generateDraft({
-        oralText: "请替我问她近来安好。",
-        scribe,
-        sender,
-        recipient,
-        senderCity: sender.city,
-        recipientCity: recipient.city,
-        letterType: "ordinary",
-        sceneTags: ["问安"]
-      })
+      adapter.generateDraft(draftInput)
     ).rejects.toMatchObject({
       code: "provider_error",
       message: "AI provider request failed."
@@ -126,16 +195,7 @@ describe("AI scribe adapter", () => {
     });
 
     await expect(
-      networkAdapter.generateDraft({
-        oralText: "请替我问她近来安好。",
-        scribe,
-        sender,
-        recipient,
-        senderCity: sender.city,
-        recipientCity: recipient.city,
-        letterType: "ordinary",
-        sceneTags: ["问安"]
-      })
+      networkAdapter.generateDraft(draftInput)
     ).rejects.toBeInstanceOf(AiScribeDraftError);
 
     const invalidAdapter = createHttpAiScribeAdapter({
@@ -144,16 +204,7 @@ describe("AI scribe adapter", () => {
     });
 
     await expect(
-      invalidAdapter.generateDraft({
-        oralText: "请替我问她近来安好。",
-        scribe,
-        sender,
-        recipient,
-        senderCity: sender.city,
-        recipientCity: recipient.city,
-        letterType: "ordinary",
-        sceneTags: ["问安"]
-      })
+      invalidAdapter.generateDraft(draftInput)
     ).rejects.toMatchObject({
       code: "invalid_response"
     });

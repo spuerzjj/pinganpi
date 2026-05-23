@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { requestMimoChatCompletion } from "./mimo-client.js";
+import { requestMimoChatCompletion, requestMimoChatCompletionStream } from "./mimo-client.js";
 import type { AiProxyConfig } from "./config.js";
 
 const config: AiProxyConfig = {
@@ -109,4 +109,166 @@ describe("MiMo client", () => {
       vi.useRealTimers();
     }
   });
+
+  it("streams OpenAI-compatible chat completion deltas", async () => {
+    const calls: Array<{ url: string; init: RequestInit }> = [];
+    const fetcher: typeof fetch = async (url, init) => {
+      calls.push({ url: String(url), init: init ?? {} });
+
+      return new Response(
+        [
+          'data: {"choices":[{"delta":{"content":"兰卿："}}]}',
+          "",
+          'data: {"choices":[{"delta":{"content":"见字如晤。"}}]}',
+          "",
+          "data: [DONE]",
+          "",
+          ""
+        ].join("\n"),
+        { status: 200, headers: { "content-type": "text/event-stream" } }
+      );
+    };
+
+    const chunks: string[] = [];
+    for await (const event of requestMimoChatCompletionStream(config, [{ role: "user", content: "写一封问安信。" }], fetcher)) {
+      chunks.push(event.delta);
+    }
+
+    expect(chunks).toEqual(["兰卿：", "见字如晤。"]);
+    expect(JSON.parse(String(calls[0]?.init.body))).toMatchObject({
+      model: "mimo-v2.5-pro",
+      stream: true,
+      thinking: { type: "disabled" },
+      max_completion_tokens: 900
+    });
+    expect(calls[0]?.init.headers).toMatchObject({ "api-key": "tp-test-key" });
+  });
+
+  it("ignores stream comments, blank lines and empty deltas", async () => {
+    const chunks: string[] = [];
+    const fetcher: typeof fetch = async () =>
+      new Response(
+        [
+          ": keep-alive",
+          "",
+          'data: {"choices":[{"delta":{"content":""}}]}',
+          "",
+          'data: {"choices":[{"delta":{"content":"平安。"}}]}',
+          "",
+          "data: [DONE]",
+          ""
+        ].join("\n"),
+        { status: 200, headers: { "content-type": "text/event-stream" } }
+      );
+
+    for await (const event of requestMimoChatCompletionStream(config, [{ role: "user", content: "写一封问安信。" }], fetcher)) {
+      chunks.push(event.delta);
+    }
+
+    expect(chunks).toEqual(["平安。"]);
+  });
+
+  it("parses stream events split across network chunks", async () => {
+    const encoder = new TextEncoder();
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(encoder.encode('data: {"choices":[{"delta":{"content":"兰'));
+        controller.enqueue(encoder.encode('卿："}}]}\n\ndata: {"choices":[{"delta":{"content":"见字如晤。"}}]}\n\n'));
+        controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+        controller.close();
+      }
+    });
+    const fetcher: typeof fetch = async () =>
+      new Response(body, {
+        status: 200,
+        headers: { "content-type": "text/event-stream" }
+      });
+
+    await expect(
+      collectStreamDeltas(requestMimoChatCompletionStream(config, [{ role: "user", content: "写一封问安信。" }], fetcher))
+    ).resolves.toEqual(["兰卿：", "见字如晤。"]);
+  });
+
+  it("rejects streaming responses without a body", async () => {
+    const fetcher: typeof fetch = async () => new Response(null, { status: 200 });
+
+    await expect(
+      collectStreamDeltas(requestMimoChatCompletionStream(config, [{ role: "user", content: "写一封问安信。" }], fetcher))
+    ).rejects.toThrow("MiMo response did not include a usable stream.");
+  });
+
+  it("rejects streaming responses that end before the provider done marker", async () => {
+    const fetcher: typeof fetch = async () =>
+      new Response('data: {"choices":[{"delta":{"content":"半截正文"}}]}\n\n', {
+        status: 200,
+        headers: { "content-type": "text/event-stream" }
+      });
+
+    await expect(
+      collectStreamDeltas(requestMimoChatCompletionStream(config, [{ role: "user", content: "写一封问安信。" }], fetcher))
+    ).rejects.toThrow("MiMo stream ended before completion.");
+  });
+
+  it("normalizes streaming provider errors without leaking response body", async () => {
+    const fetcher: typeof fetch = async () =>
+      new Response(JSON.stringify({ message: "bad key: tp-secret" }), {
+        status: 401,
+        headers: { "content-type": "application/json" }
+      });
+
+    await expect(
+      collectStreamDeltas(requestMimoChatCompletionStream(config, [{ role: "user", content: "写一封问安信。" }], fetcher))
+    ).rejects.toThrow("MiMo request failed with status 401.");
+  });
+
+  it("normalizes streaming timeout errors", async () => {
+    vi.useFakeTimers();
+    try {
+      const fetcher: typeof fetch = (_url, init) =>
+        new Promise((_resolve, reject) => {
+          init?.signal?.addEventListener("abort", () => {
+            reject(new DOMException("aborted", "AbortError"));
+          });
+        });
+
+      const assertion = expect(
+        collectStreamDeltas(
+          requestMimoChatCompletionStream(
+            {
+              ...config,
+              requestTimeoutMs: 1000
+            },
+            [{ role: "user", content: "写一封问安信。" }],
+            fetcher
+          )
+        )
+      ).rejects.toThrow("MiMo request timed out.");
+
+      await vi.advanceTimersByTimeAsync(1000);
+      await assertion;
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("normalizes malformed stream JSON without leaking provider body", async () => {
+    const fetcher: typeof fetch = async () =>
+      new Response(["data: {not-json", "", ""].join("\n"), {
+        status: 200,
+        headers: { "content-type": "text/event-stream" }
+      });
+
+    await expect(
+      collectStreamDeltas(requestMimoChatCompletionStream(config, [{ role: "user", content: "写一封问安信。" }], fetcher))
+    ).rejects.toThrow("MiMo stream response could not be parsed.");
+  });
 });
+
+async function collectStreamDeltas(stream: AsyncIterable<{ delta: string }>): Promise<string[]> {
+  const chunks: string[] = [];
+  for await (const event of stream) {
+    chunks.push(event.delta);
+  }
+
+  return chunks;
+}

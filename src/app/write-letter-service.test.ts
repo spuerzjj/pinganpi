@@ -139,6 +139,31 @@ describe("write letter service", () => {
     });
   });
 
+  it("saves oral-only drafts without falling back to a template draft", () => {
+    const state = settleAppState(createDefaultAppState(), now).state;
+
+    const result = saveDraftPaper(
+      state,
+      {
+        oralText: "请替我问她近来安好。",
+        scribeId: "scribe-xu",
+        finalText: "",
+        registered: false
+      },
+      now
+    );
+
+    expect(result.state.draftPapers[0]).toMatchObject({
+      oralText: "请替我问她近来安好。",
+      scribeId: "scribe-xu",
+      scribeDraft: "",
+      finalText: "",
+      status: "draft"
+    });
+    expect(result.state.draftPapers[0]?.draftSource).toBeUndefined();
+    expect(result.state.draftPapers[0]?.generationMeta).toBeUndefined();
+  });
+
   it("does not persist registered posting choice into a draft paper", () => {
     const state = settleAppState(createDefaultAppState(), now).state;
 

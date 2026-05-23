@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { createCloudBaseHttpServer } from "./cloudbase-http-server.js";
 import type { AiProxyConfig } from "./config.js";
-import type { CompletionRequester } from "./handler.js";
+import type { CompletionRequester, StreamingCompletionRequester } from "./handler.js";
 
 const config: AiProxyConfig = {
   baseUrl: "https://api.xiaomimimo.com/v1",
@@ -169,13 +169,39 @@ describe("CloudBase HTTP server entry", () => {
       message: "AI proxy is not configured."
     });
   });
+
+  it("serves stream draft requests under the CloudBase /api route prefix", async () => {
+    const server = await listen(
+      () => config,
+      neverCalledRequester,
+      async function* () {
+        yield { type: "delta", delta: "兰卿：" };
+        yield { type: "delta", delta: "见字如晤。" };
+      }
+    );
+    const response = await fetch(`${baseUrl(server)}/api/ai/scribe-draft/stream`, {
+      method: "POST",
+      headers: { "content-type": "application/json", origin: "http://localhost:5173" },
+      body: validBody()
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("access-control-allow-origin")).toBe("http://localhost:5173");
+    expect(response.headers.get("content-type")).toBe("text/event-stream; charset=utf-8");
+    const body = await response.text();
+    expect(body).toContain("event: delta");
+    expect(body).toContain('"text":"兰卿：见字如晤。"');
+    expect(body).toContain("event: done");
+    expect(body).not.toContain("choices");
+  });
 });
 
 async function listen(
   readConfig: Parameters<typeof createCloudBaseHttpServer>[0],
-  requester: CompletionRequester
+  requester: CompletionRequester,
+  streamingRequester?: StreamingCompletionRequester
 ): Promise<ReturnType<typeof createCloudBaseHttpServer>> {
-  const server = createCloudBaseHttpServer(readConfig, requester);
+  const server = createCloudBaseHttpServer(readConfig, requester, streamingRequester);
 
   await new Promise<void>((resolve) => {
     server.listen(0, "127.0.0.1", resolve);
@@ -198,3 +224,16 @@ function baseUrl(server: ReturnType<typeof createCloudBaseHttpServer>): string {
 const neverCalledRequester: CompletionRequester = async () => {
   throw new Error("Requester should not be called.");
 };
+
+function validBody(): string {
+  return JSON.stringify({
+    oralText: "请替我问她近来安好。",
+    scribeName: "陈启明",
+    scribeStyle: "语气温和，字句端正",
+    senderGreeting: "兰卿",
+    senderSignature: "阿平",
+    senderCity: "广州",
+    recipientCity: "上海",
+    letterType: "ordinary"
+  });
+}

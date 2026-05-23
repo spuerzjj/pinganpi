@@ -54,6 +54,7 @@ const activeDraftId = ref<string | undefined>(props.editingDraft?.id);
 const wizard = ref(createFreshWizardState());
 const draftPending = ref(false);
 const draftErrorText = ref("");
+const streamingDraftText = ref("");
 const serviceState = computed(() => settleAppState(props.appState, new Date()).state);
 const currentStep = computed(() => writeLetterSteps.find((step) => step.id === wizard.value.currentStepId) ?? writeLetterSteps[0]);
 const currentStepEyebrow = computed(() => currentStep.value?.eyebrow ?? "");
@@ -75,6 +76,7 @@ const postingCost = computed(() =>
 );
 const totalCostText = computed(() => formatFen(postingCost.value.totalFen));
 const letterPreviewText = computed(() => wizard.value.finalText || wizard.value.scribeDraft || "尚未起稿。");
+const draftPanelText = computed(() => streamingDraftText.value || wizard.value.scribeDraft || "请先生依口述起一份初稿。");
 
 function createFreshWizardState() {
   return createInitialWriteLetterWizardState({
@@ -101,10 +103,12 @@ watch(
 
     if (action === "reset" || props.editingDraft === null || props.editingDraft === undefined) {
       wizard.value = createFreshWizardState();
+      streamingDraftText.value = "";
       return;
     }
 
     wizard.value = createWriteLetterWizardStateFromDraft(props.editingDraft);
+    streamingDraftText.value = "";
   },
   { immediate: true }
 );
@@ -158,6 +162,7 @@ function handleScribeChange(event: Event): void {
   }
 
   draftErrorText.value = "";
+  streamingDraftText.value = "";
   wizard.value = markTextBasisChanged({
     ...wizard.value,
     selectedScribeId: nextScribeId
@@ -170,6 +175,7 @@ function handleOralInput(event: Event): void {
   }
 
   draftErrorText.value = "";
+  streamingDraftText.value = "";
   wizard.value = markTextBasisChanged({
     ...wizard.value,
     oralText: event.target.value
@@ -197,6 +203,7 @@ async function generateDraft(): Promise<void> {
 
   draftPending.value = true;
   draftErrorText.value = "";
+  streamingDraftText.value = "";
   wizard.value = markTextBasisChanged(wizard.value);
 
   try {
@@ -209,9 +216,11 @@ async function generateDraft(): Promise<void> {
       return;
     }
 
+    streamingDraftText.value = "";
     wizard.value = markDraftGenerated(wizard.value, draft);
   } catch {
     if (wizard.value.oralText === requestMarker.oralText && wizard.value.selectedScribeId === requestMarker.scribeId) {
+      streamingDraftText.value = "";
       draftErrorText.value = "先生暂未起成稿，口述已留在信纸上，稍后可再请先生起稿。";
     }
   } finally {
@@ -226,7 +235,17 @@ async function generateAiScribeDraft(input: Pick<WriteLetterInput, "oralText" | 
     return createScribeDraftResult(serviceState.value, input);
   }
 
-  return aiScribeAdapter.generateDraft(aiInput);
+  if (typeof aiScribeAdapter.generateDraftStream !== "function") {
+    return aiScribeAdapter.generateDraft(aiInput);
+  }
+
+  return aiScribeAdapter.generateDraftStream(aiInput, {
+    onDelta: (_delta, text) => {
+      if (wizard.value.oralText === input.oralText && wizard.value.selectedScribeId === input.scribeId) {
+        streamingDraftText.value = text;
+      }
+    }
+  });
 }
 
 function buildInput(): WriteLetterInput {
@@ -361,7 +380,7 @@ function deleteDraft(draftId: string): void {
             先生正在照口述斟酌字句。
           </p>
           <div class="paper-input min-h-40 whitespace-pre-wrap">
-            {{ wizard.scribeDraft || "请先生依口述起一份初稿。" }}
+            {{ draftPanelText }}
           </div>
           <var-button plain color="#253b5b" :loading="draftPending" :disabled="!canGenerateDraft" @click="generateDraft">重新起稿</var-button>
         </div>

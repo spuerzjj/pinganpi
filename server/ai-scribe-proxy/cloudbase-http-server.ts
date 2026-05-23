@@ -3,25 +3,30 @@ import { readAiProxyConfig, type AiProxyConfig } from "./config.js";
 import {
   createProxyUnavailableResponse,
   handleAiProxyRequest,
+  handleAiProxyStreamRequest,
   normalizeAiProxyPathname,
-  type CompletionRequester
+  shouldHandleAiProxyStreamRequest,
+  type CompletionRequester,
+  type StreamingCompletionRequester
 } from "./handler.js";
-import { requestMimoChatCompletion } from "./mimo-client.js";
+import { requestMimoChatCompletion, requestMimoChatCompletionStream } from "./mimo-client.js";
 
 export type ConfigReader = (method: string, url: string) => AiProxyConfig;
 
 export function createCloudBaseHttpServer(
   readConfig: ConfigReader = readRuntimeConfig,
-  requestCompletion: CompletionRequester = requestMimoChatCompletion
+  requestCompletion: CompletionRequester = requestMimoChatCompletion,
+  requestStreamingCompletion: StreamingCompletionRequester = requestMimoChatCompletionStream
 ): Server {
   return createServer((request, response) => {
-    void handleNodeRequest(readConfig, requestCompletion, request, response);
+    void handleNodeRequest(readConfig, requestCompletion, requestStreamingCompletion, request, response);
   });
 }
 
 async function handleNodeRequest(
   readConfig: ConfigReader,
   requestCompletion: CompletionRequester,
+  requestStreamingCompletion: StreamingCompletionRequester,
   request: IncomingMessage,
   response: ServerResponse
 ): Promise<void> {
@@ -35,8 +40,29 @@ async function handleNodeRequest(
     config = readConfig(method, url);
   } catch {
     const unavailableResponse = createProxyUnavailableResponse(request.headers);
-    response.writeHead(unavailableResponse.statusCode, unavailableResponse.headers);
-    response.end(unavailableResponse.body);
+    await writeHandlerResponse(
+      response,
+      unavailableResponse.statusCode,
+      unavailableResponse.headers,
+      unavailableResponse.body
+    );
+    return;
+  }
+
+  if (shouldHandleAiProxyStreamRequest(method, url)) {
+    const handlerResponse = await handleAiProxyStreamRequest(
+      config,
+      {
+        method,
+        url,
+        headers: request.headers,
+        body,
+        allowMissingOrigin: false
+      },
+      requestStreamingCompletion
+    );
+
+    await writeHandlerResponse(response, handlerResponse.statusCode, handlerResponse.headers, handlerResponse.body);
     return;
   }
 
@@ -52,8 +78,27 @@ async function handleNodeRequest(
     requestCompletion
   );
 
-  response.writeHead(handlerResponse.statusCode, handlerResponse.headers);
-  response.end(handlerResponse.body);
+  await writeHandlerResponse(response, handlerResponse.statusCode, handlerResponse.headers, handlerResponse.body);
+}
+
+async function writeHandlerResponse(
+  response: ServerResponse,
+  statusCode: number,
+  headers: Record<string, string>,
+  body: AsyncIterable<string> | string
+): Promise<void> {
+  response.writeHead(statusCode, headers);
+
+  if (typeof body === "string") {
+    response.end(body);
+    return;
+  }
+
+  for await (const chunk of body) {
+    response.write(chunk);
+  }
+
+  response.end();
 }
 
 function readRuntimeConfig(method: string, url: string): AiProxyConfig {

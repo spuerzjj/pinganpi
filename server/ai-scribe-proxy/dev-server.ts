@@ -2,17 +2,24 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { readAiProxyConfig, type AiProxyConfig } from "./config.js";
-import { handleAiProxyRequest, type CompletionRequester } from "./handler.js";
-import { requestMimoChatCompletion } from "./mimo-client.js";
+import {
+  handleAiProxyRequest,
+  handleAiProxyStreamRequest,
+  shouldHandleAiProxyStreamRequest,
+  type CompletionRequester,
+  type StreamingCompletionRequester
+} from "./handler.js";
+import { requestMimoChatCompletion, requestMimoChatCompletionStream } from "./mimo-client.js";
 
-export type { CompletionRequester } from "./handler.js";
+export type { CompletionRequester, StreamingCompletionRequester } from "./handler.js";
 
 export function createAiProxyServer(
   config: AiProxyConfig,
-  requestCompletion: CompletionRequester = requestMimoChatCompletion
+  requestCompletion: CompletionRequester = requestMimoChatCompletion,
+  requestStreamingCompletion: StreamingCompletionRequester = requestMimoChatCompletionStream
 ): Server {
   return createServer((request, response) => {
-    void handleNodeRequest(config, requestCompletion, request, response);
+    void handleNodeRequest(config, requestCompletion, requestStreamingCompletion, request, response);
   });
 }
 
@@ -28,22 +35,61 @@ if (isMainModule()) {
 async function handleNodeRequest(
   config: AiProxyConfig,
   requestCompletion: CompletionRequester,
+  requestStreamingCompletion: StreamingCompletionRequester,
   request: IncomingMessage,
   response: ServerResponse
 ): Promise<void> {
+  const method = request.method ?? "GET";
+  const url = request.url ?? "/";
+  const body = await readTextBody(request);
+  if (shouldHandleAiProxyStreamRequest(method, url)) {
+    const handlerResponse = await handleAiProxyStreamRequest(
+      config,
+      {
+        method,
+        url,
+        headers: request.headers,
+        body
+      },
+      requestStreamingCompletion
+    );
+
+    await writeHandlerResponse(response, handlerResponse.statusCode, handlerResponse.headers, handlerResponse.body);
+    return;
+  }
+
   const handlerResponse = await handleAiProxyRequest(
     config,
     {
-      method: request.method ?? "GET",
-      url: request.url ?? "/",
+      method,
+      url,
       headers: request.headers,
-      body: await readTextBody(request)
+      body
     },
     requestCompletion
   );
 
-  response.writeHead(handlerResponse.statusCode, handlerResponse.headers);
-  response.end(handlerResponse.body);
+  await writeHandlerResponse(response, handlerResponse.statusCode, handlerResponse.headers, handlerResponse.body);
+}
+
+async function writeHandlerResponse(
+  response: ServerResponse,
+  statusCode: number,
+  headers: Record<string, string>,
+  body: AsyncIterable<string> | string
+): Promise<void> {
+  response.writeHead(statusCode, headers);
+
+  if (typeof body === "string") {
+    response.end(body);
+    return;
+  }
+
+  for await (const chunk of body) {
+    response.write(chunk);
+  }
+
+  response.end();
 }
 
 async function readTextBody(request: IncomingMessage): Promise<string> {

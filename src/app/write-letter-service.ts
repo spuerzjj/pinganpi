@@ -49,7 +49,7 @@ export type PostLetterResult =
 export function saveDraftPaper(state: AppState, input: WriteLetterInput, now: Date): SaveDraftResult {
   const nextState = cloneAppState(state);
   const draftId = `draft-${now.getTime()}-${nextState.draftPapers.length + 1}`;
-  const draftResult = createDraftResult(nextState, {
+  const draftResult = createDraftPaperContent(nextState, {
     ...input,
     registered: false
   });
@@ -65,9 +65,9 @@ export function saveDraftPaper(state: AppState, input: WriteLetterInput, now: Da
     scribeDraft: draftResult.scribeDraft,
     finalText,
     readAloudText: draftResult.readAloudText,
-    draftSource: draftResult.draftSource,
-    generationMeta: draftResult.generationMeta,
-    status: finalText === draftResult.scribeDraft ? (input.scribeId === null ? "draft" : "scribed") : "revised"
+    ...(draftResult.draftSource === undefined ? {} : { draftSource: draftResult.draftSource }),
+    ...(draftResult.generationMeta === undefined ? {} : { generationMeta: draftResult.generationMeta }),
+    status: getDraftPaperStatus(input.scribeId, draftResult.scribeDraft, finalText)
   };
 
   nextState.draftPapers.push(draft);
@@ -203,6 +203,24 @@ type DraftResultInput = Pick<
   "oralText" | "scribeId" | "registered" | "scribeDraft" | "readAloudText" | "draftSource" | "generationMeta"
 >;
 
+type DraftPaperContent = Omit<ScribeDraftResult, "draftSource" | "generationMeta"> &
+  Partial<Pick<ScribeDraftResult, "draftSource" | "generationMeta">>;
+
+function createDraftPaperContent(state: AppState, input: DraftResultInput & Pick<WriteLetterInput, "finalText">): DraftPaperContent {
+  if (normalizeText(input.finalText) === "" && !hasProvidedDraftResult(input)) {
+    const sender = findMember(state, state.currentMemberId);
+
+    return {
+      oralText: normalizeText(input.oralText),
+      scribeDraft: "",
+      readAloudText: "",
+      signature: sender.signatureName
+    };
+  }
+
+  return createDraftResult(state, input);
+}
+
 function createDraftResult(state: AppState, input: DraftResultInput): ScribeDraftResult {
   const sender = findMember(state, state.currentMemberId);
   const recipient = findMember(state, state.recipientMemberId);
@@ -232,6 +250,14 @@ function createDraftResult(state: AppState, input: DraftResultInput): ScribeDraf
     replyContext: null,
     emotionTags: []
   });
+}
+
+function getDraftPaperStatus(scribeId: string | null, scribeDraft: string, finalText: string): DraftPaper["status"] {
+  if (normalizeText(scribeDraft) === "" && normalizeText(finalText) === "") {
+    return "draft";
+  }
+
+  return finalText === scribeDraft ? (scribeId === null ? "draft" : "scribed") : "revised";
 }
 
 function hasProvidedDraftResult(input: DraftResultInput): input is DraftResultInput & {

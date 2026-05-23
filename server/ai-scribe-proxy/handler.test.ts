@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { handleAiProxyRequest, type CompletionRequester } from "./handler.js";
+import {
+  handleAiProxyRequest,
+  handleAiProxyStreamRequest,
+  shouldHandleAiProxyStreamRequest,
+  type CompletionRequester
+} from "./handler.js";
 import type { AiProxyConfig } from "./config.js";
 
 const config: AiProxyConfig = {
@@ -151,7 +156,135 @@ describe("AI proxy handler", () => {
     });
     expect(called).toBe(false);
   });
+
+  it("streams controlled draft events without provider chunks", async () => {
+    const response = await handleAiProxyStreamRequest(
+      config,
+      {
+        method: "POST",
+        url: "/ai/scribe-draft/stream",
+        headers: { origin: "http://localhost:5173", "content-type": "application/json" },
+        body: validBody()
+      },
+      async function* () {
+        yield { type: "delta", delta: "兰卿：" };
+        yield { type: "delta", delta: "见字如晤。" };
+      }
+    );
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers["content-type"]).toBe("text/event-stream; charset=utf-8");
+
+    const body = await collectStreamBody(response.body);
+    expect(body).toContain("event: delta");
+    expect(body).toContain('"delta":"兰卿："');
+    expect(body).toContain("event: done");
+    expect(body).toContain('"scribeDraft":"兰卿：见字如晤。"');
+    expect(body).not.toContain("choices");
+  });
+
+  it("recognizes stream endpoints with and without the CloudBase api prefix", () => {
+    expect(shouldHandleAiProxyStreamRequest("POST", "/ai/scribe-draft/stream")).toBe(true);
+    expect(shouldHandleAiProxyStreamRequest("POST", "/api/ai/scribe-draft/stream")).toBe(true);
+    expect(shouldHandleAiProxyStreamRequest("POST", "/ai/scribe-draft")).toBe(false);
+  });
+
+  it("rejects invalid stream origins before calling the provider", async () => {
+    let called = false;
+    const response = await handleAiProxyStreamRequest(
+      config,
+      {
+        method: "POST",
+        url: "/ai/scribe-draft/stream",
+        headers: { origin: "https://example.com", "content-type": "application/json" },
+        body: validBody()
+      },
+      async function* () {
+        called = true;
+        yield { type: "delta", delta: "不应调用" };
+      }
+    );
+
+    expect(response.statusCode).toBe(403);
+    expect(JSON.parse(String(response.body))).toEqual({
+      ok: false,
+      reason: "origin_forbidden",
+      message: "AI proxy only accepts local development origins."
+    });
+    expect(called).toBe(false);
+  });
+
+  it("returns JSON validation errors before starting a stream", async () => {
+    const response = await handleAiProxyStreamRequest(config, {
+      method: "POST",
+      url: "/ai/scribe-draft/stream",
+      headers: { origin: "http://localhost:5173", "content-type": "application/json" },
+      body: JSON.stringify({ oralText: "缺少字段" })
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.headers["content-type"]).toBe("application/json; charset=utf-8");
+    expect(JSON.parse(String(response.body))).toEqual({
+      ok: false,
+      reason: "invalid_request",
+      message: "scribeName must be a non-empty string."
+    });
+  });
+
+  it("emits a controlled stream error if the provider fails mid-stream", async () => {
+    const response = await handleAiProxyStreamRequest(
+      config,
+      {
+        method: "POST",
+        url: "/ai/scribe-draft/stream",
+        headers: { origin: "http://localhost:5173", "content-type": "application/json" },
+        body: validBody()
+      },
+      async function* () {
+        yield { type: "delta", delta: "兰卿：" };
+        throw new Error("bad key: tp-secret provider body choices");
+      }
+    );
+
+    const body = await collectStreamBody(response.body);
+    expect(body).toContain("event: delta");
+    expect(body).toContain("event: error");
+    expect(body).toContain('"message":"AI provider request failed."');
+    expect(body).not.toContain("tp-secret");
+    expect(body).not.toContain("choices");
+  });
+
+  it("emits a controlled stream error when the provider finishes without usable text", async () => {
+    const response = await handleAiProxyStreamRequest(
+      config,
+      {
+        method: "POST",
+        url: "/ai/scribe-draft/stream",
+        headers: { origin: "http://localhost:5173", "content-type": "application/json" },
+        body: validBody()
+      },
+      async function* () {}
+    );
+
+    const body = await collectStreamBody(response.body);
+    expect(body).not.toContain("event: done");
+    expect(body).toContain("event: error");
+    expect(body).toContain('"reason":"invalid_response"');
+  });
 });
+
+async function collectStreamBody(body: AsyncIterable<string> | string): Promise<string> {
+  if (typeof body === "string") {
+    return body;
+  }
+
+  const chunks: string[] = [];
+  for await (const chunk of body) {
+    chunks.push(chunk);
+  }
+
+  return chunks.join("");
+}
 
 function validBody(): string {
   return JSON.stringify({
