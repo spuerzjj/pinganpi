@@ -1,0 +1,20 @@
+{
+  "$schema": "https://static.cloudbase.net/cli/cloudbaserc.schema.json",
+  "version": "2.0",
+  "envId": "{{env.CLOUDBASE_ENV_ID}}",
+  "region": "ap-shanghai",
+  "functionRoot": "cloudbase/functions",
+  "functions": [
+    {
+      "name": "ai-scribe-proxy",
+      "description": "平安批 AI 起稿服务端代理",
+      "type": "HTTP",
+      "runtime": "Nodejs20.19",
+      "handler": "index.main",
+      "timeout": 30,
+      "memorySize": 256,
+      "installDependency": false,
+      "dir": "cloudbase/functions/ai-scribe-proxy"
+    }
+  ]
+}

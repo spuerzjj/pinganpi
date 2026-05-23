@@ -19,6 +19,11 @@
 - 本地 `POST /ai/scribe-draft` 已能返回 AI 初稿。
 - 写信页真实 AI 起稿烟测已通过。
 - 代理核心逻辑已抽为 `server/ai-scribe-proxy/handler.ts`，本地 dev server 已复用该 handler。
+- 用户已购买腾讯云 CloudBase，阶段 13 云端落点确定为 CloudBase HTTP 云函数。
+- 已安装项目级 CloudBase CLI：`@cloudbase/cli@3.4.0`。
+- 已新增 CloudBase HTTP 入口：`server/ai-scribe-proxy/cloudbase-entry.ts`。
+- 已新增 CloudBase 构建脚本：`npm run cloudbase:build:ai`。
+- 已新增 CloudBase 部署脚本：`CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:deploy:ai`。
 - 本地代理已加入费用护栏：
   - `PINGANPI_AI_MAX_ORAL_TEXT_CHARS` 默认 800。
   - `MIMO_MAX_COMPLETION_TOKENS` 默认 900。
@@ -26,7 +31,7 @@
 仍需云端控制台人工确认：
 
 - MiMo 订阅页的额度、余额提醒、费用告警和 key 类型。
-- 云端代理落点，优先评估 CloudBase；不默认购买 CVM。
+- CloudBase 环境 ID、区域和 HTTP 函数访问地址。
 - 云端 secret、部署凭据、回滚删除步骤。
 
 ## 环境命名
@@ -71,7 +76,7 @@ VITE_PINGANPI_AI_PROXY_URL=https://<your-cloud-ai-proxy-domain>
 - Modify: `AGENTS.md`
 
 - [ ] 登录 Xiaomi MiMo 控制台，确认当前模型、key 类型、额度、余额提醒方式和费用告警入口。
-- [ ] 登录腾讯云控制台，只评估 CloudBase / 云函数是否满足最小 Node 服务端代理，不购买 CVM 或长期包年资源。
+- [x] 登录腾讯云控制台，确认已购买 CloudBase；阶段 13 云端落点确定为 CloudBase HTTP 云函数，不购买 CVM 或长期包年资源。
 - [ ] 记录最终选择的云端落点、区域、环境名和预计月费用上限。
 - [ ] 更新 roadmap / dashboard / AGENTS，明确阶段 13 的云端落点决策。
 
@@ -107,7 +112,8 @@ VITE_PINGANPI_AI_PROXY_URL=https://<your-cloud-ai-proxy-domain>
 - Modify: `docs/pinganpi-roadmap-dashboard.html`
 
 - [x] 抽出 `server/ai-scribe-proxy/handler.ts`，集中校验、prompt、MiMo client 和错误归一逻辑。
-- [ ] 新增具体云函数入口，让 CloudBase / 云函数复用 `handleAiProxyRequest`。
+- [x] 新增具体云函数入口，让 CloudBase / 云函数复用 `handleAiProxyRequest`。
+- [x] 新增 CloudBase CLI 和构建 / 部署脚本。
 - [ ] 部署 `GET /health`，确认返回 `{ "ok": true }`。
 - [ ] 部署 `POST /ai/scribe-draft`，用非敏感口述烟测 AI 起稿。
 - [ ] 配置 `VITE_PINGANPI_AI_PROXY_URL` 指向云端代理。
@@ -119,6 +125,24 @@ VITE_PINGANPI_AI_PROXY_URL=https://<your-cloud-ai-proxy-domain>
 - 代理仍保留本地 Origin / Capacitor Origin 策略，生产域名策略单独记录。
 - 超出口述长度时不调用 MiMo。
 - provider 错误不会把原始错误 body 返回给客户端。
+
+部署命令：
+
+```bash
+npm run cloudbase:login
+CLOUDBASE_ENV_ID=<你的 CloudBase 环境 ID> npm run cloudbase:deploy:ai
+```
+
+部署前必须先在 CloudBase 控制台给函数配置服务端环境变量：
+
+```bash
+MIMO_API_BASE_URL=https://api.xiaomimimo.com/v1
+MIMO_MODEL_ID=mimo-v2.5-pro
+MIMO_API_KEY=<只放云端 secret>
+MIMO_REQUEST_TIMEOUT_MS=30000
+PINGANPI_AI_MAX_ORAL_TEXT_CHARS=800
+MIMO_MAX_COMPLETION_TOKENS=900
+```
 
 ## Task 4: 费用告警与回滚删除
 
