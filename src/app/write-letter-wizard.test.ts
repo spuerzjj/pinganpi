@@ -1,0 +1,69 @@
+import { describe, expect, it } from "vitest";
+import {
+  canContinueFromStep,
+  canEnterStep,
+  createInitialWriteLetterWizardState,
+  getNextStepId,
+  markDraftGenerated,
+  markTextBasisChanged,
+  writeLetterSteps
+} from "./write-letter-wizard.js";
+
+describe("write letter wizard", () => {
+  it("defines the five archival writing steps in order", () => {
+    expect(writeLetterSteps.map((step) => step.id)).toEqual(["method", "oral", "draft", "revise", "post"]);
+    expect(writeLetterSteps.map((step) => step.label)).toEqual(["选写法", "口述", "起稿", "校改", "投寄"]);
+  });
+
+  it("blocks later steps until the oral text and draft are ready", () => {
+    const state = createInitialWriteLetterWizardState({
+      defaultScribeId: "scribe-xu",
+      sampleOralText: "",
+      sampleDraftText: ""
+    });
+
+    expect(canEnterStep(state, "method")).toBe(true);
+    expect(canEnterStep(state, "oral")).toBe(true);
+    expect(canEnterStep(state, "draft")).toBe(false);
+    expect(canEnterStep(state, "revise")).toBe(false);
+    expect(canEnterStep(state, "post")).toBe(false);
+    expect(canContinueFromStep(state, "oral")).toBe(false);
+  });
+
+  it("allows revise and post after a fresh draft and final text exist", () => {
+    const initial = createInitialWriteLetterWizardState({
+      defaultScribeId: "scribe-xu",
+      sampleOralText: "今日雨停，心里记挂你。",
+      sampleDraftText: ""
+    });
+    const drafted = markDraftGenerated(initial, "兰卿：今日雨停，心里记挂你。");
+
+    expect(drafted.draftDirty).toBe(false);
+    expect(drafted.scribeDraft).toBe("兰卿：今日雨停，心里记挂你。");
+    expect(drafted.finalText).toBe("兰卿：今日雨停，心里记挂你。");
+    expect(canEnterStep(drafted, "revise")).toBe(true);
+    expect(canEnterStep(drafted, "post")).toBe(true);
+    expect(canContinueFromStep(drafted, "revise")).toBe(true);
+  });
+
+  it("requires a new draft after the oral text or writing method changes", () => {
+    const drafted = markDraftGenerated(
+      createInitialWriteLetterWizardState({
+        defaultScribeId: "scribe-xu",
+        sampleOralText: "今日雨停，心里记挂你。",
+        sampleDraftText: ""
+      }),
+      "兰卿：今日雨停，心里记挂你。"
+    );
+
+    const changed = markTextBasisChanged({
+      ...drafted,
+      oralText: "今日雨停，也添了些寒意。"
+    });
+
+    expect(changed.draftDirty).toBe(true);
+    expect(canEnterStep(changed, "revise")).toBe(false);
+    expect(canEnterStep(changed, "post")).toBe(false);
+    expect(getNextStepId(changed, "oral")).toBe("draft");
+  });
+});
