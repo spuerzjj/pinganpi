@@ -971,6 +971,8 @@ npx cap doctor
 
 目标：用小程序页面重建首批核心界面，并先支持本地 mock 数据。
 
+实施计划：`docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-local-ui.md`
+
 推荐范围：
 
 - 今日、写信、代笔先生、钱匣、信箱 / 档案。
