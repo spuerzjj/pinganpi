@@ -1,7 +1,18 @@
+import {
+  createLocalMockState,
+  createWalletPageModel,
+  type WalletPageModel,
+} from "../../services/local-model.js";
+
 Page({
   data: {
-    kicker: "平安批 / 钱匣",
-    title: "钱匣",
-    body: "余额、自然收支和寄信费用会记录到账本。"
-  }
+    model: null as WalletPageModel | null,
+  },
+  onShow(this: { setData(data: { model: WalletPageModel }): void }) {
+    const now = new Date();
+    const state = createLocalMockState(now);
+    const model = createWalletPageModel(state, now);
+
+    this.setData({ model });
+  },
 });

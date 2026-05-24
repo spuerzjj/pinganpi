@@ -1,7 +1,42 @@
 <view class="page-shell">
-  <view class="archive-panel">
-    <view class="kicker">{{kicker}}</view>
-    <view class="title">{{title}}</view>
-    <view class="body-copy">{{body}}</view>
-  </view>
+  <block wx:if="{{model}}">
+    <view class="panel-stack">
+      <view class="archive-panel">
+        <view class="kicker">{{model.kicker}}</view>
+        <view class="title">{{model.title}}</view>
+        <view class="body-copy">匣中现余 <text class="strong-number">{{model.balanceText}}</text></view>
+      </view>
+
+      <view class="section-panel">
+        <view class="section-title">收支定例</view>
+        <view class="record-list">
+          <view class="record-row">
+            <view class="meta-row">
+              <text class="meta-label">进项</text>
+              <text class="meta-value">{{model.incomeText}}</text>
+            </view>
+          </view>
+          <view class="record-row">
+            <view class="meta-row">
+              <text class="meta-label">日用</text>
+              <text class="meta-value">{{model.livingCostText}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="section-panel">
+        <view class="section-title">近日账目</view>
+        <view class="record-list" wx:if="{{model.ledgerRows.length}}">
+          <view class="record-row" wx:for="{{model.ledgerRows}}" wx:key="label">
+            <view class="record-head">
+              <view class="record-title record-main">{{item.label}}</view>
+              <view class="strong-number amount-{{item.tone}}">{{item.amountText}}</view>
+            </view>
+          </view>
+        </view>
+        <view class="empty-note" wx:else>暂无新账。</view>
+      </view>
+    </view>
+  </block>
 </view>

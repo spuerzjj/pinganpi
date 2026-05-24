@@ -1,7 +1,18 @@
+import {
+  createLocalMockState,
+  createScribesPageModel,
+  type ScribesPageModel,
+} from "../../services/local-model.js";
+
 Page({
   data: {
-    kicker: "平安批 / 代笔先生",
-    title: "代笔先生",
-    body: "不同城市的先生会有不同出勤和代书风格。"
-  }
+    model: null as ScribesPageModel | null,
+  },
+  onShow(this: { setData(data: { model: ScribesPageModel }): void }) {
+    const now = new Date();
+    const state = createLocalMockState(now);
+    const model = createScribesPageModel(state, now);
+
+    this.setData({ model });
+  },
 });

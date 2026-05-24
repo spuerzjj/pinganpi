@@ -1,7 +1,28 @@
 <view class="page-shell">
-  <view class="archive-panel">
-    <view class="kicker">{{kicker}}</view>
-    <view class="title">{{title}}</view>
-    <view class="body-copy">{{body}}</view>
-  </view>
+  <block wx:if="{{model}}">
+    <view class="panel-stack">
+      <view class="archive-panel">
+        <view class="kicker">{{model.kicker}}</view>
+        <view class="title">{{model.title}}</view>
+        <view class="body-copy">旧信、邮政记录和往来线索在此归档。</view>
+      </view>
+
+      <view class="section-panel">
+        <view class="section-title">旧信卷宗</view>
+        <view class="record-list" wx:if="{{model.letters.length}}">
+          <view class="record-row" wx:for="{{model.letters}}" wx:key="id">
+            <view class="record-title">{{item.subject}}</view>
+            <view class="record-meta">{{item.metaText}}</view>
+            <view class="record-copy">{{item.excerpt}}</view>
+            <view class="record-list">
+              <view class="record-row" wx:for="{{item.records}}" wx:for-item="record" wx:key="*this">
+                <view class="record-meta">{{record}}</view>
+              </view>
+            </view>
+          </view>
+        </view>
+        <view class="empty-note" wx:else>旧信档案暂空。</view>
+      </view>
+    </view>
+  </block>
 </view>

@@ -1,11 +1,18 @@
-import { createTodayDomainSummary } from "../../services/domain-summary.js";
-
-const todaySummary = createTodayDomainSummary(new Date());
+import {
+  createLocalMockState,
+  createTodayPageModel,
+  type TodayPageModel,
+} from "../../services/local-model.js";
 
 Page({
   data: {
-    kicker: "平安批 / 今日",
-    title: todaySummary.eraDateText,
-    body: `${todaySummary.presentDateText}。本埠邮资：${todaySummary.localPostageText}；挂号邮资：${todaySummary.registeredPostageText}。`
-  }
+    model: null as TodayPageModel | null,
+  },
+  onShow(this: { setData(data: { model: TodayPageModel }): void }) {
+    const now = new Date();
+    const state = createLocalMockState(now);
+    const model = createTodayPageModel(state, now);
+
+    this.setData({ model });
+  },
 });

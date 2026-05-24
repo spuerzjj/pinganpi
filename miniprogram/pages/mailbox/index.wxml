@@ -1,7 +1,32 @@
 <view class="page-shell">
-  <view class="archive-panel">
-    <view class="kicker">{{kicker}}</view>
-    <view class="title">{{title}}</view>
-    <view class="body-copy">{{body}}</view>
-  </view>
+  <block wx:if="{{model}}">
+    <view class="panel-stack">
+      <view class="archive-panel">
+        <view class="kicker">{{model.kicker}}</view>
+        <view class="title">{{model.title}}</view>
+        <view class="body-copy">到达前不拆正文，已拆来信转入旧信档案。</view>
+      </view>
+
+      <view class="section-panel">
+        <view class="section-title">来往信件</view>
+        <view class="record-list" wx:if="{{model.letters.length}}">
+          <view class="record-row" wx:for="{{model.letters}}" wx:key="id">
+            <view class="record-head">
+              <view class="record-main">
+                <view class="record-title">{{item.subject}}</view>
+                <view class="record-meta">{{item.fromText}} · {{item.dueText}}</view>
+              </view>
+              <text wx:if="{{item.canOpen}}" class="stamp status-present">{{item.stateText}}</text>
+              <text wx:else class="stamp status-absent">{{item.stateText}}</text>
+            </view>
+            <view class="record-copy">{{item.excerpt}}</view>
+            <view class="record-tags">
+              <text class="stamp">{{item.importantText}}</text>
+            </view>
+          </view>
+        </view>
+        <view class="empty-note" wx:else>今日信箱暂无登记。</view>
+      </view>
+    </view>
+  </block>
 </view>

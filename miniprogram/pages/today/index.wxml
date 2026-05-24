@@ -1,7 +1,45 @@
 <view class="page-shell">
-  <view class="archive-panel">
-    <view class="kicker">{{kicker}}</view>
-    <view class="title">{{title}}</view>
-    <view class="body-copy">{{body}}</view>
-  </view>
+  <block wx:if="{{model}}">
+    <view class="panel-stack">
+      <view class="archive-panel">
+        <view class="kicker">{{model.kicker}}</view>
+        <view class="title">{{model.title}}</view>
+        <view class="body-copy">{{model.presentDateText}}</view>
+      </view>
+
+      <view class="section-panel">
+        <view class="section-title">今日登记</view>
+        <view class="record-list">
+          <view class="record-row">
+            <view class="meta-row">
+              <text class="meta-label">钱匣余款</text>
+              <text class="meta-value strong-number">{{model.walletBalanceText}}</text>
+            </view>
+          </view>
+          <view class="record-row">
+            <view class="meta-row">
+              <text class="meta-label">代笔先生</text>
+              <text class="meta-value">{{model.availableScribeText}}</text>
+            </view>
+          </view>
+          <view class="record-row">
+            <view class="meta-row">
+              <text class="meta-label">今日信箱</text>
+              <text class="meta-value">{{model.inboxText}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="section-panel">
+        <view class="section-title">邮路摘记</view>
+        <view class="record-list">
+          <view class="record-row">
+            <view class="record-title">{{model.routeText}}</view>
+            <view class="record-copy">{{model.postageText}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </block>
 </view>
