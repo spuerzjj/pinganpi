@@ -57,7 +57,6 @@ a {
 
 .metric,
 .panel,
-.phase,
 .link-list a {
   border: 1px solid var(--line);
   border-radius: 4px; /* 极小圆角 */
@@ -143,20 +142,6 @@ h3 {
   font-weight: normal;
 }
 
-.phase-title em {
-  display: inline-flex;
-  align-items: center;
-  min-height: 28px;
-  border: 1px solid #cbd3c8;
-  border-radius: 999px;
-  padding: 0 12px;
-  color: #405040;
-  background: #ffffff;
-  font-size: 13px;
-  font-style: normal;
-  font-weight: 700;
-}
-
 .metrics,
 .focus-grid,
 .bottom-grid {
@@ -232,99 +217,113 @@ h3 {
   gap: 18px;
 }
 
-.progress-shell {
-  width: min(360px, 42vw);
-  height: 12px;
-  overflow: hidden;
-  border: 1px solid #cbd3c8;
-  border-radius: 999px;
-  background: #eef1ec;
-}
-
-.progress-bar {
-  height: 100%;
-  background: #2f6b4f;
-}
-
 .phase-groups {
-  display: grid;
-  gap: 22px;
-  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 .phase-group {
-  display: grid;
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 .phase-list {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 .phase {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr);
+  grid-template-columns: 24px 1fr;
+  align-items: center;
   gap: 12px;
-  min-height: 126px;
-  padding: 14px;
+  min-height: auto;
+  padding: 12px 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+}
+
+.phase:last-child {
+  border-bottom: none;
 }
 
 .phase-number {
-  display: grid;
+  display: inline-grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #e9eee6;
-  color: #405040;
-  font-weight: 800;
+  width: 24px;
+  height: 24px;
+  border-radius: 2px;
+  background: var(--surface-muted);
+  border: 1px solid var(--line);
+  color: var(--subtle);
+  font-size: 10px;
+  font-weight: normal;
 }
 
 .phase-title {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
-  color: #17201a;
-  font-size: 15px;
-  font-weight: 800;
-  line-height: 1.4;
-}
-
-.phase-title span {
-  min-width: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .phase-title em {
-  min-height: 24px;
-  padding: 0 8px;
-  font-size: 12px;
-  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: 0 6px;
+  color: var(--muted);
+  background: transparent;
+  font-family: monospace;
+  font-size: 10px;
+  font-weight: normal;
+  text-transform: uppercase;
 }
 
 .phase p {
-  margin-top: 10px;
+  display: none; /* 在侧边栏中隐藏阶段的详细 summary，保持简洁 */
 }
 
+/* 已完成状态 */
 .phase-done .phase-number {
-  background: #dbe9df;
-  color: #2f6b4f;
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+}
+.phase-done .phase-title {
+  color: var(--ink);
 }
 
-.phase-next {
-  border-color: #9f3b2f;
-  background: #fff9f7;
-}
-
+/* 进行中状态 */
 .phase-next .phase-number {
-  background: #9f3b2f;
-  color: #ffffff;
+  background: transparent;
+  color: var(--active);
+  border-color: var(--active);
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+}
+.phase-next .phase-title {
+  color: var(--active);
+  font-weight: 700;
+}
+.phase-next .phase-title em {
+  color: var(--active);
+  border-color: var(--active);
 }
 
-.phase-paused {
-  background: #f4f2ec;
+/* 暂停状态 */
+.phase-paused .phase-number {
+  background: transparent;
+  border-style: dashed;
 }
 
 .risk-list {
@@ -421,10 +420,6 @@ h3 {
   .section-head {
     align-items: flex-start;
     flex-direction: column;
-  }
-
-  .progress-shell {
-    width: 100%;
   }
 }
 
