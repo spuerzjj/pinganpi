@@ -180,11 +180,11 @@ MiMo 暂缓记录：
 
 ### 6. 阶段 19 结束条件
 
-- [ ] 所有人工项标记为：完成 / 暂缓 / 不可配置
-- [ ] roadmap、dashboard、AGENTS 更新阶段 19 状态
-- [ ] 若新增脚本或配置，运行 `npm test`、`npm run typecheck`
-- [ ] 若涉及 App / CloudBase 配置，运行相关 smoke
-- [ ] 阶段 20 可拿本 checklist 进入完整人工验证
+- [x] 所有人工项标记为：完成 / 暂缓 / 不可配置
+- [x] roadmap、dashboard、AGENTS 更新阶段 19 状态
+- [x] 若新增脚本或配置，运行 `npm test`、`npm run typecheck`；本次收口未新增脚本或业务代码，已运行 `git diff --check`
+- [x] 若涉及 App / CloudBase 配置，运行相关 smoke；本次收口未改 App / CloudBase 配置，沿用本计划已记录的 `/api/health`、`/sync/health` 和同步 fail-closed smoke
+- [x] 阶段 20 可拿本 checklist 进入完整人工验证
 
 ## 剩余人工回报模板
 

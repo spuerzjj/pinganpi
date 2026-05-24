@@ -68,7 +68,7 @@ npx cap doctor
 
 ## 当前代码状态
 
-当前主线开发基于 `main`，最新路线图基线为：**阶段 17 / 18 已完成工程闭环：阶段 17 新增手机号账号本地 adapter、稳定 `PinganpiAccount`、登录态恢复和账号入口页；阶段 18 新增创建一对关系、24 小时一次性邀请码、输入即加入、唯一 active household、本地绑定驱动同步命名空间、服务端账号 / 关系约束和 `sync-proxy` 账号成员授权边界。阶段 16 双人真实同步 MVP 已完成云端 smoke 收口：阶段 16A 的同步 runtime、本地同步状态、localStorage remote adapter、浏览器 device / household 配置、联网投寄 / 拆阅护栏和双设备生命周期测试已完成；阶段 16B 的 HTTP SyncAdapter、`VITE_PINGANPI_SYNC_PROXY_URL` / `VITE_PINGANPI_SYNC_MEMBER_TOKEN` 配置开关、CloudBase `sync-proxy` HTTP 函数、CloudBase 数据库 snapshot store、服务端 redaction / 私有草稿 / 照片附件过滤、member token fail closed、stale revision CAS、构建 / 部署 / env / smoke 脚本已完成；CloudBase 集合 `pinganpi_sync_snapshots` 已创建，显式路由 `/sync/health`、`/sync/pull`、`/sync/push` 已配置，云端 smoke 已通过 health、未带 token 401、合法 pull、push、再 pull。阶段 19 正在收口外部平台配置：CloudBase 手机号短信登录已开启且两个真实手机号验证码均已收到；App 登录确定采用 CloudBase Auth v2 HTTP API；账号 / 关系集合命名、集合权限、HTTP 路由 smoke 和 CLI 路由查询已确认；预算告警、函数运行角色收敛、MiMo key 管理和真实双设备验证继续放到阶段 19 / 20。阶段 20 完整人工验证计划已准备，待阶段 19 剩余人工项确认后执行。阶段 15 已完成云端与双人同步准备基础，远端实体使用 `remoteId` 避免跨设备同本地 id 数据丢失，pull 会按成员 redaction 未到达来信正文，本地删除草稿会生成 tombstone。阶段 16 设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-dual-sync-mvp-design.md` 和 `docs/superpowers/specs/2026-05-24-pinganpi-cloudbase-sync-design.md`，阶段 17 设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-phone-account-design.md`，阶段 18 设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-pair-binding-design.md`，阶段 17 / 18 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-account-pair-binding.md`。阶段 13 已跑通本机 Xiaomi MiMo、本地代理、App 写信页、CloudBase HTTP 云函数部署、云端 secret 配置、云端 AI 起稿接口、浏览器写信页云端 AI 烟测、CloudBase 用量基线、禁用 key 安全失败验证、恢复验证和 `/*` 路由清理；控制台人工事项统一进入阶段 19。阶段 14 已完成本地 / 云端受控 SSE、App streaming adapter、写信页 partial 预览和完成前不可投寄保护，并已部署 CloudBase 后通过 `/api/ai/scribe-draft/stream` 非敏感烟测；GUI 浏览器点击验证因 Computer Use 权限未授予待补**。继续开发前以 `git log --oneline --decorate -5` 为准。
+当前主线开发基于 `main`，最新路线图基线为：**阶段 17 / 18 已完成工程闭环：阶段 17 新增手机号账号本地 adapter、稳定 `PinganpiAccount`、登录态恢复和账号入口页；阶段 18 新增创建一对关系、24 小时一次性邀请码、输入即加入、唯一 active household、本地绑定驱动同步命名空间、服务端账号 / 关系约束和 `sync-proxy` 账号成员授权边界。阶段 16 双人真实同步 MVP 已完成云端 smoke 收口：阶段 16A 的同步 runtime、本地同步状态、localStorage remote adapter、浏览器 device / household 配置、联网投寄 / 拆阅护栏和双设备生命周期测试已完成；阶段 16B 的 HTTP SyncAdapter、`VITE_PINGANPI_SYNC_PROXY_URL` / `VITE_PINGANPI_SYNC_MEMBER_TOKEN` 配置开关、CloudBase `sync-proxy` HTTP 函数、CloudBase 数据库 snapshot store、服务端 redaction / 私有草稿 / 照片附件过滤、member token fail closed、stale revision CAS、构建 / 部署 / env / smoke 脚本已完成；CloudBase 集合 `pinganpi_sync_snapshots` 已创建，显式路由 `/sync/health`、`/sync/pull`、`/sync/push` 已配置，云端 smoke 已通过 health、未带 token 401、合法 pull、push、再 pull。阶段 19 外部平台配置已收口：CloudBase 手机号短信登录已开启且两个真实手机号验证码均已收到；App 登录确定采用 CloudBase Auth v2 HTTP API；账号 / 关系集合命名、集合权限、HTTP 路由 smoke 和 CLI 路由查询已确认；当前免费体验版不启用按量付费，预算暂缓；当前单环境接受默认 `TCB_QcsRole`；MiMo key 管理暂缓到正式发布、扩大使用范围、疑似泄露、新模型或异常费用前复查。阶段 20 完整人工验证计划已准备，下一步可执行。阶段 15 已完成云端与双人同步准备基础，远端实体使用 `remoteId` 避免跨设备同本地 id 数据丢失，pull 会按成员 redaction 未到达来信正文，本地删除草稿会生成 tombstone。阶段 16 设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-dual-sync-mvp-design.md` 和 `docs/superpowers/specs/2026-05-24-pinganpi-cloudbase-sync-design.md`，阶段 17 设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-phone-account-design.md`，阶段 18 设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-pair-binding-design.md`，阶段 17 / 18 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-account-pair-binding.md`。阶段 13 已跑通本机 Xiaomi MiMo、本地代理、App 写信页、CloudBase HTTP 云函数部署、云端 secret 配置、云端 AI 起稿接口、浏览器写信页云端 AI 烟测、CloudBase 用量基线、禁用 key 安全失败验证、恢复验证和 `/*` 路由清理。阶段 14 已完成本地 / 云端受控 SSE、App streaming adapter、写信页 partial 预览和完成前不可投寄保护，并已部署 CloudBase 后通过 `/api/ai/scribe-draft/stream` 非敏感烟测；GUI 浏览器点击验证因 Computer Use 权限未授予待补**。继续开发前以 `git log --oneline --decorate -5` 为准。
 
 最新关键提交以 `git log --oneline --decorate -8` 为准；阶段 13 相关提交包括：
 
@@ -275,7 +275,7 @@ npx cap doctor
 
 7. **阶段 19：外部平台人工配置收口**
    - 统一处理需要用户介入的控制台、验证码、真实环境和费用事项。
-   - 状态：进行中；执行计划为 `docs/superpowers/plans/2026-05-24-pinganpi-external-platform-closure.md`。
+   - 状态：已收口；执行计划为 `docs/superpowers/plans/2026-05-24-pinganpi-external-platform-closure.md`。
    - 已新增 `scripts/audit-cloudbase-stage19.ts` 和 `npm run cloudbase:audit:stage19`，用于脱敏审计 CloudBase 用量和函数状态；不要再直接把 `cloudbase fn detail` 原始输出发给用户，因为它会明文返回 env。
    - 当前审计基线：CloudBase 计费周期 `2026-05-23 ~ 2026-06-23`，用量 `1.67 / 3000 credits`；`ai-scribe-proxy` 与 `sync-proxy` 均为 `Active / Available`，运行时 `Nodejs20.19`，PublicNet `ENABLE`，触发器 `0`，VPC 未配置，角色均为 `TCB_QcsRole`。
    - 用户确认当前 CloudBase 套餐 / 版本为腾讯云开发免费体验版；官方价格文档显示免费体验环境提供 `3000 点/月`，单次可续费 6 个月，不支持自动续费；免费环境可购买 Token 点资源包，暂不支持加购扩展资源包、大促资源包和开启按量付费。
@@ -296,7 +296,7 @@ npx cap doctor
 
 8. **阶段 20：完整人工验证引导**
    - 状态：计划已准备，执行计划为 `docs/superpowers/plans/2026-05-24-pinganpi-full-manual-verification.md`。
-   - 待阶段 19 剩余人工项确认后执行。
+   - 下一步可执行。
    - 由 Codex 引导用户对系统做端到端人工验证。
    - 覆盖账号登录、创建关系、邀请码加入、双设备同步、AI 起稿、写信投寄、真实等待送达、拆阅、断网恢复、iOS / Android 真机和 WebView console。
    - 验证记录建议写入 `docs/superpowers/reports/2026-05-24-pinganpi-full-manual-verification.md`。
