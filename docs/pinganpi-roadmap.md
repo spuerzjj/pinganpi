@@ -2,7 +2,9 @@
 
 > **供后续代理使用：** 本文件记录《平安批》从 Capacitor 移动 App 主线转向微信原生小程序主线后的当前状态。后续开始实现前，应先阅读本文件确认方向、边界和验收标准。
 
-**可视化看板：** `docs/pinganpi-roadmap-dashboard.html`
+**日常可视化入口：** `npm run roadmap:dev` 启动独立 Roadmap Viewer。数据源为 `docs/roadmap-data.json`。
+
+**旧静态看板：** `docs/pinganpi-roadmap-dashboard.html` 仍保留为静态快照，不再作为日常主入口。
 
 **当前分支：** `codex/wechat-miniprogram-pivot`
 
@@ -272,6 +274,12 @@
 
 ## 验证基线
 
+Roadmap Viewer 新增验证记录：
+
+- `npm test -- roadmap-viewer/src/roadmap.test.ts`：通过，1 个测试通过。
+- `npm run roadmap:build`：通过，独立 Vue viewer 可完成类型检查和 Vite 构建。
+- `npm run roadmap:dev -- --port 5190`：通过，浏览器验证 `http://localhost:5190/` 能显示 `平安批 Roadmap`、阶段 27 和 `388 tests`；`/docs/pinganpi-roadmap.md` 文档链接返回 200。
+
 最近阶段 26 小程序登录与双人关系工程闭环新增验证记录：
 
 - `npm test -- server/miniprogram-functions/miniprogram-auth.test.ts server/miniprogram-functions/pinganpi-account.test.ts server/miniprogram-functions/pinganpi-pair.test.ts miniprogram/services/account-session.test.ts miniprogram/services/account-cloud.test.ts`：通过，5 个测试文件，23 个测试通过。
@@ -279,7 +287,7 @@
 - `CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:miniprogram`：阶段 26 账号 / 关系可信身份改造后通过，四个 event 云函数均部署成功。
 - `CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:smoke:miniprogram`：阶段 26 账号 / 关系可信身份改造后通过，四个 event 云函数 health invoke 均通过；AI 起稿 smoke 默认跳过，未产生 provider 调用。
 - `npm run miniprogram:check`：通过；包含共享副本一致性检查和小程序 typecheck。
-- `npm test`：通过，56 个测试文件，387 个测试通过。
+- `npm test`：通过，57 个测试文件，388 个测试通过。
 - `npm run typecheck`：通过。
 - `git diff --check`：通过。
 

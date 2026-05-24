@@ -28,6 +28,9 @@
     "miniprogram:sync-shared": "node --import tsx scripts/sync-miniprogram-shared-domain.ts",
     "miniprogram:check-shared": "node --import tsx scripts/sync-miniprogram-shared-domain.ts --check",
     "miniprogram:check": "npm run miniprogram:check-shared && npm run miniprogram:typecheck",
+    "roadmap:dev": "vite --config roadmap-viewer/vite.config.ts --host 0.0.0.0",
+    "roadmap:build": "vue-tsc -p roadmap-viewer/tsconfig.json --noEmit && vite build --config roadmap-viewer/vite.config.ts",
+    "roadmap:preview": "vite preview --config roadmap-viewer/vite.config.ts --host 0.0.0.0",
     "test": "vitest run",
     "test:watch": "vitest"
   },

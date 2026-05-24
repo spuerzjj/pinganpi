@@ -2,6 +2,7 @@
 .worktrees/
 node_modules/
 dist/
+roadmap-viewer/dist/
 coverage/
 .superpowers/
 cloudbase/functions/

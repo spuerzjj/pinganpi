@@ -475,7 +475,7 @@
           <p class="kicker">平安批 / 开发管理</p>
           <h1>Roadmap Dashboard</h1>
           <p class="subtitle">
-            这是开发进度看板，不属于 App 功能。它用于快速判断当前完成度、下一步优先级、验证状态和遗留风险。
+            这是开发进度看板的旧静态快照，不属于 App 功能。日常查看请优先启动独立 Roadmap Viewer：npm run roadmap:dev。
           </p>
         </div>
         <div class="meta">
@@ -495,7 +495,7 @@
         </article>
         <article class="metric">
           <p class="metric-label">验证状态</p>
-          <p class="metric-value">387 tests</p>
+          <p class="metric-value">388 tests</p>
           <p class="metric-note">全量测试、旧 Vue typecheck、小程序检查和小程序云函数构建已通过。</p>
         </article>
         <article class="metric">
@@ -772,7 +772,7 @@
               <li>阶段 26 已完成工程闭环：账号页接入微信手机号 code 登录和受控兜底入口，关系页接入创建关系、邀请码和加入。</li>
               <li>服务端账号 / 关系云函数已改为从可信微信 / CloudBase 上下文推导账号身份，不信任客户端传入的身份字段。</li>
               <li>`npm run cloudbase:build:miniprogram` 已通过，生成目录仍被 Git 忽略。</li>
-              <li>全量 56 个测试文件，387 个测试通过。</li>
+              <li>全量 57 个测试文件，388 个测试通过。</li>
               <li>阶段 24 已完成基础：今日、写信、代笔先生、钱匣、信箱 / 档案已接入本地 mock view-model，写信 tab 切换保留进度，口述变更会重新起稿。</li>
               <li>`miniprogram/services/local-model.test.ts` 已通过，4 个测试覆盖今日、先生、钱匣、信箱 / 档案 view-model。</li>
               <li>`miniprogram/services/write-flow.test.ts` 已通过，6 个测试覆盖本地写信费用、起稿、校改、挂号、投寄存根和口述变更后旧稿失效。</li>
@@ -913,6 +913,7 @@
         <div class="card-body">
           <div class="link-row">
             <a class="button primary" href="./pinganpi-roadmap.md">详细路线图</a>
+            <a class="button primary" href="../roadmap-viewer/index.html">独立 Roadmap Viewer 源入口</a>
             <a class="button" href="./superpowers/specs/2026-05-23-pinganpi-design.md">产品设计文档</a>
             <a class="button primary" href="./superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md">阶段 21 小程序迁移设计</a>
             <a class="button primary" href="./superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md">阶段 22 小程序基座计划</a>

@@ -67,10 +67,14 @@ CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:deploy:sync
 npm run miniprogram:sync-shared
 npm run miniprogram:check-shared
 npm run miniprogram:check
+npm run roadmap:dev
+npm run roadmap:build
 npx cap doctor
 ```
 
 新主线的日常开发方式：用微信开发者工具打开 `miniprogram/`，连接 CloudBase `dev` 环境，通过 `wx.cloud.callFunction` 调用云函数。`npm run dev`、`cap:sync`、`cap doctor` 只代表旧 Capacitor / Vue 历史基线。
+
+Roadmap 日常查看方式：使用独立 Vue 工具 `roadmap-viewer/`，执行 `npm run roadmap:dev`。该工具独立于旧 App `src/` 和小程序 `miniprogram/`，数据源是 `docs/roadmap-data.json`；旧 `docs/pinganpi-roadmap-dashboard.html` 仅保留为静态快照。
 
 ## 当前代码状态
 
@@ -159,7 +163,7 @@ npx cap doctor
 - `docs/superpowers/specs/2026-05-23-pinganpi-ai-scribe-design.md`
 - `docs/superpowers/plans/2026-05-23-pinganpi-minimal-ai-proxy.md`
 
-最近验证基线：阶段 26 已通过 `npm run miniprogram:check`、`npm test`（56 个测试文件，387 个测试通过）、`npm run typecheck`、`npm run cloudbase:build:miniprogram`、`git diff --check` 和阶段 26 聚焦测试（5 个测试文件，23 个测试通过），覆盖小程序可信身份、账号云函数、关系云函数、会话缓存和 cloud service；`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:miniprogram` 与 `npm run cloudbase:smoke:miniprogram` 已在阶段 26 账号 / 关系可信身份改造后通过。阶段 25 基线保留：小程序 CloudBase dev 主链路已通过构建、部署和 health smoke，AI / sync / account / pair event wrapper、小程序 cloud adapter、账号关系 CloudBase store 和 smoke helper 均有测试覆盖。阶段 24 基线保留：`npm test -- miniprogram/services/local-model.test.ts`（4 个测试通过）、`npm test -- miniprogram/services/write-flow.test.ts`（6 个测试通过）。阶段 23 基线保留：`npm test -- src/domain`（5 个测试文件，85 个测试通过）、`npm run miniprogram:check-shared`、`npm test -- miniprogram/services/domain-summary.test.ts`（1 个测试通过）、`npm test -- scripts/sync-miniprogram-shared-domain.test.ts`（4 个测试通过）。阶段 17 / 18 旧 App 基线保留：`npm test` 曾为 40 个测试文件、320 个测试通过，`vue-tsc --noEmit`、`vite build`、`cap sync`、`cap doctor`、`npm audit --omit=dev` 均通过；Varlet 首包超过 500 KB 是旧 App 优化项。阶段 16B 云端基线保留：`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:sync` 通过，`npm run cloudbase:smoke:sync` 已通过真实云端 smoke。为避免 `@cloudbase/node-sdk` 传递引入存在原型污染公告的 `lodash.set` / `lodash.unset` 小包，已通过 `vendor/lodash-set` 和 `vendor/lodash-unset` 提供兼容 shim，内部调用已修复的主 `lodash` 子模块。
+最近验证基线：Roadmap Viewer 已通过 `npm test -- roadmap-viewer/src/roadmap.test.ts`、`npm run roadmap:build`、浏览器访问 `http://localhost:5190/` 和 `/docs/pinganpi-roadmap.md` 文档链接 200 验证。阶段 26 已通过 `npm run miniprogram:check`、`npm test`（57 个测试文件，388 个测试通过）、`npm run typecheck`、`npm run cloudbase:build:miniprogram`、`git diff --check` 和阶段 26 聚焦测试（5 个测试文件，23 个测试通过），覆盖小程序可信身份、账号云函数、关系云函数、会话缓存和 cloud service；`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:miniprogram` 与 `npm run cloudbase:smoke:miniprogram` 已在阶段 26 账号 / 关系可信身份改造后通过。阶段 25 基线保留：小程序 CloudBase dev 主链路已通过构建、部署和 health smoke，AI / sync / account / pair event wrapper、小程序 cloud adapter、账号关系 CloudBase store 和 smoke helper 均有测试覆盖。阶段 24 基线保留：`npm test -- miniprogram/services/local-model.test.ts`（4 个测试通过）、`npm test -- miniprogram/services/write-flow.test.ts`（6 个测试通过）。阶段 23 基线保留：`npm test -- src/domain`（5 个测试文件，85 个测试通过）、`npm run miniprogram:check-shared`、`npm test -- miniprogram/services/domain-summary.test.ts`（1 个测试通过）、`npm test -- scripts/sync-miniprogram-shared-domain.test.ts`（4 个测试通过）。阶段 17 / 18 旧 App 基线保留：`npm test` 曾为 40 个测试文件、320 个测试通过，`vue-tsc --noEmit`、`vite build`、`cap sync`、`cap doctor`、`npm audit --omit=dev` 均通过；Varlet 首包超过 500 KB 是旧 App 优化项。阶段 16B 云端基线保留：`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:sync` 通过，`npm run cloudbase:smoke:sync` 已通过真实云端 smoke。为避免 `@cloudbase/node-sdk` 传递引入存在原型污染公告的 `lodash.set` / `lodash.unset` 小包，已通过 `vendor/lodash-set` 和 `vendor/lodash-unset` 提供兼容 shim，内部调用已修复的主 `lodash` 子模块。
 
 ## 后续路线
 
