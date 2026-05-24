@@ -6,7 +6,7 @@
 
 **当前分支：** `main`
 
-**当前开发基线：** 已完成阶段 12 的 App 侧 AI 起稿链路；阶段 13 已跑通本机 Xiaomi MiMo、本地代理、App 写信页、CloudBase HTTP 云函数部署、云端 secret 配置、云端 AI 起稿接口、浏览器写信页云端 AI 烟测、CloudBase 用量基线、禁用 key 安全失败验证和恢复验证，并已删除历史遗留 `/*` 路由，只保留 `/api`。阶段 14 已完成 AI 起稿流式工程链路：本地 / 云端代理支持受控 SSE，App 起稿页可边收边显示，完成前不会进入可投寄正文，云端 `/api/ai/scribe-draft/stream` 已通过非敏感烟测。阶段 15 已完成云端与双人同步准备基础：新增远端模型、sync adapter 边界、AppState / RemoteSnapshot 转换、远端快照合并和本地 mock remote adapter，已用本地测试验证双设备 push / pull / merge；远端实体使用 `remoteId` 避免跨设备 id 冲突，pull 会对收件方未到达来信正文做红action，删除草稿可同步 tombstone。本阶段未接真实 CloudBase 数据库 SDK。阶段 16A 已完成本地 / 模拟远端同步闭环：新增同步元数据、本地同步状态存储、sync runtime、localStorage remote adapter、浏览器 device / household 配置、App 启动 / 前台 refresh / 操作后 push、联网投寄 / 拆阅护栏和双设备生命周期测试；真实 CloudBase 数据库 adapter 放到阶段 16B。阶段 13 仍需完成 MiMo / CloudBase 控制台费用告警和 CloudBase 默认角色收敛检查；阶段 14 仍需在用户授予 Computer Use 权限后补一次 GUI 浏览器操作验证。精确提交以 `git log --oneline --decorate -5` 为准。
+**当前开发基线：** 已完成阶段 12 的 App 侧 AI 起稿链路；阶段 13 已跑通本机 Xiaomi MiMo、本地代理、App 写信页、CloudBase HTTP 云函数部署、云端 secret 配置、云端 AI 起稿接口、浏览器写信页云端 AI 烟测、CloudBase 用量基线、禁用 key 安全失败验证和恢复验证，并已删除历史遗留 `/*` 路由，只保留 `/api`。阶段 14 已完成 AI 起稿流式工程链路：本地 / 云端代理支持受控 SSE，App 起稿页可边收边显示，完成前不会进入可投寄正文，云端 `/api/ai/scribe-draft/stream` 已通过非敏感烟测。阶段 15 已完成云端与双人同步准备基础：新增远端模型、sync adapter 边界、AppState / RemoteSnapshot 转换、远端快照合并和本地 mock remote adapter，已用本地测试验证双设备 push / pull / merge；远端实体使用 `remoteId` 避免跨设备 id 冲突，pull 会对收件方未到达来信正文做 redaction，删除草稿可同步 tombstone。阶段 16A 已完成本地 / 模拟远端同步闭环：新增同步元数据、本地同步状态存储、sync runtime、localStorage remote adapter、浏览器 device / household 配置、App 启动 / 前台 refresh / 操作后 push、联网投寄 / 拆阅护栏和双设备生命周期测试。阶段 16B 已完成工程实现：新增 HTTP SyncAdapter、CloudBase `sync-proxy` HTTP 函数、CloudBase 数据库 snapshot store、服务端 redaction / 私有草稿 / 照片附件过滤、member token 绑定、缺失 token fail closed、stale revision CAS 边界、构建 / 部署脚本和 App 配置开关；真实 CloudBase 数据库集合、HTTP 路由部署烟测、双真机同步烟测和控制台权限 / 费用配置仍待手工收口。阶段 13 仍需完成 MiMo / CloudBase 控制台费用告警和 CloudBase 默认角色收敛检查；阶段 14 仍需在用户授予 Computer Use 权限后补一次 GUI 浏览器操作验证。精确提交以 `git log --oneline --decorate -5` 为准。
 
 **工作区策略：** 日常开发直接在 `/Users/zhujunjie/code/pinganpi` 进行。除非用户明确要求隔离开发，否则不要创建或使用 `.worktrees/`。
 
@@ -206,9 +206,9 @@
 
 ## 路线图总览
 
-主线阶段按“本地体验稳定 → AI 接入设计 → 本地 AI 代理 → AI 正文生成 → 云端 AI 配置 → AI 体验优化 → 同步模型 → 双人真实可用 → 异常与附件 → 发布质量”推进。当前已完成阶段 16A 双人同步本地闭环；阶段 13 还有控制台人工收口事项，阶段 14 还有 GUI 点击补测，下一工程阶段建议进入阶段 16B 真实 CloudBase 数据库 adapter。
+主线阶段按“本地体验稳定 → AI 接入设计 → 本地 AI 代理 → AI 正文生成 → 云端 AI 配置 → AI 体验优化 → 同步模型 → 双人真实可用 → 异常与附件 → 发布质量”推进。当前已完成阶段 16A 双人同步本地闭环和阶段 16B CloudBase 同步代理工程实现；阶段 13 还有控制台人工收口事项，阶段 14 还有 GUI 点击补测，下一工程重点建议做阶段 16B 真实 CloudBase 部署烟测与双设备验证。
 
-**本期目标：** 阶段 16A 已把阶段 15 的同步模型接入 App 运行时，支持同步状态、启动 / 前台 refresh、操作后 push、联网投寄 / 拆阅护栏和本地双设备生命周期验证。下一步阶段 16B 接入真实 CloudBase 数据库 adapter，AI 仍只负责“代笔先生起稿”，不替用户自动投寄，不绕过手工校改，不改变真实等待、邮资、钱匣和信件状态规则。
+**本期目标：** 阶段 16B 已把阶段 16A 的同步 runtime 接到可部署的 CloudBase HTTP 同步代理。App 默认仍用本地 adapter；配置 `VITE_PINGANPI_SYNC_PROXY_URL` 后才启用 HTTP 同步。同步代理只负责 pull / push household snapshot，不替用户投寄，不绕过手工校改，不改变真实等待、邮资、钱匣和信件状态规则。
 
 | 阶段 | 名称 | 状态 | 说明 |
 | --- | --- | --- | --- |
@@ -227,7 +227,7 @@
 | 13 | 云端 AI 代理与费用配置 | 进行中 | CloudBase HTTP 云函数、云端 secret、`/api` 路由、云端 AI 起稿、浏览器烟测、禁用 key 安全失败、恢复验证和 `/*` 路由清理已完成；控制台费用告警和默认角色收敛检查待完成。 |
 | 14 | AI 起稿流式体验优化 | 已完成工程实现 | 本地 / 云端受控 SSE、App 流式 adapter、写信页 partial 预览、完成前不可投寄、云端流式烟测已通过；GUI 浏览器操作验证待权限补测。 |
 | 15 | 云端同步准备 | 已完成基础 | 已新增远端模型、sync adapter、快照转换/合并和本地 mock remote adapter；不接真实云 SDK。 |
-| 16 | 双人真实同步 MVP | 16A 已完成 | 本地 / 模拟远端同步 runtime、同步状态、联网操作护栏和双设备生命周期测试已完成；真实 CloudBase 数据库 adapter 放到 16B。 |
+| 16 | 双人真实同步 MVP | 16B 工程实现完成 | 本地 / 模拟远端同步闭环和 CloudBase HTTP 同步代理代码已完成；真实部署烟测、控制台权限 / 费用配置和双真机同步验证待手工收口。 |
 | 17 | 邮政异常规则 | 未开始 | 延误、错分、迷失、找回、退回的确定性推进。 |
 | 18 | 系统推送 | 未开始 | 重要信、挂号信、找回、退回等克制提醒。 |
 | 19 | 照片附件 | 未开始 | 夹寄照片、费用、存储、展示和隐私边界。 |
@@ -239,7 +239,7 @@
 - 阶段 11 已提供阶段 12 开发期所需的本地代理边界；阶段 12 已接入 App 侧 AI adapter，不阻塞于云端购买和部署。
 - 阶段 13 是生产级 AI 能力的前置条件：真实 MiMo env、费用告警、服务端 secret、云函数 / CloudBase 落点和回滚删除步骤在本阶段完成。
 - 阶段 14 是体验优化阶段：本地 / 云端流式代理和 App partial 预览已实现；它不改变写信、投寄、等待和拆阅规则。
-- 阶段 15 是阶段 16 的前置条件：远端模型、同步协议和本地 mock remote 验证已完成基础；阶段 16A 先在此边界上完成 App 侧同步 runtime 和本地双设备闭环，真实 CloudBase 数据库 adapter 放到 16B。
+- 阶段 15 是阶段 16 的前置条件：远端模型、同步协议和本地 mock remote 验证已完成基础；阶段 16A 已完成 App 侧同步 runtime 和本地双设备闭环，阶段 16B 已完成 CloudBase HTTP 同步代理工程实现，真实部署烟测和双真机验证仍需收口。
 - 阶段 17 可以在阶段 15 后独立设计；若与真实双设备同步并行推进，必须保证邮政事件幂等。
 - 阶段 18 依赖阶段 15 的远端事件边界，也依赖阶段 17 的异常事件定义。
 - 阶段 19 依赖阶段 15 的文件存储规划；具体云存储购买 / 配置在阶段 19 实施，UI 原型可以提前做本地 mock。
@@ -247,18 +247,20 @@
 
 ## 验证基线
 
-最近阶段 16A 双人同步本地闭环新增验证记录：
+最近阶段 16B CloudBase 同步代理工程实现新增验证记录：
 
+- 新增聚焦验证：`src/app/sync/http-remote-adapter.test.ts`、`src/app/sync/remote-adapter-factory.test.ts`、`server/sync-proxy/handler.test.ts`、`server/sync-proxy/cloudbase-store.test.ts`、`server/sync-proxy/cloudbase-entry.test.ts`、`server/sync-proxy/cloudbase-http-server.test.ts` 共 6 个测试文件、29 个测试通过。
 - `git diff --check`：通过。
-- `/Users/zhujunjie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node node_modules/vitest/vitest.mjs run`：28 个测试文件，263 个测试通过。当前 Codex shell 中 `npm` 不在 PATH，因此使用项目依赖的等价 Vitest 入口。
-- `/Users/zhujunjie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node node_modules/vue-tsc/bin/vue-tsc.js --noEmit`：通过。当前 Codex shell 中 `npm` 不在 PATH，因此使用项目依赖的等价 Vue TSC 入口。
-- 浏览器烟测：`http://127.0.0.1:5173/?household=household-browser-test&device=device-a&member=member-zhou` 可加载，页面包含标题、同步状态和五个主导航，控制台无 error。
-- `rg -n "MIMO_API_KEY|VITE_MIMO|VITE_XIAOMI|tp-|sk-" src --glob '!**/*.test.ts'`：无生产代码命中。
+- `/Users/zhujunjie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node node_modules/vitest/vitest.mjs run`：34 个测试文件，292 个测试通过。
+- `/Users/zhujunjie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node node_modules/vue-tsc/bin/vue-tsc.js --noEmit`：通过。
+- `/Users/zhujunjie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node --import tsx scripts/build-cloudbase-sync-proxy.ts`：通过，生成的 `cloudbase/functions/sync-proxy/` 已被 Git 忽略。
 - `/Users/zhujunjie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node node_modules/vite/bin/vite.js build`：通过，保留 Varlet / 首包超过 500 KB 的既有提示。
 - `/Users/zhujunjie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node node_modules/@capacitor/cli/bin/capacitor sync`：通过，已同步 iOS / Android Web assets。
 - `/Users/zhujunjie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node node_modules/@capacitor/cli/bin/capacitor doctor`：通过，iOS / Android Capacitor 依赖正常。
+- `npm audit --omit=dev`：通过，0 vulnerabilities。为避免 `@cloudbase/node-sdk` 传递引入存在原型污染公告的 `lodash.set` / `lodash.unset` 小包，已通过 `vendor/lodash-set` 和 `vendor/lodash-unset` 提供兼容 shim，内部调用已修复的主 `lodash` 子模块。
+- `rg -n "(tp|sk)-[A-Za-z0-9]{8,}" src server scripts vendor docs --glob '!**/*.test.ts'`：无真实 key 命中。
 
-既有阶段 13 / 14 云端基线如下，本次阶段 16A 未重跑这些云端命令：
+既有阶段 13 / 14 云端基线如下，本次阶段 16B 未重跑这些云端 AI 命令：
 
 - `npm run cloudbase:build:ai`：通过，生成的 `cloudbase/functions/` 已被 Git 忽略。
 - `CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:ai`：通过，函数 `ai-scribe-proxy` 已重新部署。
@@ -300,7 +302,7 @@ npx cap doctor
 
 - 生产级 AI 能力：本机 MiMo、本地代理、本地费用护栏、可复用 handler 边界、CloudBase HTTP 云函数、云端 secret、云端代理地址、浏览器云端起稿烟测、流式起稿、禁用 key 安全失败验证、恢复验证和 `/*` 路由清理已跑通；CloudBase / MiMo 控制台费用告警和默认角色收敛检查仍在阶段 13。
 - AI 起稿流式输出已完成本地 / 云端工程实现；GUI 浏览器点击验证因 Computer Use 权限未授予，需后续补测。
-- 真实 CloudBase 数据库同步、双人账户绑定和真实双设备数据同步。
+- 真实 CloudBase `sync-proxy` 部署烟测、HTTP 路由 / 数据库集合权限 / member token 配置、双人账户绑定和真实双设备数据同步。
 - 阶段 13 的 AI 能力额度、云端费用限额和 CloudBase 默认角色收敛检查；回滚 / 删除命令已记录，但控制台告警仍需手工确认。
 - 延误、错分、迷失、找回、退回的自动确定性推进规则。
 - 系统推送：重要信、挂号信、迷失信找回、退回信件。
@@ -608,7 +610,7 @@ npx cap doctor
 
 ### 阶段 15：云端与双人同步准备
 
-状态：已完成基础。阶段设计与实施计划已建立，`src/app/sync/` 纯 TypeScript 同步边界和本地 mock remote adapter 已完成；真实 CloudBase 数据库 adapter 留到阶段 16B。
+状态：已完成基础。阶段设计与实施计划已建立，`src/app/sync/` 纯 TypeScript 同步边界和本地 mock remote adapter 已完成；真实 CloudBase HTTP 同步代理已在阶段 16B 完成工程实现。
 
 设计文档：
 
@@ -624,7 +626,7 @@ npx cap doctor
 - 新增 `src/app/sync/remote-snapshot.ts`，支持从 `AppState` 导出远端拆分实体，并把远端快照合并回本地状态。
 - 新增 `mergeRemoteSnapshots`，供 mock remote adapter 合并远端实体，不把远端存储降级成单一 `AppState` blob。
 - 新增 `src/app/sync/mock-remote-adapter.ts`，用本地内存模拟 household 远端快照、revision 和 device cursor。
-- 新增测试覆盖：AI metadata 安全字段、白名单转换、append-only 去重、跨设备同 id 不丢数据、未到达来信正文红action、信件状态单向推进、草稿冲突、草稿 tombstone、对方私有草稿过滤、双设备 push / pull / opened 合并和深拷贝隔离。
+- 新增测试覆盖：AI metadata 安全字段、白名单转换、append-only 去重、跨设备同 id 不丢数据、未到达来信正文 redaction、信件状态单向推进、草稿冲突、草稿 tombstone、对方私有草稿过滤、双设备 push / pull / opened 合并和深拷贝隔离。
 
 目标：本地流程和生产级 AI 调用边界稳定后，为真实两人使用做云端同步准备。
 
@@ -665,15 +667,17 @@ npx cap doctor
 
 目标：让两台设备在真实云端或本地模拟云端上共享同一对通信关系的数据，并保持慢通信体验。
 
-状态：16A 已完成。已用本地 / 模拟远端完成 App 侧同步闭环；真实 CloudBase 数据库 adapter 留到 16B。
+状态：16B 工程实现已完成。已用本地 / 模拟远端完成 App 侧同步闭环，并新增可部署的 CloudBase HTTP 同步代理；真实 CloudBase 部署烟测、控制台权限 / 费用配置和双真机同步验证仍需手工收口。
 
 设计文档：
 
 - `docs/superpowers/specs/2026-05-24-pinganpi-dual-sync-mvp-design.md`
+- `docs/superpowers/specs/2026-05-24-pinganpi-cloudbase-sync-design.md`
 
 实施计划：
 
 - `docs/superpowers/plans/2026-05-24-pinganpi-dual-sync-mvp.md`
+- `docs/superpowers/plans/2026-05-24-pinganpi-cloudbase-sync-adapter.md`
 
 推荐范围：
 
@@ -689,12 +693,18 @@ npx cap doctor
 已实现：
 
 - 新增 `src/app/sync/sync-state.ts` 和 `src/app/sync/sync-state-storage.ts`，保存 household、device、member、revision、同步状态和短错误。
-- 新增 `src/app/sync/sync-runtime.ts`，实现 pull、push、syncNow、prepareOnlineMutation；失败不透出原始异常，push 后会按当前成员红action并把可见远端快照合回本地。
+- 新增 `src/app/sync/sync-runtime.ts`，实现 pull、push、syncNow、prepareOnlineMutation；失败不透出原始异常，push 后会按当前成员 redaction 并把可见远端快照合回本地。
 - 新增 `src/app/sync/local-remote-adapter.ts`，用 localStorage 模拟 household 远端快照，拒绝 stale push，污染快照会回退为空快照，push / pull 都返回深拷贝。
 - 新增 `src/app/sync/browser-sync-config.ts`，支持 `household` / `device` / `member` URL 参数，按 household + member + device 隔离本地 AppState / SyncState，remote snapshot 仅按 household 共享。
 - `src/App.vue` 已接入同步状态 UI、启动同步、进入前台 refresh、信箱 refresh、保存 / 删除草稿后后台 push、投寄 / 拆阅前联网校验和成功后 push。
 - 后台同步结果有串行队列和本地 state revision 检查，避免旧同步结果覆盖较新的本地草稿、tombstone、投寄扣款或拆阅记录。
 - 新增 `src/app/sync/dual-device-sync.test.ts`，验证 A 投寄、B 到达前拿不到正文、到达后拆阅并补回正文、A 同步看到 opened、账本 / 邮政记录不重复、B 私有草稿不导入 A。
+- 新增 `src/app/sync/http-remote-adapter.ts`，通过 `POST /sync/pull` 和 `POST /sync/push` 实现 HTTP 版 `SyncAdapter`，会把 409 `stale_remote_revision` 映射为 runtime 可识别的冲突错误，并拒绝 malformed revision response。
+- 新增 `src/app/sync/remote-adapter-factory.ts`、`VITE_PINGANPI_SYNC_PROXY_URL` 和 `VITE_PINGANPI_SYNC_MEMBER_TOKEN` 配置。未配置同步代理地址时继续使用本地 localStorage adapter；配置后才启用 HTTP 同步代理，配置成员 token 时由客户端发送 `X-Pinganpi-Sync-Token`。
+- 新增 `server/sync-proxy/handler.ts`，实现 `GET /health`、`POST /sync/pull`、`POST /sync/push`，复用 `mergeRemoteSnapshots` 和 redaction；服务端用 `PINGANPI_SYNC_MEMBER_TOKENS` 将 `householdId + memberId` 绑定到 token，缺失配置时同步请求 fail closed。
+- `sync-proxy` 返回给客户端的 snapshot 会过滤对方私有草稿，未到达来信不含正文、摘要、口述、代笔稿或 AI metadata，并清空 `photoAttachments`，避免阶段 19 前后附件定位信息提前泄露。
+- 新增 `server/sync-proxy/cloudbase-store.ts`，使用 `@cloudbase/node-sdk` 数据库写入 household snapshot，保存集合默认为 `pinganpi_sync_snapshots`，写入前按 expected revision 做 CAS / 事务边界校验；真实 SDK 写入形态为 `doc.set(data)` / `transaction.set(docRef, data)`，写入数据不包含 `_id` 字段。
+- 新增 `server/sync-proxy/cloudbase-entry.ts`、`cloudbase-http-server.ts`、`cloudbase-bootstrap.ts` 和 `scripts/build-cloudbase-sync-proxy.ts`；`cloudbaserc.json` 已增加 HTTP 函数 `sync-proxy`，`package.json` 已增加 `cloudbase:build:sync` / `cloudbase:deploy:sync`。
 
 验收标准：
 
@@ -703,7 +713,7 @@ npx cap doctor
 - 一端投寄后，另一端只能在到达后拆阅。
 - 离线写草稿恢复联网后可以同步，不破坏对方数据。
 - 如后续支持离线投寄 / 拆阅请求，必须作为 command 入队，联网后重新校验钱包、状态机、收件人和到达时间，失败时转为待处理或回滚。
-- 真实 CloudBase 数据库 adapter 只在 16A 本地闭环稳定后进入 16B，不提前改变 `src/domain` 或投寄 / 拆阅规则。
+- 真实 CloudBase 同步代理工程实现不改变 `src/domain` 或投寄 / 拆阅规则；实际部署前必须在 CloudBase 控制台确认数据库集合权限、HTTP 路由、费用告警和默认角色。
 
 非目标：
 

@@ -10,8 +10,9 @@ import ScribesPage from "./app/pages/ScribesPage.vue";
 import TodayPage from "./app/pages/TodayPage.vue";
 import WalletPage from "./app/pages/WalletPage.vue";
 import WriteLetterPage from "./app/pages/WriteLetterPage.vue";
+import { readSyncMemberToken, readSyncProxyUrl } from "./app/runtime-config.js";
 import { resolveBrowserSyncConfig } from "./app/sync/browser-sync-config.js";
-import { createLocalStorageRemoteSyncAdapter } from "./app/sync/local-remote-adapter.js";
+import { createRemoteSyncAdapter } from "./app/sync/remote-adapter-factory.js";
 import { createLocalSyncStateStore } from "./app/sync/sync-state-storage.js";
 import {
   prepareOnlineMutation,
@@ -38,7 +39,11 @@ interface WriteLetterSubmitPayload {
 const browserStorage: KeyValueStorage = typeof window === "undefined" ? createMemoryKeyValueStorage() : window.localStorage;
 const browserLocation = typeof window === "undefined" ? "" : window.location;
 const syncConfig = resolveBrowserSyncConfig(browserLocation, browserStorage);
-const remoteAdapter = createLocalStorageRemoteSyncAdapter(browserStorage);
+const remoteAdapter = createRemoteSyncAdapter({
+  storage: browserStorage,
+  syncProxyUrl: readSyncProxyUrl(),
+  syncMemberToken: readSyncMemberToken()
+});
 const appStateStore = createBrowserAppStateStore(syncConfig.appStateStorageKey);
 const syncStateStore = createLocalSyncStateStore(
   browserStorage,

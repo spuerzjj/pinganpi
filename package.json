@@ -14,6 +14,8 @@
     "cloudbase:configure:ai-env": "node --env-file-if-exists=.env.ai.local --import tsx scripts/configure-cloudbase-ai-env.ts",
     "cloudbase:disable:ai-env": "PINGANPI_CLOUDBASE_AI_ENV_MODE=disabled node --env-file-if-exists=.env.ai.local --import tsx scripts/configure-cloudbase-ai-env.ts",
     "cloudbase:deploy:ai": "npm run cloudbase:build:ai && cloudbase fn deploy ai-scribe-proxy --httpFn --force",
+    "cloudbase:build:sync": "node --import tsx scripts/build-cloudbase-sync-proxy.ts",
+    "cloudbase:deploy:sync": "npm run cloudbase:build:sync && cloudbase fn deploy sync-proxy --httpFn --force",
     "cap:sync": "npm run build && npx cap sync",
     "typecheck": "vue-tsc --noEmit",
     "test": "vitest run",
@@ -37,6 +39,7 @@
   },
   "dependencies": {
     "@capacitor/core": "^8.3.4",
+    "@cloudbase/node-sdk": "^3.18.1",
     "@varlet/ui": "^3.17.0",
     "vue": "^3.5.34"
   },
@@ -44,6 +47,8 @@
     "axios": "^1.16.1",
     "js-cookie": "^3.0.7",
     "lodash": "^4.18.1",
+    "lodash.set": "file:vendor/lodash-set",
+    "lodash.unset": "file:vendor/lodash-unset",
     "uuid": "^13.0.2"
   }
 }

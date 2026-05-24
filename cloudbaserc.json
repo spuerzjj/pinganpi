@@ -15,6 +15,17 @@
       "memorySize": 256,
       "installDependency": false,
       "dir": "cloudbase/functions/ai-scribe-proxy"
+    },
+    {
+      "name": "sync-proxy",
+      "description": "平安批双人同步服务端代理",
+      "type": "HTTP",
+      "runtime": "Nodejs20.19",
+      "handler": "index.main",
+      "timeout": 30,
+      "memorySize": 256,
+      "installDependency": false,
+      "dir": "cloudbase/functions/sync-proxy"
     }
   ]
 }

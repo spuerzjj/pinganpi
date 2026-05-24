@@ -240,7 +240,7 @@
       }
 
       .progress-fill {
-        width: 70%;
+        width: 78%;
         height: 100%;
         border-radius: inherit;
         background: linear-gradient(90deg, #2563eb, #059669);
@@ -479,7 +479,7 @@
           </p>
         </div>
         <div class="meta">
-          <span class="badge done">工程：阶段 16A 完成</span>
+          <span class="badge done">工程：阶段 16B 实现</span>
           <span class="badge warn">人工收口：阶段 13</span>
           <span class="badge done">main</span>
           <span class="badge">更新：2026-05-24</span>
@@ -489,23 +489,23 @@
       <section class="grid-4" aria-label="关键状态">
         <article class="metric">
           <p class="metric-label">当前基线</p>
-          <p class="metric-value">阶段 16A 完成</p>
-          <p class="metric-note">同步 runtime、同步状态、联网操作护栏和本地双设备生命周期测试已完成。</p>
+          <p class="metric-value">阶段 16B 实现</p>
+          <p class="metric-note">同步 runtime、本地双设备闭环和 CloudBase sync-proxy 工程实现已完成。</p>
         </article>
         <article class="metric">
           <p class="metric-label">验证状态</p>
-          <p class="metric-value">263 tests</p>
-          <p class="metric-note">Vitest / typecheck / 浏览器烟测 / sync runtime / local remote / 双设备生命周期最近通过。</p>
+          <p class="metric-value">292 tests</p>
+          <p class="metric-note">新增 HTTP adapter、sync-proxy handler / HTTP server、CloudBase store 和配置工厂测试。</p>
         </article>
         <article class="metric">
           <p class="metric-label">下一推荐</p>
-          <p class="metric-value">CloudBase DB</p>
-          <p class="metric-note">下一工程阶段建议进入阶段 16B：真实 CloudBase 数据库 adapter。</p>
+          <p class="metric-value">部署烟测</p>
+          <p class="metric-note">下一步做真实 CloudBase sync-proxy 部署、路由和双设备同步烟测。</p>
         </article>
         <article class="metric">
           <p class="metric-label">主要风险</p>
           <p class="metric-value">7 项</p>
-          <p class="metric-note">控制台收口、GUI 补测、16B 云数据库、异常、推送、附件、发布质量。</p>
+          <p class="metric-note">控制台收口、GUI 补测、同步部署烟测、异常、推送、附件、发布质量。</p>
         </article>
       </section>
 
@@ -513,9 +513,9 @@
         <div class="card-header">
           <div>
             <h2>阶段进度</h2>
-            <p class="muted">阶段 16A App 侧同步闭环已完成；阶段 13 还剩 MiMo / CloudBase 控制台费用告警、默认角色收敛和 key 轮换入口等人工收口。</p>
+            <p class="muted">阶段 16B CloudBase 同步代理工程实现已完成；阶段 13 还剩 MiMo / CloudBase 控制台费用告警、默认角色收敛和 key 轮换入口等人工收口。</p>
           </div>
-          <span class="badge done">75%</span>
+          <span class="badge done">78%</span>
         </div>
         <div class="card-body progress">
           <div class="progress-track" aria-hidden="true">
@@ -582,7 +582,7 @@
               <span class="phase-number">15</span>
               <span class="phase-title">云端同步</span>
             </div>
-            <div class="phase next">
+            <div class="phase done">
               <span class="phase-number">16</span>
               <span class="phase-title">双人同步 MVP</span>
             </div>
@@ -679,6 +679,11 @@
                 <span>远端模型、sync adapter、快照转换 / 合并、本地 mock remote 和双设备合并测试已完成；未接真实云数据库 SDK。</span>
                 <span class="badge done">阶段 15</span>
               </li>
+              <li class="list-item">
+                <strong>CloudBase 同步代理</strong>
+                <span>HTTP SyncAdapter、sync-proxy 云函数、数据库 snapshot store、服务端 redaction / 私有草稿 / 照片附件过滤、member token fail-closed、stale revision CAS 和构建部署脚本已接入。</span>
+                <span class="badge done">阶段 16B</span>
+              </li>
             </ul>
           </div>
         </article>
@@ -696,9 +701,11 @@
               <span class="badge warn">chunk warning</span>
             </div>
             <ul class="plain-list" style="margin-top: 12px">
-              <li>23 个测试文件，225 个测试通过。</li>
-              <li>测试覆盖草稿、写信、模板代书、邮政推进、拆阅服务、AI 代理、同步模型、mock remote、AppModel 和持久化结算。</li>
+              <li>全量 34 个测试文件，292 个测试通过。</li>
+              <li>新增测试覆盖 HTTP SyncAdapter、CloudBase sync handler、CloudBase snapshot store、CloudBase event / HTTP server 入口和 App adapter factory。</li>
+              <li>测试继续覆盖草稿、写信、模板代书、邮政推进、拆阅服务、AI 代理、同步模型、mock remote、AppModel 和持久化结算。</li>
               <li>`npx cap sync` 与 `npx cap doctor` 已通过，iOS / Android Capacitor 依赖正常。</li>
+              <li>`npm audit --omit=dev` 通过，0 vulnerabilities；CloudBase SDK 的 lodash.set / unset 风险已用本仓库 shim 替换。</li>
               <li>CloudBase `/api/health` 返回 ok，云端 `/api/ai/scribe-draft` 非敏感烟测返回 AI 初稿。</li>
               <li>云端 `/api/ai/scribe-draft/stream` 非敏感烟测返回多段 `delta` 和最终 `done`，未暴露 provider 原始 `choices` chunk。</li>
               <li>禁用云端 `MIMO_API_KEY` 后返回 `502 proxy_unavailable`，恢复后云端起稿重新返回 200。</li>
@@ -715,7 +722,7 @@
         <article class="card">
           <div class="card-header">
             <h2>后续主线</h2>
-            <span class="badge info">下一工程：阶段 16B</span>
+            <span class="badge info">下一工程：同步部署烟测</span>
           </div>
           <div class="card-body priority-grid">
             <div class="priority">
@@ -758,14 +765,21 @@
                 <span class="badge done">阶段 15 完成基础</span>
               </div>
               <h3>云端与双人同步准备</h3>
-              <p>远端模型、同步 adapter、本地 mock remote、append-only 去重、跨设备 id 防冲突、未到达正文红action、信件状态单向推进和草稿冲突策略已完成；真实 CloudBase 数据库 adapter 留到阶段 16B。</p>
+              <p>远端模型、同步 adapter、本地 mock remote、append-only 去重、跨设备 id 防冲突、未到达正文 redaction、信件状态单向推进和草稿冲突策略已完成；CloudBase HTTP 同步代理已在阶段 16B 完成工程实现。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
                 <span class="badge done">阶段 16A 完成</span>
               </div>
               <h3>双人同步本地闭环</h3>
-              <p>同步 runtime、同步状态、localStorage remote adapter、浏览器 device 配置、联网投寄 / 拆阅护栏和本地双设备生命周期测试已完成；真实 CloudBase 数据库 adapter 留到 16B。</p>
+              <p>同步 runtime、同步状态、localStorage remote adapter、浏览器 device 配置、联网投寄 / 拆阅护栏和本地双设备生命周期测试已完成。</p>
+            </div>
+            <div class="priority">
+              <div class="meta" style="justify-content: flex-start">
+                <span class="badge done">阶段 16B 实现</span>
+              </div>
+              <h3>CloudBase 同步代理</h3>
+              <p>App 可通过 HTTP SyncAdapter 调用 `sync-proxy`；服务端使用 CloudBase 数据库保存 household snapshot，按 member token 绑定成员，返回前过滤未到达正文、对方私有草稿和照片附件。真实部署烟测待收口。</p>
             </div>
           </div>
         </article>
@@ -779,7 +793,7 @@
             <ul class="plain-list">
               <li>CloudBase / MiMo 费用告警、月费用上限或人工检查频率仍需配置和记录。</li>
               <li>Chrome GUI 点击验证需要先授予 Codex Computer Use 的 Accessibility / Screen Recording 权限。</li>
-              <li>阶段 16B 需要接入真实 CloudBase 数据库 adapter，并验证真实双设备同步。</li>
+              <li>阶段 16B 工程实现已完成，但仍需部署 `sync-proxy`、配置 HTTP 路由 / 数据库集合权限 / `PINGANPI_SYNC_MEMBER_TOKENS`，并验证真实双设备同步。</li>
               <li>阶段 13 尚未完成 CloudBase 默认角色收敛检查、控制台告警配置和 MiMo 控制台 key 轮换入口记录。</li>
               <li>延误、迷失、找回、退回尚未接入自动确定性推进规则。</li>
               <li>系统推送和照片附件尚未开始。</li>
@@ -804,6 +818,8 @@
             <a class="button" href="./superpowers/plans/2026-05-24-pinganpi-cloud-sync-foundation.md">阶段 15 实施计划</a>
             <a class="button" href="./superpowers/specs/2026-05-24-pinganpi-dual-sync-mvp-design.md">阶段 16 设计</a>
             <a class="button" href="./superpowers/plans/2026-05-24-pinganpi-dual-sync-mvp.md">阶段 16 实施计划</a>
+            <a class="button" href="./superpowers/specs/2026-05-24-pinganpi-cloudbase-sync-design.md">阶段 16B 同步设计</a>
+            <a class="button" href="./superpowers/plans/2026-05-24-pinganpi-cloudbase-sync-adapter.md">阶段 16B 实施计划</a>
           </div>
         </div>
       </section>
