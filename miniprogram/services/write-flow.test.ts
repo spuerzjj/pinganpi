@@ -35,6 +35,17 @@ describe("miniprogram write flow", () => {
     expect(revised.canPost).toBe(true);
   });
 
+  it("invalidates generated draft when oral text changes", () => {
+    const state = createLocalMockState(fixedNow);
+    const drafted = generateLocalDraft(updateOralText(createWriteFlowModel(state, fixedNow), "一切平安。"), state, fixedNow);
+    const changed = updateOralText(drafted, "今日雨冷，问她衣裳可够。");
+
+    expect(changed.step).toBe("oral");
+    expect(changed.draftText).toBe("");
+    expect(changed.finalText).toBe("");
+    expect(changed.canPost).toBe(false);
+  });
+
   it("updates registered postage and total cost", () => {
     const state = createLocalMockState(fixedNow);
     const registered = setRegistered(createWriteFlowModel(state, fixedNow), true);

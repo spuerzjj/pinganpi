@@ -100,10 +100,16 @@ export function createWriteFlowModel(state: MiniLocalState, now: Date): WriteFlo
 }
 
 export function updateOralText(flow: WriteFlowModel, oralText: string): WriteFlowModel {
+  const oralTextChanged = flow.oralText.trim() !== oralText.trim();
+  const shouldInvalidateDraft =
+    oralTextChanged && (flow.draftText.trim().length > 0 || flow.finalText.trim().length > 0);
+
   return withComputedFields({
     ...flow,
     oralText,
-    step: flow.step === "method" ? "oral" : flow.step,
+    draftText: shouldInvalidateDraft ? "" : flow.draftText,
+    finalText: shouldInvalidateDraft ? "" : flow.finalText,
+    step: flow.step === "method" || shouldInvalidateDraft ? "oral" : flow.step,
   });
 }
 

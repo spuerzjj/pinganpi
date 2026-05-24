@@ -74,7 +74,7 @@ npx cap doctor
 
 ## 当前代码状态
 
-当前迁移工作在 `codex/wechat-miniprogram-pivot` 分支推进。最新路线图基线为：**阶段 1-19 的旧 Capacitor / Vue App 工程能力已形成完整业务参考；2026-05-24 用户确认项目主线切换为微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境。手机号仍是《平安批》业务账号主键，微信一键获取手机号为默认登录入口，短信验证码登录保留兜底。本地开发和上线都优先走 CloudBase 云函数，本地 proxy 降级为诊断工具。阶段 21 已完成迁移设计与重基线；阶段 22 已完成小程序工程基座；阶段 23 已完成共享领域核心迁移；阶段 24 已完成小程序本地核心界面：今日、写信、代笔先生、钱匣、信箱 / 档案已接入本地 mock view-model，写信页已有本地五步流程。下一步进入阶段 25：小程序 CloudBase dev 主链路。迁移设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`，阶段 22 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md`，阶段 23 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-shared-domain-core.md`，阶段 24 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-local-ui.md`。**
+当前迁移工作在 `codex/wechat-miniprogram-pivot` 分支推进。最新路线图基线为：**阶段 1-19 的旧 Capacitor / Vue App 工程能力已形成完整业务参考；2026-05-24 用户确认项目主线切换为微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境。手机号仍是《平安批》业务账号主键，微信一键获取手机号为默认登录入口，短信验证码登录保留兜底。本地开发和上线都优先走 CloudBase 云函数，本地 proxy 降级为诊断工具。阶段 21 已完成迁移设计与重基线；阶段 22 已完成小程序工程基座；阶段 23 已完成共享领域核心迁移；阶段 24 已完成小程序本地核心界面：今日、写信、代笔先生、钱匣、信箱 / 档案已接入本地 mock view-model，写信页已有本地五步流程，tab 切换保留进度，口述变更会重新起稿。下一步进入阶段 25：小程序 CloudBase dev 主链路。迁移设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`，阶段 22 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md`，阶段 23 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-shared-domain-core.md`，阶段 24 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-local-ui.md`。**
 
 旧 App 能力基线仍然重要：阶段 16 双人真实同步 MVP 已完成云端 smoke；阶段 17 手机号账号本地工程闭环已完成；阶段 18 双人绑定与同步授权工程闭环已完成；阶段 19 外部平台配置已收口。阶段 13 / 14 的 CloudBase AI 代理、非流式 / 流式起稿、禁用 key 安全失败验证和恢复验证已跑通。继续开发前以 `git log --oneline --decorate -5` 为准。
 
@@ -159,7 +159,7 @@ npx cap doctor
 - `docs/superpowers/specs/2026-05-23-pinganpi-ai-scribe-design.md`
 - `docs/superpowers/plans/2026-05-23-pinganpi-minimal-ai-proxy.md`
 
-最近验证基线：阶段 24 已通过 `npm test -- miniprogram/services/local-model.test.ts`（4 个测试通过）、`npm test -- miniprogram/services/write-flow.test.ts`（5 个测试通过）、`npm run miniprogram:check`、`npm test`（46 个测试文件，342 个测试通过）、`npm run typecheck` 和 `git diff --check`。阶段 23 基线保留：`npm test -- src/domain`（5 个测试文件，85 个测试通过）、`npm run miniprogram:check-shared`、`npm test -- miniprogram/services/domain-summary.test.ts`（1 个测试通过）、`npm test -- scripts/sync-miniprogram-shared-domain.test.ts`（4 个测试通过）。阶段 22 基线为 `npm test -- miniprogram/config/env.test.ts`（1 个测试文件，3 个测试通过）。阶段 17 / 18 旧 App 基线保留：`npm test` 曾为 40 个测试文件、320 个测试通过，`vue-tsc --noEmit`、`vite build`、`cap sync`、`cap doctor`、`npm audit --omit=dev` 均通过；Varlet 首包超过 500 KB 是旧 App 优化项。阶段 16B 云端基线保留：`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:sync` 通过，`npm run cloudbase:smoke:sync` 已通过真实云端 smoke。为避免 `@cloudbase/node-sdk` 传递引入存在原型污染公告的 `lodash.set` / `lodash.unset` 小包，已通过 `vendor/lodash-set` 和 `vendor/lodash-unset` 提供兼容 shim，内部调用已修复的主 `lodash` 子模块。
+最近验证基线：阶段 24 已通过 `npm test -- miniprogram/services/local-model.test.ts`（4 个测试通过）、`npm test -- miniprogram/services/write-flow.test.ts`（6 个测试通过）、`npm run miniprogram:check`、`npm test`（46 个测试文件，343 个测试通过）、`npm run typecheck` 和 `git diff --check`。阶段 23 基线保留：`npm test -- src/domain`（5 个测试文件，85 个测试通过）、`npm run miniprogram:check-shared`、`npm test -- miniprogram/services/domain-summary.test.ts`（1 个测试通过）、`npm test -- scripts/sync-miniprogram-shared-domain.test.ts`（4 个测试通过）。阶段 22 基线为 `npm test -- miniprogram/config/env.test.ts`（1 个测试文件，3 个测试通过）。阶段 17 / 18 旧 App 基线保留：`npm test` 曾为 40 个测试文件、320 个测试通过，`vue-tsc --noEmit`、`vite build`、`cap sync`、`cap doctor`、`npm audit --omit=dev` 均通过；Varlet 首包超过 500 KB 是旧 App 优化项。阶段 16B 云端基线保留：`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:sync` 通过，`npm run cloudbase:smoke:sync` 已通过真实云端 smoke。为避免 `@cloudbase/node-sdk` 传递引入存在原型污染公告的 `lodash.set` / `lodash.unset` 小包，已通过 `vendor/lodash-set` 和 `vendor/lodash-unset` 提供兼容 shim，内部调用已修复的主 `lodash` 子模块。
 
 ## 后续路线
 
@@ -228,6 +228,7 @@ npx cap doctor
    - 今日、代笔先生、钱匣、信箱、档案页面已从占位内容改为读取本地模型。
    - 已新增 `miniprogram/services/write-flow.ts` 和测试，提供本地五步写信流程、费用计算、挂号切换和投寄存根。
    - 写信页已支持口述、先生起稿、校改、投寄核算和本地投寄回执。
+   - 写信 tab 切换不会重建本地 flow；口述变更会清空旧起稿 / 定稿，避免用旧正文投寄。
    - 本阶段仍不接 CloudBase、真实登录、真实同步或 AI 起稿。
 
 5. **阶段 25：小程序 CloudBase dev 主链路**

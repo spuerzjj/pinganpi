@@ -66,7 +66,7 @@ Page({
     canGoNext: false,
     nextDisabled: false,
   },
-  onShow(this: WritePageInstance) {
+  onLoad(this: WritePageInstance) {
     const now = new Date();
     localState = createLocalMockState(now);
     setFlow(this, createWriteFlowModel(localState, now), null);

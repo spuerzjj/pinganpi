@@ -495,7 +495,7 @@
         </article>
         <article class="metric">
           <p class="metric-label">验证状态</p>
-          <p class="metric-value">342 tests</p>
+          <p class="metric-value">343 tests</p>
           <p class="metric-note">全量测试、旧 Vue typecheck、小程序检查和阶段 24 专项测试已通过。</p>
         </article>
         <article class="metric">
@@ -769,10 +769,10 @@
               <span class="badge warn">chunk warning</span>
             </div>
             <ul class="plain-list" style="margin-top: 12px">
-              <li>阶段 24 已完成基础：今日、写信、代笔先生、钱匣、信箱 / 档案已接入本地 mock view-model。</li>
+              <li>阶段 24 已完成基础：今日、写信、代笔先生、钱匣、信箱 / 档案已接入本地 mock view-model，写信 tab 切换保留进度，口述变更会重新起稿。</li>
               <li>`miniprogram/services/local-model.test.ts` 已通过，4 个测试覆盖今日、先生、钱匣、信箱 / 档案 view-model。</li>
-              <li>`miniprogram/services/write-flow.test.ts` 已通过，5 个测试覆盖本地写信费用、起稿、校改、挂号和投寄存根。</li>
-              <li>全量 46 个测试文件，342 个测试通过。</li>
+              <li>`miniprogram/services/write-flow.test.ts` 已通过，6 个测试覆盖本地写信费用、起稿、校改、挂号、投寄存根和口述变更后旧稿失效。</li>
+              <li>全量 46 个测试文件，343 个测试通过。</li>
               <li>阶段 23 已完成基础：`shared/domain/` 是领域规则真实实现位置，`src/domain/` 保留兼容 re-export。</li>
               <li>`miniprogram/shared/domain/` 是由 `npm run miniprogram:sync-shared` 同步的根内副本，避免微信小程序预览 / 上传跨出 `miniprogramRoot`。</li>
               <li>`npm test -- src/domain` 已通过，5 个测试文件，85 个测试通过；旧领域入口验证共享核心行为未变。</li>
@@ -833,7 +833,7 @@
                 <span class="badge done">阶段 24 完成基础</span>
               </div>
               <h3>小程序本地核心界面</h3>
-              <p>今日、写信、代笔先生、钱匣、信箱 / 档案已接入本地 mock view-model；写信页已有本地五步流程。</p>
+              <p>今日、写信、代笔先生、钱匣、信箱 / 档案已接入本地 mock view-model；写信页已有本地五步流程，tab 切换保留进度，口述变更会重新起稿。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
