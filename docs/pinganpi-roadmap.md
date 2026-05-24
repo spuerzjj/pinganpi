@@ -6,7 +6,7 @@
 
 **当前分支：** `codex/wechat-miniprogram-pivot`
 
-**当前开发基线：** 阶段 1-19 的 Capacitor / Vue App 工程能力已形成完整业务参考：领域层、写信流程、AI 起稿、流式起稿、CloudBase AI 代理、同步模型、CloudBase 同步代理、手机号账号本地闭环、双人绑定本地 / 服务端边界和外部平台配置收口均已完成对应验证。2026-05-24 用户确认重大方向调整：目标运行环境从 iOS / Android App 改为微信小程序并需要上架；新主线采用微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境；手机号仍是《平安批》业务账号主键；微信一键获取手机号为默认登录入口，短信验证码保留兜底；本地开发和线上都优先走 CloudBase 云函数，本地 proxy 降级为诊断工具。阶段 21 已完成迁移设计与重基线；阶段 22 已完成小程序工程基座；阶段 23 已完成共享领域核心迁移，`shared/domain/` 成为领域规则真实实现位置，`src/domain/` 保留兼容 re-export，`miniprogram/shared/domain/` 是由 `npm run miniprogram:sync-shared` 同步的根内副本，小程序今日页已通过根内副本使用共享领域摘要。下一步进入阶段 24：小程序本地核心界面。迁移设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`，阶段 22 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md`，阶段 23 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-shared-domain-core.md`。精确提交以 `git log --oneline --decorate -5` 为准。
+**当前开发基线：** 阶段 1-19 的 Capacitor / Vue App 工程能力已形成完整业务参考：领域层、写信流程、AI 起稿、流式起稿、CloudBase AI 代理、同步模型、CloudBase 同步代理、手机号账号本地闭环、双人绑定本地 / 服务端边界和外部平台配置收口均已完成对应验证。2026-05-24 用户确认重大方向调整：目标运行环境从 iOS / Android App 改为微信小程序并需要上架；新主线采用微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境；手机号仍是《平安批》业务账号主键；微信一键获取手机号为默认登录入口，短信验证码保留兜底；本地开发和线上都优先走 CloudBase 云函数，本地 proxy 降级为诊断工具。阶段 21 已完成迁移设计与重基线；阶段 22 已完成小程序工程基座；阶段 23 已完成共享领域核心迁移；阶段 24 已完成小程序本地核心界面，今日、写信、先生、钱匣、信箱 / 档案已接入本地 mock view-model，写信页已有本地 5 步流程。下一步进入阶段 25：小程序 CloudBase dev 主链路。迁移设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`，阶段 22 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md`，阶段 23 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-shared-domain-core.md`，阶段 24 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-local-ui.md`。精确提交以 `git log --oneline --decorate -5` 为准。
 
 **工作区策略：** 日常开发直接在 `/Users/zhujunjie/code/pinganpi` 进行。除非用户明确要求隔离开发，否则不要创建或使用 `.worktrees/`。
 
@@ -210,7 +210,7 @@
 
 新主线从阶段 21 开始改为“微信小程序迁移设计 → 小程序工程基座 → 共享领域核心 → 小程序核心界面 → CloudBase dev 主链路 → 登录绑定真实闭环 → AI 与同步补齐 → 小程序上架配置 → 小程序完整人工验证 → 邮政异常 / 推送 / 附件 / 发布打磨”。
 
-**本期目标：** 阶段 23 已完成共享领域核心迁移。下一步进入阶段 24：在小程序里接入本地 mock App 状态，补齐今日、写信、先生、钱匣、信箱 / 档案的本地核心界面。旧 Capacitor / Vue 实现暂存为历史参考，不再作为主开发目标。
+**本期目标：** 阶段 24 已完成小程序本地核心界面。下一步进入阶段 25：接入 CloudBase dev 主链路，让账号、绑定、同步和 AI 通过 `wx.cloud.callFunction` 跑通工程通道。旧 Capacitor / Vue 实现暂存为历史参考，不再作为主开发目标。
 
 | 阶段 | 名称 | 状态 | 说明 |
 | --- | --- | --- | --- |
@@ -237,7 +237,7 @@
 | 21 | 微信小程序迁移设计与重基线 | 已完成 | 新增小程序迁移设计，更新 roadmap / dashboard / AGENTS，并提交阶段 22 实施计划。 |
 | 22 | 小程序工程基座 | 已完成基础 | 已新增 `miniprogram/`、TypeScript 检查、页面骨架、微信开发者工具配置和 `dev` CloudBase 环境入口。 |
 | 23 | 共享领域核心迁移 | 已完成基础 | 已新增 `shared/domain/` 作为领域规则真实实现，`src/domain/` 保留兼容 re-export，小程序根内副本和一致性检查已建立，今日页已使用共享领域摘要。 |
-| 24 | 小程序本地核心界面 | 未开始 | 今日、写信、先生、钱匣、信箱 / 档案的本地 mock 闭环。 |
+| 24 | 小程序本地核心界面 | 已完成基础 | 今日、写信、先生、钱匣、信箱 / 档案已接入本地 mock view-model；写信页已有本地 5 步流程。 |
 | 25 | 小程序 CloudBase dev 主链路 | 未开始 | 账号、绑定、同步、AI 云函数 event wrapper 与 `dev` 环境 smoke。 |
 | 26 | 小程序登录与双人关系真实闭环 | 未开始 | 微信一键手机号、短信兜底、账号恢复、邀请码加入。 |
 | 27 | 小程序 AI 与同步体验补齐 | 未开始 | AI 起稿、失败关闭、同步状态，必要时恢复流式专项。 |
@@ -272,7 +272,16 @@
 
 ## 验证基线
 
-最近阶段 23 共享领域核心迁移新增验证记录：
+最近阶段 24 小程序本地核心界面新增验证记录：
+
+- `npm test -- miniprogram/services/local-model.test.ts`：通过，4 个测试通过；覆盖今日、先生、钱匣、信箱 / 档案 view-model。
+- `npm test -- miniprogram/services/write-flow.test.ts`：通过，5 个测试通过；覆盖本地写信费用、起稿、校改、挂号和投寄存根。
+- `npm run miniprogram:check`：通过；包含共享副本一致性检查和小程序 typecheck。
+- `npm test`：通过，46 个测试文件，342 个测试通过。
+- `npm run typecheck`：通过。
+- `git diff --check`：通过。
+
+阶段 23 共享领域核心迁移验证记录：
 
 - `npm test -- src/domain`：通过，5 个测试文件，85 个测试通过；旧领域测试通过 `src/domain` re-export 验证共享核心行为未变。
 - `npm run miniprogram:check-shared`：通过；动态扫描 `shared/domain/*.ts` 并确认 `miniprogram/shared/domain/` 与其一致，避免小程序跨根 import 和副本陈旧。
@@ -973,12 +982,15 @@ npx cap doctor
 
 实施计划：`docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-local-ui.md`
 
-推荐范围：
+状态：已完成基础。
 
-- 今日、写信、代笔先生、钱匣、信箱 / 档案。
-- 写信保持 `选写法 → 口述 → 起稿 → 校改 → 投寄` 分步流程。
-- UI 保持克制文字档案风格，使用 WXML / WXSS 和本地组件。
-- 不做网页营销页，不做现代聊天气泡。
+已完成：
+
+- 新增 `miniprogram/services/local-model.ts` 和测试，提供今日、先生、钱匣、信箱、档案的本地 mock view-model。
+- 今日、代笔先生、钱匣、信箱、档案页面已从占位内容改为读取本地模型。
+- 新增 `miniprogram/services/write-flow.ts` 和测试，提供本地 5 步写信流程、费用计算、挂号切换和投寄存根。
+- 写信页已支持口述、先生起稿、校改、投寄核算和本地投寄回执。
+- 本阶段仍不接 CloudBase、真实登录、真实同步或 AI 起稿。
 
 ### 阶段 25：小程序 CloudBase dev 主链路
 

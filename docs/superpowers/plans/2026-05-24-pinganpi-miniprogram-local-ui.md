@@ -1,6 +1,6 @@
 # 小程序本地核心界面 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox syntax for tracking; completed work is marked `[x]`.
 
 **Goal:** 在微信小程序中用本地 mock 数据重建首批核心界面：今日、写信、代笔先生、钱匣、信箱 / 档案。
 
@@ -12,7 +12,7 @@
 
 ## Scope
 
-本计划对应路线图阶段 24：小程序本地核心界面。
+本计划对应路线图阶段 24：小程序本地核心界面。当前状态：已执行完成；下方 checkbox 是实施记录，不是待执行事项。
 
 本阶段包含：
 
@@ -93,7 +93,7 @@ Use these stable seed values in `miniprogram/services/local-model.ts`:
 - Create: `miniprogram/services/local-model.ts`
 - Create: `miniprogram/services/local-model.test.ts`
 
-- [ ] **Step 1: Write local-model tests**
+- [x] **Step 1: Write local-model tests**
 
 Create `miniprogram/services/local-model.test.ts`:
 
@@ -158,7 +158,7 @@ describe("miniprogram local model", () => {
 });
 ```
 
-- [ ] **Step 2: Run local-model tests and confirm failure**
+- [x] **Step 2: Run local-model tests and confirm failure**
 
 Run:
 
@@ -168,7 +168,7 @@ npm test -- miniprogram/services/local-model.test.ts
 
 Expected: FAIL because `miniprogram/services/local-model.ts` does not exist.
 
-- [ ] **Step 3: Implement local model**
+- [x] **Step 3: Implement local model**
 
 Create `miniprogram/services/local-model.ts` with:
 
@@ -564,7 +564,7 @@ function formatDueText(letter: MiniLetter): string {
 }
 ```
 
-- [ ] **Step 4: Run local-model tests**
+- [x] **Step 4: Run local-model tests**
 
 Run:
 
@@ -574,7 +574,7 @@ npm test -- miniprogram/services/local-model.test.ts
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit Task 1**
+- [x] **Step 5: Commit Task 1**
 
 ```bash
 git add miniprogram/services/local-model.ts miniprogram/services/local-model.test.ts
@@ -601,7 +601,7 @@ git commit -m "feat(miniprogram): 添加本地界面模型"
 - Modify: `miniprogram/pages/archive/index.wxml`
 - Modify: `miniprogram/pages/archive/index.wxss`
 
-- [ ] **Step 1: Add shared mini program UI classes**
+- [x] **Step 1: Add shared mini program UI classes**
 
 Append to `miniprogram/app.wxss`:
 
@@ -656,7 +656,7 @@ Append to `miniprogram/app.wxss`:
 }
 ```
 
-- [ ] **Step 2: Update pages to load models**
+- [x] **Step 2: Update pages to load models**
 
 For each page `index.ts`, import `createLocalMockState()` and the corresponding page model function. Use `onShow()` and `this.setData(...)` so the date can refresh when the page returns from background.
 
@@ -686,7 +686,7 @@ Use the same pattern for:
 - `createMailboxPageModel`
 - `createArchivePageModel`
 
-- [ ] **Step 3: Update WXML layouts**
+- [x] **Step 3: Update WXML layouts**
 
 For today page use:
 
@@ -714,7 +714,7 @@ For today page use:
 
 For list pages use `wx:for` over `model.scribes`, `model.ledgerRows`, `model.letters`, and render status with `stamp` elements. Use `{{item.id}}` as `wx:key`.
 
-- [ ] **Step 4: Run page typecheck**
+- [x] **Step 4: Run page typecheck**
 
 Run:
 
@@ -724,7 +724,7 @@ npm run miniprogram:check
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit Task 2**
+- [x] **Step 5: Commit Task 2**
 
 ```bash
 git add miniprogram/app.wxss miniprogram/pages/today miniprogram/pages/scribes miniprogram/pages/wallet miniprogram/pages/mailbox miniprogram/pages/archive
@@ -740,7 +740,7 @@ git commit -m "feat(miniprogram): 接入本地核心阅读界面"
 - Modify: `miniprogram/pages/write/index.wxml`
 - Modify: `miniprogram/pages/write/index.wxss`
 
-- [ ] **Step 1: Write write-flow tests**
+- [x] **Step 1: Write write-flow tests**
 
 Create `miniprogram/services/write-flow.test.ts`:
 
@@ -790,7 +790,7 @@ describe("miniprogram write flow", () => {
 });
 ```
 
-- [ ] **Step 2: Run write-flow tests and confirm failure**
+- [x] **Step 2: Run write-flow tests and confirm failure**
 
 Run:
 
@@ -800,7 +800,7 @@ npm test -- miniprogram/services/write-flow.test.ts
 
 Expected: FAIL because `write-flow.ts` does not exist.
 
-- [ ] **Step 3: Implement write-flow service**
+- [x] **Step 3: Implement write-flow service**
 
 Create `miniprogram/services/write-flow.ts` with exported types and functions:
 
@@ -821,7 +821,7 @@ Implementation requirements:
 - `canPost` is true only when `finalText.trim().length > 0` and `wallet.balanceFen >= totalCostFen`.
 - Local draft text may be deterministic template text, but must preserve the oral text and make clear it is先生起稿.
 
-- [ ] **Step 4: Update write page TypeScript**
+- [x] **Step 4: Update write page TypeScript**
 
 `miniprogram/pages/write/index.ts` should:
 
@@ -836,7 +836,7 @@ Implementation requirements:
   - `onPostLocal`
 - Store `receipt` after local post.
 
-- [ ] **Step 5: Update write WXML**
+- [x] **Step 5: Update write WXML**
 
 Render:
 
@@ -847,7 +847,7 @@ Render:
 - Cost, route, due window and “本地投寄” button on post step.
 - Receipt panel after local post.
 
-- [ ] **Step 6: Run write-flow focused tests and miniprogram check**
+- [x] **Step 6: Run write-flow focused tests and miniprogram check**
 
 Run:
 
@@ -858,7 +858,7 @@ npm run miniprogram:check
 
 Expected: PASS.
 
-- [ ] **Step 7: Commit Task 3**
+- [x] **Step 7: Commit Task 3**
 
 ```bash
 git add miniprogram/services/write-flow.ts miniprogram/services/write-flow.test.ts miniprogram/pages/write
@@ -872,7 +872,7 @@ git commit -m "feat(miniprogram): 添加本地写信分步流程"
 - Modify: `docs/pinganpi-roadmap-dashboard.html`
 - Modify: `AGENTS.md`
 
-- [ ] **Step 1: Update roadmap**
+- [x] **Step 1: Update roadmap**
 
 Change stage 24 row to completed basis:
 
@@ -886,7 +886,7 @@ Change current target to stage 25:
 **本期目标：** 阶段 24 已完成小程序本地核心界面。下一步进入阶段 25：接入 CloudBase dev 主链路，让账号、绑定、同步和 AI 通过 `wx.cloud.callFunction` 跑通工程通道。
 ```
 
-- [ ] **Step 2: Update dashboard and AGENTS**
+- [x] **Step 2: Update dashboard and AGENTS**
 
 Dashboard should show:
 
@@ -902,7 +902,7 @@ AGENTS should record:
 - Next stage is 25.
 - Verification baseline after final test count.
 
-- [ ] **Step 3: Run final verification**
+- [x] **Step 3: Run final verification**
 
 Run:
 
@@ -915,7 +915,7 @@ git diff --check
 
 Expected: PASS.
 
-- [ ] **Step 4: Commit docs**
+- [x] **Step 4: Commit docs**
 
 ```bash
 git add docs/pinganpi-roadmap.md docs/pinganpi-roadmap-dashboard.html AGENTS.md

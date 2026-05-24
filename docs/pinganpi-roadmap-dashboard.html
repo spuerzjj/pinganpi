@@ -481,7 +481,7 @@
         <div class="meta">
           <span class="badge done">旧 App：阶段 19 收口</span>
           <span class="badge info">新主线：微信小程序</span>
-          <span class="badge done">阶段 23 已完成基础</span>
+          <span class="badge done">阶段 24 已完成基础</span>
           <span class="badge done">codex/wechat-miniprogram-pivot</span>
           <span class="badge">更新：2026-05-24</span>
         </div>
@@ -490,18 +490,18 @@
       <section class="grid-4" aria-label="关键状态">
         <article class="metric">
           <p class="metric-label">当前基线</p>
-          <p class="metric-value">阶段 23</p>
-          <p class="metric-note">已迁移 shared/domain，并同步根内副本供小程序打包使用。</p>
+          <p class="metric-value">阶段 24</p>
+          <p class="metric-note">本地 mock 核心界面已接入，写信页已有五步本地流程。</p>
         </article>
         <article class="metric">
           <p class="metric-label">验证状态</p>
-          <p class="metric-value">333 tests</p>
-          <p class="metric-note">全量测试、旧 Vue typecheck、小程序检查和共享副本一致性检查已通过。</p>
+          <p class="metric-value">342 tests</p>
+          <p class="metric-note">全量测试、旧 Vue typecheck、小程序检查和阶段 24 专项测试已通过。</p>
         </article>
         <article class="metric">
           <p class="metric-label">下一推荐</p>
-          <p class="metric-value">本地界面</p>
-          <p class="metric-note">进入阶段 24：把小程序页面从骨架推进到本地 mock 核心界面。</p>
+          <p class="metric-value">dev 云链路</p>
+          <p class="metric-note">进入阶段 25：让小程序通过 CloudBase dev 云函数调用账号、绑定、同步和 AI。</p>
         </article>
         <article class="metric">
           <p class="metric-label">主要风险</p>
@@ -514,13 +514,13 @@
         <div class="card-header">
           <div>
             <h2>阶段进度</h2>
-            <p class="muted">阶段 1-19 的旧 App 工程能力保留为业务参考；阶段 23 已迁移共享领域核心，下一步进入小程序本地核心界面。</p>
+            <p class="muted">阶段 1-19 的旧 App 工程能力保留为业务参考；阶段 24 已完成小程序本地核心界面，下一步进入 CloudBase dev 主链路。</p>
           </div>
-          <span class="badge done">阶段 23</span>
+          <span class="badge done">阶段 24</span>
         </div>
         <div class="card-body progress">
           <div class="progress-track" aria-hidden="true">
-            <div class="progress-fill" style="width: 66%"></div>
+            <div class="progress-fill" style="width: 70%"></div>
           </div>
           <div class="phase-grid">
             <div class="phase done">
@@ -615,11 +615,11 @@
               <span class="phase-number">23</span>
               <span class="phase-title">共享核心</span>
             </div>
-            <div class="phase next">
+            <div class="phase done">
               <span class="phase-number">24</span>
               <span class="phase-title">小程序界面</span>
             </div>
-            <div class="phase">
+            <div class="phase next">
               <span class="phase-number">25</span>
               <span class="phase-title">dev 云链路</span>
             </div>
@@ -769,6 +769,10 @@
               <span class="badge warn">chunk warning</span>
             </div>
             <ul class="plain-list" style="margin-top: 12px">
+              <li>阶段 24 已完成基础：今日、写信、代笔先生、钱匣、信箱 / 档案已接入本地 mock view-model。</li>
+              <li>`miniprogram/services/local-model.test.ts` 已通过，4 个测试覆盖今日、先生、钱匣、信箱 / 档案 view-model。</li>
+              <li>`miniprogram/services/write-flow.test.ts` 已通过，5 个测试覆盖本地写信费用、起稿、校改、挂号和投寄存根。</li>
+              <li>全量 46 个测试文件，342 个测试通过。</li>
               <li>阶段 23 已完成基础：`shared/domain/` 是领域规则真实实现位置，`src/domain/` 保留兼容 re-export。</li>
               <li>`miniprogram/shared/domain/` 是由 `npm run miniprogram:sync-shared` 同步的根内副本，避免微信小程序预览 / 上传跨出 `miniprogramRoot`。</li>
               <li>`npm test -- src/domain` 已通过，5 个测试文件，85 个测试通过；旧领域入口验证共享核心行为未变。</li>
@@ -776,7 +780,6 @@
               <li>`npm test -- miniprogram/services/domain-summary.test.ts` 已通过，小程序可通过根内副本使用共享规则。</li>
               <li>`npm test -- scripts/sync-miniprogram-shared-domain.test.ts` 已通过，4 个测试覆盖副本同步、陈旧检测和新增源文件检测。</li>
               <li>`npm run miniprogram:check` 已通过，包含共享副本一致性检查和小程序 typecheck。</li>
-              <li>全量 44 个测试文件，333 个测试通过。</li>
               <li>阶段 22 已完成基础：`miniprogram/`、页面骨架、TypeScript 检查、微信开发者工具配置和 CloudBase dev 环境入口已创建。</li>
               <li>`npm test -- miniprogram/config/env.test.ts` 已通过，确认小程序默认使用 `dev` 环境 `pinganpi-d7gml1f6sbcc172ea`，`prd` 仍为空等待用户创建。</li>
               <li>`npm run miniprogram:typecheck` 已通过，小程序页面骨架和 CloudBase dev 配置入口可检查。</li>
@@ -801,7 +804,7 @@
         <article class="card">
           <div class="card-header">
             <h2>后续主线</h2>
-            <span class="badge info">下一工程：阶段 24</span>
+            <span class="badge info">下一工程：阶段 25</span>
           </div>
           <div class="card-body priority-grid">
             <div class="priority">
@@ -827,14 +830,14 @@
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge info">阶段 24 下一步</span>
+                <span class="badge done">阶段 24 完成基础</span>
               </div>
               <h3>小程序本地核心界面</h3>
-              <p>重建今日、写信、代笔先生、钱匣、信箱 / 档案，先跑通本地 mock 慢通信闭环。</p>
+              <p>今日、写信、代笔先生、钱匣、信箱 / 档案已接入本地 mock view-model；写信页已有本地五步流程。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge">阶段 25</span>
+                <span class="badge info">阶段 25 下一步</span>
               </div>
               <h3>CloudBase dev 主链路</h3>
               <p>新增小程序云函数 event wrapper，接账号、绑定、同步和 AI，到 dev 环境完成 smoke。</p>
