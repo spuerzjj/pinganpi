@@ -6,7 +6,7 @@
 
 **当前分支：** `codex/wechat-miniprogram-pivot`
 
-**当前开发基线：** 阶段 1-19 的 Capacitor / Vue App 工程能力已形成完整业务参考：领域层、写信流程、AI 起稿、流式起稿、CloudBase AI 代理、同步模型、CloudBase 同步代理、手机号账号本地闭环、双人绑定本地 / 服务端边界和外部平台配置收口均已完成对应验证。2026-05-24 用户确认重大方向调整：目标运行环境从 iOS / Android App 改为微信小程序并需要上架；新主线采用微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境；手机号仍是《平安批》业务账号主键；微信一键获取手机号为默认登录入口，短信验证码保留兜底；本地开发和线上都优先走 CloudBase 云函数，本地 proxy 降级为诊断工具。阶段 21 已完成迁移设计与重基线；阶段 22 已完成小程序工程基座；阶段 23 已完成共享领域核心迁移，`shared/domain/` 成为领域规则真实实现位置，`src/domain/` 保留兼容 re-export，小程序今日页已直接使用共享领域摘要。下一步进入阶段 24：小程序本地核心界面。迁移设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`，阶段 22 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md`，阶段 23 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-shared-domain-core.md`。精确提交以 `git log --oneline --decorate -5` 为准。
+**当前开发基线：** 阶段 1-19 的 Capacitor / Vue App 工程能力已形成完整业务参考：领域层、写信流程、AI 起稿、流式起稿、CloudBase AI 代理、同步模型、CloudBase 同步代理、手机号账号本地闭环、双人绑定本地 / 服务端边界和外部平台配置收口均已完成对应验证。2026-05-24 用户确认重大方向调整：目标运行环境从 iOS / Android App 改为微信小程序并需要上架；新主线采用微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境；手机号仍是《平安批》业务账号主键；微信一键获取手机号为默认登录入口，短信验证码保留兜底；本地开发和线上都优先走 CloudBase 云函数，本地 proxy 降级为诊断工具。阶段 21 已完成迁移设计与重基线；阶段 22 已完成小程序工程基座；阶段 23 已完成共享领域核心迁移，`shared/domain/` 成为领域规则真实实现位置，`src/domain/` 保留兼容 re-export，`miniprogram/shared/domain/` 是由 `npm run miniprogram:sync-shared` 同步的根内副本，小程序今日页已通过根内副本使用共享领域摘要。下一步进入阶段 24：小程序本地核心界面。迁移设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`，阶段 22 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md`，阶段 23 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-shared-domain-core.md`。精确提交以 `git log --oneline --decorate -5` 为准。
 
 **工作区策略：** 日常开发直接在 `/Users/zhujunjie/code/pinganpi` 进行。除非用户明确要求隔离开发，否则不要创建或使用 `.worktrees/`。
 
@@ -236,7 +236,7 @@
 | 20 | 旧 App 完整人工验证引导 | 暂存 | 已新增原 iOS / Android App 完整人工验证计划；小程序迁移后不作为当前主线执行。 |
 | 21 | 微信小程序迁移设计与重基线 | 已完成 | 新增小程序迁移设计，更新 roadmap / dashboard / AGENTS，并提交阶段 22 实施计划。 |
 | 22 | 小程序工程基座 | 已完成基础 | 已新增 `miniprogram/`、TypeScript 检查、页面骨架、微信开发者工具配置和 `dev` CloudBase 环境入口。 |
-| 23 | 共享领域核心迁移 | 已完成基础 | 已新增 `shared/domain/` 作为领域规则真实实现，`src/domain/` 保留兼容 re-export，小程序今日页已直接使用共享领域摘要。 |
+| 23 | 共享领域核心迁移 | 已完成基础 | 已新增 `shared/domain/` 作为领域规则真实实现，`src/domain/` 保留兼容 re-export，小程序根内副本和一致性检查已建立，今日页已使用共享领域摘要。 |
 | 24 | 小程序本地核心界面 | 未开始 | 今日、写信、先生、钱匣、信箱 / 档案的本地 mock 闭环。 |
 | 25 | 小程序 CloudBase dev 主链路 | 未开始 | 账号、绑定、同步、AI 云函数 event wrapper 与 `dev` 环境 smoke。 |
 | 26 | 小程序登录与双人关系真实闭环 | 未开始 | 微信一键手机号、短信兜底、账号恢复、邀请码加入。 |
@@ -275,9 +275,11 @@
 最近阶段 23 共享领域核心迁移新增验证记录：
 
 - `npm test -- src/domain`：通过，5 个测试文件，85 个测试通过；旧领域测试通过 `src/domain` re-export 验证共享核心行为未变。
-- `npm test -- miniprogram/services/domain-summary.test.ts`：通过，1 个测试通过；确认小程序可直接使用 `shared/domain`。
-- `npm run miniprogram:typecheck`：通过。
-- `npm test`：通过，43 个测试文件，329 个测试通过。
+- `npm run miniprogram:check-shared`：通过；确认 `miniprogram/shared/domain/` 与 `shared/domain/` 一致，避免小程序跨根 import。
+- `npm test -- miniprogram/services/domain-summary.test.ts`：通过，1 个测试通过；确认小程序可通过根内副本使用共享规则。
+- `npm test -- scripts/sync-miniprogram-shared-domain.test.ts`：通过，3 个测试通过；覆盖同步、缺失 / 变更检测和多余文件检测。
+- `npm run miniprogram:check`：通过；包含共享副本一致性检查和小程序 typecheck。
+- `npm test`：通过，44 个测试文件，332 个测试通过。
 - `npm run typecheck`：通过。
 - `git diff --check`：通过。
 
@@ -960,8 +962,10 @@ npx cap doctor
 
 - 新增 `shared/domain/`，承载时间、旧币制、代笔先生、钱匣、邮政和信件状态机规则真实实现。
 - `src/domain/` 改为兼容 re-export，旧 App 和旧测试入口保持可用。
-- `tsconfig.json` 与 `tsconfig.miniprogram.json` 均已纳入 `shared/**/*.ts`。
-- 新增 `miniprogram/services/domain-summary.ts` 和测试，今日页已使用共享旧历日期和邮资摘要。
+- 新增 `miniprogram/shared/domain/` 根内副本，避免微信小程序预览 / 上传跨出 `miniprogramRoot`。
+- 新增 `npm run miniprogram:sync-shared` 和 `npm run miniprogram:check-shared`，保证小程序副本与 `shared/domain/` 一致。
+- `tsconfig.json` 已纳入 `shared/**/*.ts`；`tsconfig.miniprogram.json` 只检查小程序根内源码。
+- 新增 `miniprogram/services/domain-summary.ts` 和测试，今日页已通过根内副本使用共享旧历日期和邮资摘要。
 
 ### 阶段 24：小程序本地核心界面
 

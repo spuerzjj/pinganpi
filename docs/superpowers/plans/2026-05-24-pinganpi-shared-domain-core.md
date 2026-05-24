@@ -4,7 +4,7 @@
 
 **Goal:** 将现有纯领域规则迁移到 `shared/domain/`，让微信小程序和旧 App 都能复用同一套时间、钱匣、代笔先生、邮资、送达和状态机规则。
 
-**Architecture:** `shared/domain/` 成为领域规则真实实现位置；`src/domain/` 保留为兼容 re-export，避免旧 App 一次性改动大量 import。小程序新增一个轻量 service 直接从 `shared/domain` 读取格式化日期、钱额和邮资示例，用测试证明小程序侧能复用共享规则。
+**Architecture:** `shared/domain/` 成为领域规则真实实现位置；`src/domain/` 保留为兼容 re-export，避免旧 App 一次性改动大量 import。小程序不能跨出 `miniprogramRoot` 引用仓库根目录源码，因此 `miniprogram/shared/domain/` 是由脚本从 `shared/domain/` 同步出的根内副本；小程序 service 只从根内副本读取格式化日期、钱额和邮资示例，用测试和同步检查证明小程序侧复用同一套共享规则。
 
 **Tech Stack:** TypeScript、Vitest、微信原生小程序 TypeScript、现有 NodeNext 模块解析。
 
@@ -18,8 +18,9 @@
 
 - 新增 `shared/domain/` 并迁入领域规则实现。
 - 保留 `src/domain/` 作为兼容 re-export 和旧测试入口。
-- 让小程序 TypeScript 配置包含 `shared/**/*.ts`。
-- 新增小程序 service 直接使用共享领域核心。
+- 让仓库根 TypeScript 配置包含 `shared/**/*.ts`，小程序 TypeScript 配置只包含 `miniprogram/` 根内源码。
+- 新增 `miniprogram/shared/domain/` 根内副本，并用脚本校验它与 `shared/domain/` 一致。
+- 新增小程序 service 通过 `miniprogram/shared/domain/` 根内副本使用共享领域核心。
 - 更新小程序今日页展示共享规则产物。
 - 更新 roadmap / dashboard / AGENTS 的阶段 23 状态和验证基线。
 
@@ -44,6 +45,9 @@ Create:
 - `shared/domain/index.ts`
 - `miniprogram/services/domain-summary.ts`
 - `miniprogram/services/domain-summary.test.ts`
+- `miniprogram/shared/domain/*.ts`
+- `scripts/sync-miniprogram-shared-domain.ts`
+- `scripts/sync-miniprogram-shared-domain.test.ts`
 
 Modify:
 
@@ -57,6 +61,7 @@ Modify:
 - `miniprogram/pages/today/index.ts`
 - `tsconfig.json`
 - `tsconfig.miniprogram.json`
+- `package.json`
 - `docs/pinganpi-roadmap.md`
 - `docs/pinganpi-roadmap-dashboard.html`
 - `AGENTS.md`
@@ -152,10 +157,10 @@ The include array should contain:
 ]
 ```
 
-Modify `tsconfig.miniprogram.json` include list to:
+Modify `tsconfig.miniprogram.json` include list to keep小程序根内源码：
 
 ```json
-["miniprogram/**/*.ts", "miniprogram/**/*.d.ts", "shared/**/*.ts"]
+["miniprogram/**/*.ts", "miniprogram/**/*.d.ts"]
 ```
 
 - [ ] **Step 4: 运行旧领域测试和类型检查**
@@ -172,7 +177,7 @@ Expected:
 
 - Old `src/domain` tests still pass through re-export shims.
 - Vue / server typecheck still passes.
-- Miniprogram typecheck passes with `shared/**/*.ts` included.
+- Miniprogram typecheck passes using `miniprogram/shared/domain/` root-included copies.
 
 - [ ] **Step 5: 提交任务 1**
 
@@ -223,7 +228,7 @@ Expected: FAIL because `miniprogram/services/domain-summary.ts` does not exist.
 Create `miniprogram/services/domain-summary.ts`:
 
 ```ts
-import { calculatePostage, formatEraDate, formatFen, formatPresentCorrespondence } from "../../shared/domain/index.js";
+import { calculatePostage, formatEraDate, formatFen, formatPresentCorrespondence } from "../shared/domain/index.js";
 
 export interface TodayDomainSummary {
   readonly eraDateText: string;
@@ -305,7 +310,7 @@ git commit -m "feat(miniprogram): 接入共享领域摘要"
 Change stage 23 row to:
 
 ```markdown
-| 23 | 共享领域核心迁移 | 已完成基础 | 已新增 `shared/domain/` 作为领域规则真实实现，`src/domain/` 保留兼容 re-export，小程序今日页已直接使用共享领域摘要。 |
+| 23 | 共享领域核心迁移 | 已完成基础 | 已新增 `shared/domain/` 作为领域规则真实实现，`src/domain/` 保留兼容 re-export，小程序今日页已通过根内副本使用共享领域摘要。 |
 ```
 
 Change current target to stage 24:
@@ -318,8 +323,9 @@ Add verification lines:
 
 ```markdown
 - `npm test -- src/domain`：通过，旧领域测试通过 `src/domain` re-export 验证共享核心行为未变。
-- `npm test -- miniprogram/services/domain-summary.test.ts`：通过，确认小程序可直接使用 `shared/domain`。
-- `npm run miniprogram:typecheck`：通过。
+- `npm run miniprogram:check-shared`：通过，确认小程序根内副本与 `shared/domain` 一致。
+- `npm test -- miniprogram/services/domain-summary.test.ts`：通过，确认小程序可通过根内副本使用共享规则。
+- `npm run miniprogram:check`：通过，包含共享副本一致性检查和小程序 typecheck。
 ```
 
 - [ ] **Step 2: 更新 `docs/pinganpi-roadmap-dashboard.html`**
@@ -347,7 +353,8 @@ Mark phase 23 as done and phase 24 as next:
 Add verification snapshot:
 
 ```html
-<li><code>npm test -- miniprogram/services/domain-summary.test.ts</code> 已通过，小程序可直接使用 <code>shared/domain</code>。</li>
+<li><code>npm run miniprogram:check-shared</code> 已通过，小程序根内副本与 <code>shared/domain</code> 一致。</li>
+<li><code>npm test -- miniprogram/services/domain-summary.test.ts</code> 已通过，小程序可通过根内副本使用共享规则。</li>
 ```
 
 - [ ] **Step 3: 更新 `AGENTS.md`**
@@ -355,7 +362,7 @@ Add verification snapshot:
 Add current state:
 
 ```markdown
-阶段 23 已完成共享领域核心迁移：`shared/domain/` 是领域规则真实实现位置，`src/domain/` 保留兼容 re-export，小程序今日页已通过 `miniprogram/services/domain-summary.ts` 使用共享规则。
+阶段 23 已完成共享领域核心迁移：`shared/domain/` 是领域规则真实实现位置，`src/domain/` 保留兼容 re-export，`miniprogram/shared/domain/` 是由 `npm run miniprogram:sync-shared` 同步的根内副本，小程序今日页已通过 `miniprogram/services/domain-summary.ts` 使用共享规则。
 ```
 
 Update recommended next step to stage 24.
