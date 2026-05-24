@@ -126,6 +126,7 @@ export interface SyncPullInput {
 export interface SyncPushInput {
   householdId: string;
   deviceId: string;
+  memberId: string;
   baseRemoteRevision: number | null;
   snapshot: RemoteSnapshot;
 }

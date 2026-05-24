@@ -1,17 +1,30 @@
-import type { SyncAdapter, RemoteSnapshot, RemoteSyncCursor, SyncPullInput, SyncPushInput } from "./remote-model.js";
+import type { KeyValueStorage } from "../app-state-storage.js";
+import type { RemoteSnapshot, RemoteSyncCursor, SyncAdapter, SyncPullInput, SyncPushInput } from "./remote-model.js";
 import { createEmptyRemoteSnapshot, mergeRemoteSnapshots, redactRemoteSnapshotForMember } from "./remote-snapshot.js";
+
+export const LOCAL_REMOTE_SNAPSHOT_STORAGE_KEY_PREFIX = "pinganpi.remote-snapshot.v1.";
 
 interface StoredRemoteState {
   snapshot: RemoteSnapshot;
 }
 
-export function createMockRemoteSyncAdapter(): SyncAdapter {
-  const snapshotsByHouseholdId = new Map<string, StoredRemoteState>();
+export class StaleRemoteRevisionError extends Error {
+  readonly code = "stale_remote_revision";
 
+  constructor(expectedRevision: number, receivedRevision: number | null) {
+    super(`Stale remote revision: expected ${expectedRevision}, received ${receivedRevision ?? "null"}`);
+  }
+}
+
+export function createRemoteSnapshotStorageKey(householdId: string): string {
+  return `${LOCAL_REMOTE_SNAPSHOT_STORAGE_KEY_PREFIX}${householdId}`;
+}
+
+export function createLocalStorageRemoteSyncAdapter(storage: KeyValueStorage): SyncAdapter {
   return {
     async pull(input) {
       const nowIso = new Date().toISOString();
-      const stored = snapshotsByHouseholdId.get(input.householdId);
+      const stored = loadStoredRemoteState(storage, input.householdId);
       const snapshot =
         stored?.snapshot ??
         createEmptyRemoteSnapshot({
@@ -21,21 +34,23 @@ export function createMockRemoteSyncAdapter(): SyncAdapter {
           remoteRevision: 0
         });
       const previousCursor = findCursor(snapshot, input.deviceId);
-      const nextSnapshot = upsertCursor(deepClone(snapshot), createPulledCursor(input, snapshot.remoteRevision, nowIso, previousCursor));
+      const pulledCursor = createPulledCursor(input, snapshot.remoteRevision, nowIso, previousCursor);
+      const nextSnapshot = upsertCursor(deepClone(snapshot), pulledCursor);
 
       if (stored !== undefined) {
-        stored.snapshot = upsertCursor(
-          stored.snapshot,
-          createPulledCursor(input, stored.snapshot.remoteRevision, nowIso, previousCursor)
+        saveStoredRemoteState(
+          storage,
+          input.householdId,
+          upsertCursor(stored.snapshot, createPulledCursor(input, stored.snapshot.remoteRevision, nowIso, previousCursor))
         );
       }
 
-      return redactRemoteSnapshotForMember(nextSnapshot, input.memberId);
+      return deepClone(redactRemoteSnapshotForMember(nextSnapshot, input.memberId));
     },
 
     async push(input) {
       const nowIso = new Date().toISOString();
-      const stored = snapshotsByHouseholdId.get(input.householdId);
+      const stored = loadStoredRemoteState(storage, input.householdId);
       const baseSnapshot =
         stored?.snapshot ??
         createEmptyRemoteSnapshot({
@@ -44,8 +59,13 @@ export function createMockRemoteSyncAdapter(): SyncAdapter {
           exportedAtIso: nowIso,
           remoteRevision: 0
         });
+
+      if (input.baseRemoteRevision !== null && input.baseRemoteRevision !== baseSnapshot.remoteRevision) {
+        throw new StaleRemoteRevisionError(baseSnapshot.remoteRevision, input.baseRemoteRevision);
+      }
+
       const nextRevision = baseSnapshot.remoteRevision + 1;
-      const mergedSnapshot = mergeSnapshots(baseSnapshot, input.snapshot, {
+      const mergedSnapshot = mergeRemoteSnapshots(baseSnapshot, input.snapshot, {
         householdId: input.householdId,
         deviceId: input.deviceId,
         mergedAtIso: nowIso,
@@ -60,9 +80,7 @@ export function createMockRemoteSyncAdapter(): SyncAdapter {
         cursor
       );
 
-      snapshotsByHouseholdId.set(input.householdId, {
-        snapshot: deepClone(snapshotWithCursor)
-      });
+      saveStoredRemoteState(storage, input.householdId, snapshotWithCursor);
 
       return {
         householdId: input.householdId,
@@ -75,22 +93,28 @@ export function createMockRemoteSyncAdapter(): SyncAdapter {
   };
 }
 
-function mergeSnapshots(
-  baseSnapshot: RemoteSnapshot,
-  incomingSnapshot: RemoteSnapshot,
-  options: {
-    householdId: string;
-    deviceId: string;
-    mergedAtIso: string;
-    remoteRevision: number;
+function loadStoredRemoteState(storage: KeyValueStorage, householdId: string): StoredRemoteState | undefined {
+  const raw = storage.getItem(createRemoteSnapshotStorageKey(householdId));
+
+  if (raw === null) {
+    return undefined;
   }
-): RemoteSnapshot {
-  return mergeRemoteSnapshots(baseSnapshot, incomingSnapshot, {
-    householdId: options.householdId,
-    deviceId: options.deviceId,
-    mergedAtIso: options.mergedAtIso,
-    remoteRevision: options.remoteRevision
-  });
+
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+
+    if (!isRemoteSnapshotForHousehold(parsed, householdId)) {
+      return undefined;
+    }
+
+    return { snapshot: parsed };
+  } catch {
+    return undefined;
+  }
+}
+
+function saveStoredRemoteState(storage: KeyValueStorage, householdId: string, snapshot: RemoteSnapshot): void {
+  storage.setItem(createRemoteSnapshotStorageKey(householdId), JSON.stringify(deepClone(snapshot)));
 }
 
 function createPulledCursor(
@@ -145,10 +169,12 @@ function mergeCursors(...cursorGroups: RemoteSyncCursor[][]): RemoteSyncCursor[]
 
 function mergeCursor(left: RemoteSyncCursor, right: RemoteSyncCursor): RemoteSyncCursor {
   const updatedAtIso = chooseLaterIso(left.updatedAtIso, right.updatedAtIso);
+  const memberId = right.memberId ?? left.memberId;
 
   return {
     householdId: right.householdId,
     deviceId: right.deviceId,
+    ...(memberId === undefined ? {} : { memberId }),
     remoteRevision: Math.max(left.remoteRevision, right.remoteRevision),
     lastPulledAtIso: chooseLaterNullableIso(left.lastPulledAtIso, right.lastPulledAtIso),
     lastPushedAtIso: chooseLaterNullableIso(left.lastPushedAtIso, right.lastPushedAtIso),
@@ -183,4 +209,33 @@ function chooseLaterNullableIso(left: string | null, right: string | null): stri
 
 function chooseLaterIso(left: string, right: string): string {
   return Date.parse(left) >= Date.parse(right) ? left : right;
+}
+
+function isRemoteSnapshotForHousehold(value: unknown, householdId: string): value is RemoteSnapshot {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return (
+    (value.household === null ||
+      (isRecord(value.household) &&
+        value.household.id === householdId &&
+        value.household.householdId === householdId)) &&
+    Array.isArray(value.members) &&
+    Array.isArray(value.wallets) &&
+    Array.isArray(value.ledgerEntries) &&
+    Array.isArray(value.draftPapers) &&
+    Array.isArray(value.letters) &&
+    Array.isArray(value.postalRecords) &&
+    Array.isArray(value.photoAttachments) &&
+    Array.isArray(value.syncCursors) &&
+    typeof value.exportedAtIso === "string" &&
+    typeof value.remoteRevision === "number" &&
+    Number.isSafeInteger(value.remoteRevision) &&
+    value.remoteRevision >= 0
+  );
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

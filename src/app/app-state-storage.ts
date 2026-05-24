@@ -55,10 +55,10 @@ export function createAppStateStore(
   };
 }
 
-export function createBrowserAppStateStore(): AppStateStore {
+export function createBrowserAppStateStore(key: string = APP_STATE_STORAGE_KEY): AppStateStore {
   if (typeof window === "undefined") {
-    return createAppStateStore(createMemoryKeyValueStorage());
+    return createAppStateStore(createMemoryKeyValueStorage(), key);
   }
 
-  return createAppStateStore(window.localStorage);
+  return createAppStateStore(window.localStorage, key);
 }

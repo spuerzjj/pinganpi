@@ -15,6 +15,7 @@ describe("mock remote sync adapter", () => {
     await adapter.push({
       householdId,
       deviceId: deviceA,
+      memberId: "member-zhou",
       baseRemoteRevision: null,
       snapshot: createSnapshot(stateA, deviceA, "2026-05-24T02:00:00.000Z", 0)
     });
@@ -54,6 +55,7 @@ describe("mock remote sync adapter", () => {
     await adapter.push({
       householdId,
       deviceId: deviceA,
+      memberId: "member-zhou",
       baseRemoteRevision: null,
       snapshot: createSnapshot(stateA, deviceA, "2026-05-24T02:00:00.000Z", 0)
     });
@@ -91,6 +93,7 @@ describe("mock remote sync adapter", () => {
     await adapter.push({
       householdId,
       deviceId: deviceA,
+      memberId: "member-zhou",
       baseRemoteRevision: null,
       snapshot: createSnapshot(stateA, deviceA, "2026-05-24T02:00:00.000Z", 0)
     });
@@ -114,6 +117,7 @@ describe("mock remote sync adapter", () => {
     const pushByB = await adapter.push({
       householdId,
       deviceId: deviceB,
+      memberId: "member-lan",
       baseRemoteRevision: pulledByB.remoteRevision,
       snapshot: createSnapshot(stateB, deviceB, "2026-05-24T02:10:00.000Z", pulledByB.remoteRevision)
     });
@@ -159,12 +163,14 @@ describe("mock remote sync adapter", () => {
     await adapter.push({
       householdId,
       deviceId: deviceA,
+      memberId: "member-zhou",
       baseRemoteRevision: null,
       snapshot: createSnapshot(stateA, deviceA, "2026-05-24T02:00:00.000Z", 0)
     });
     await adapter.push({
       householdId,
       deviceId: deviceB,
+      memberId: "member-lan",
       baseRemoteRevision: 1,
       snapshot: createSnapshot(stateB, deviceB, "2026-05-24T02:05:00.000Z", 1)
     });
@@ -204,6 +210,7 @@ describe("mock remote sync adapter", () => {
     await adapter.push({
       householdId,
       deviceId: deviceA,
+      memberId: "member-zhou",
       baseRemoteRevision: null,
       snapshot: createSnapshot(stateA, deviceA, "2026-05-24T02:00:00.000Z", 0)
     });

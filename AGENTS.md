@@ -64,7 +64,7 @@ npx cap doctor
 
 ## 当前代码状态
 
-当前主线开发基于 `main`，最新路线图基线为：**已完成阶段 15 的云端与双人同步准备基础，新增远端模型、sync adapter 边界、AppState / RemoteSnapshot 转换、远端快照合并和本地 mock remote adapter；远端实体使用 `remoteId` 避免跨设备同本地 id 数据丢失，pull 会按成员红action 未到达来信正文，本地删除草稿会生成 tombstone。阶段 16 已确定走 16A：先用本地 / 模拟远端接入 App 同步 runtime、同步状态、联网操作护栏和本地双设备生命周期验证；真实 CloudBase 数据库 adapter 放到 16B。阶段 16 设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-dual-sync-mvp-design.md`，实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-dual-sync-mvp.md`。阶段 13 已跑通本机 Xiaomi MiMo、本地代理、App 写信页、CloudBase HTTP 云函数部署、云端 secret 配置、云端 AI 起稿接口、浏览器写信页云端 AI 烟测、CloudBase 用量基线、禁用 key 安全失败验证、恢复验证和 `/*` 路由清理。阶段 14 已完成本地 / 云端受控 SSE、App streaming adapter、写信页 partial 预览和完成前不可投寄保护，并已部署 CloudBase 后通过 `/api/ai/scribe-draft/stream` 非敏感烟测。阶段 13 仍需完成 MiMo / CloudBase 控制台费用告警和 CloudBase 默认角色收敛检查；阶段 14 的 GUI 浏览器点击验证因 Computer Use 权限未授予待补**。继续开发前以 `git log --oneline --decorate -5` 为准。
+当前主线开发基于 `main`，最新路线图基线为：**已完成阶段 16A 双人同步本地闭环：新增同步元数据、本地同步状态存储、sync runtime、localStorage remote adapter、浏览器 device / household 配置、App 启动 / 前台 refresh / 操作后 push、联网投寄 / 拆阅护栏和双设备生命周期测试；真实 CloudBase 数据库 adapter 放到阶段 16B。阶段 15 已完成云端与双人同步准备基础，远端实体使用 `remoteId` 避免跨设备同本地 id 数据丢失，pull 会按成员红action 未到达来信正文，本地删除草稿会生成 tombstone。阶段 16 设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-dual-sync-mvp-design.md`，实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-dual-sync-mvp.md`。阶段 13 已跑通本机 Xiaomi MiMo、本地代理、App 写信页、CloudBase HTTP 云函数部署、云端 secret 配置、云端 AI 起稿接口、浏览器写信页云端 AI 烟测、CloudBase 用量基线、禁用 key 安全失败验证、恢复验证和 `/*` 路由清理。阶段 14 已完成本地 / 云端受控 SSE、App streaming adapter、写信页 partial 预览和完成前不可投寄保护，并已部署 CloudBase 后通过 `/api/ai/scribe-draft/stream` 非敏感烟测。阶段 13 仍需完成 MiMo / CloudBase 控制台费用告警和 CloudBase 默认角色收敛检查；阶段 14 的 GUI 浏览器点击验证因 Computer Use 权限未授予待补**。继续开发前以 `git log --oneline --decorate -5` 为准。
 
 最新关键提交以 `git log --oneline --decorate -8` 为准；阶段 13 相关提交包括：
 
@@ -147,7 +147,7 @@ npx cap doctor
 - `docs/superpowers/specs/2026-05-23-pinganpi-ai-scribe-design.md`
 - `docs/superpowers/plans/2026-05-23-pinganpi-minimal-ai-proxy.md`
 
-最近验证基线：阶段 15 使用项目依赖入口跑通 `node node_modules/vitest/vitest.mjs run`，23 个测试文件、225 个测试通过；`node node_modules/vue-tsc/bin/vue-tsc.js --noEmit` 通过。当前 Codex shell 中 `npm` 不在 PATH；如果用户终端有 npm，仍可按常规执行 `npm test` 和 `npm run typecheck`。此前 `npm run build`、`npx cap sync`、`npx cap doctor` 均通过，`npm run build` 仍保留 Varlet 首包超过 500 KB 的既有提示。
+最近验证基线：阶段 16A 使用项目依赖入口跑通 `/Users/zhujunjie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node node_modules/vitest/vitest.mjs run`，28 个测试文件、263 个测试通过；`/Users/zhujunjie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node node_modules/vue-tsc/bin/vue-tsc.js --noEmit` 通过；`/Users/zhujunjie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node node_modules/vite/bin/vite.js build` 通过，保留 Varlet 首包超过 500 KB 的既有提示；`/Users/zhujunjie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node node_modules/@capacitor/cli/bin/capacitor sync` 通过；`/Users/zhujunjie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node node_modules/@capacitor/cli/bin/capacitor doctor` 通过；浏览器烟测 `http://127.0.0.1:5173/?household=household-browser-test&device=device-a&member=member-zhou` 可加载，页面包含标题、同步状态和五个主导航，控制台无 error。当前 Codex shell 中 `npm` 不在 PATH；如果用户终端有 npm，仍可按常规执行 `npm test` 和 `npm run typecheck`。
 
 ## 后续路线
 
@@ -226,14 +226,14 @@ npx cap doctor
    - 本阶段不接真实 CloudBase 数据库 SDK，不改 `src/domain`，不让远端同步绕过投寄、拆阅、钱匣和邮政状态机规则。
 
 4. **阶段 16：双人真实同步 MVP**
-   - 阶段 16A 已启动；设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-dual-sync-mvp-design.md`，实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-dual-sync-mvp.md`。
-   - 先用本地 / 模拟远端完成 App 侧同步闭环，不直接接 CloudBase 数据库 SDK。
+   - 阶段 16A 已完成；设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-dual-sync-mvp-design.md`，实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-dual-sync-mvp.md`。
+   - 已用本地 / 模拟远端完成 App 侧同步闭环，暂不接 CloudBase 数据库 SDK。
    - 新增同步 runtime、本地同步元数据、浏览器本地 remote adapter、同步状态 UI 和本地双设备生命周期测试。
    - 两台设备共享同一对通信关系的数据。
    - 启动 pull、关键操作 push、回到前台 refresh。
    - 第一版只保证离线草稿；投寄和拆阅必须联网校验后才正式生效。
    - 本地调试使用 device namespace：同一浏览器可用不同 `device` 参数模拟两台设备，本地 AppState 分开，remote snapshot 共享。
-   - 真实 CloudBase 数据库 adapter 放到 16A 闭环稳定后的 16B。
+   - 真实 CloudBase 数据库 adapter 放到阶段 16B。
    - 后续若支持离线投寄 / 拆阅请求，必须作为 command 入队，联网后重新校验钱包、状态机、收件人和到达时间。
 
 5. **阶段 17：邮政异常规则**

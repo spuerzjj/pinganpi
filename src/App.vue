@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, type Component } from "vue";
-import { settleAppState, type DraftPaper } from "./app/app-state.js";
-import { createBrowserAppStateStore } from "./app/app-state-storage.js";
+import { computed, onMounted, onUnmounted, ref, type Component } from "vue";
+import { cloneAppState, settleAppState, type AppState, type DraftPaper } from "./app/app-state.js";
+import { createBrowserAppStateStore, createMemoryKeyValueStorage, type KeyValueStorage } from "./app/app-state-storage.js";
 import { buildAppModel } from "./app/app-model.js";
 import { deleteDraftPaper, postDraftPaper, saveDraftPaper, type SaveDraftPaperInput } from "./app/draft-paper-service.js";
 import { openLetter } from "./app/mailbox-service.js";
@@ -10,6 +10,15 @@ import ScribesPage from "./app/pages/ScribesPage.vue";
 import TodayPage from "./app/pages/TodayPage.vue";
 import WalletPage from "./app/pages/WalletPage.vue";
 import WriteLetterPage from "./app/pages/WriteLetterPage.vue";
+import { resolveBrowserSyncConfig } from "./app/sync/browser-sync-config.js";
+import { createLocalStorageRemoteSyncAdapter } from "./app/sync/local-remote-adapter.js";
+import { createLocalSyncStateStore } from "./app/sync/sync-state-storage.js";
+import {
+  prepareOnlineMutation,
+  pushLocalChanges,
+  syncNow as runSyncNow,
+  type SyncRuntimeResult
+} from "./app/sync/sync-runtime.js";
 import { postLetter, type WriteLetterInput } from "./app/write-letter-service.js";
 
 type NavKey = "today" | "write" | "scribes" | "wallet" | "mailbox";
@@ -26,14 +35,50 @@ interface WriteLetterSubmitPayload {
   input: WriteLetterInput;
 }
 
-const appStateStore = createBrowserAppStateStore();
-const settlement = settleAppState(appStateStore.load(), new Date());
+const browserStorage: KeyValueStorage = typeof window === "undefined" ? createMemoryKeyValueStorage() : window.localStorage;
+const browserLocation = typeof window === "undefined" ? "" : window.location;
+const syncConfig = resolveBrowserSyncConfig(browserLocation, browserStorage);
+const remoteAdapter = createLocalStorageRemoteSyncAdapter(browserStorage);
+const appStateStore = createBrowserAppStateStore(syncConfig.appStateStorageKey);
+const syncStateStore = createLocalSyncStateStore(
+  browserStorage,
+  {
+    householdId: syncConfig.householdId,
+    deviceId: syncConfig.deviceId,
+    memberId: syncConfig.memberId
+  },
+  syncConfig.syncStateStorageKey
+);
+const memberAlignment = alignAppStateWithSyncMember(appStateStore.load(), syncConfig.memberId);
+const settlement = settleAppState(memberAlignment.state, new Date());
 const appState = ref(settlement.state);
+const syncState = ref(syncStateStore.load());
 const model = computed(() => buildAppModel(new Date(), appState.value));
 const noticeText = ref("");
 const editingDraftId = ref<string | null>(null);
 const composeResetKey = ref(0);
 const composeSaveKey = ref(0);
+let appStateRevision = 0;
+let syncQueue: Promise<void> = Promise.resolve();
+const staleLocalChangeText = "本地信纸已有新变化，请再试一次。";
+const syncStatusText = computed(() => {
+  switch (syncState.value.status) {
+    case "syncing":
+      return "同步中";
+    case "synced":
+      return "已同步";
+    case "failed":
+      return "同步失败";
+    case "offline":
+      return "离线";
+    case "not_configured":
+      return "未配置";
+    case "idle":
+    default:
+      return "未同步";
+  }
+});
+const canRetrySync = computed(() => syncState.value.status === "failed" || syncState.value.status === "offline");
 const editingDraft = computed<DraftPaper | null>(() => {
   if (editingDraftId.value === null) {
     return null;
@@ -42,7 +87,7 @@ const editingDraft = computed<DraftPaper | null>(() => {
   return appState.value.draftPapers.find((draft) => draft.id === editingDraftId.value) ?? null;
 });
 
-if (settlement.changed) {
+if (memberAlignment.changed || settlement.changed) {
   appStateStore.save(settlement.state);
 }
 
@@ -66,8 +111,14 @@ const activePage = computed(() => {
 });
 
 function persistState(nextState: typeof appState.value): void {
+  appStateRevision += 1;
   appState.value = nextState;
   appStateStore.save(nextState);
+}
+
+function persistSyncState(nextState: typeof syncState.value): void {
+  syncState.value = nextState;
+  syncStateStore.save(nextState);
 }
 
 function settleAndPersist(now = new Date()): void {
@@ -78,6 +129,7 @@ function settleAndPersist(now = new Date()): void {
   }
 
   persistState(result.state);
+  void pushCurrentState();
 }
 
 function handleNavClick(key: NavKey): void {
@@ -85,6 +137,7 @@ function handleNavClick(key: NavKey): void {
 
   if (key === "mailbox") {
     settleAndPersist();
+    void syncNowAndPersist();
   }
 }
 
@@ -114,6 +167,7 @@ function handleDeleteDraft(draftId: string): void {
   }
 
   noticeText.value = "草稿已从信纸匣移出。";
+  void pushCurrentState();
 }
 
 function handleSaveDraft(payload: WriteLetterSubmitPayload): void {
@@ -129,14 +183,21 @@ function handleSaveDraft(payload: WriteLetterSubmitPayload): void {
   editingDraftId.value = result.draftId;
   composeSaveKey.value += 1;
   noticeText.value = result.created ? "草稿已存入信纸匣。" : "草稿已重新存妥。";
+  void pushCurrentState();
 }
 
-function handlePostLetter(payload: WriteLetterSubmitPayload): void {
+async function handlePostLetter(payload: WriteLetterSubmitPayload): Promise<void> {
   const input = buildSaveDraftInput(payload);
+  const prepared = await prepareMutationOrNotice();
+
+  if (!prepared.ok) {
+    return;
+  }
+
   const result =
     input.draftId === undefined
-      ? postLetter(appState.value, input, new Date())
-      : postDraftPaper(appState.value, input.draftId, input, new Date());
+      ? postLetter(prepared.state, input, new Date())
+      : postDraftPaper(prepared.state, input.draftId, input, new Date());
 
   if (!result.ok) {
     noticeText.value = result.reason;
@@ -147,10 +208,21 @@ function handlePostLetter(payload: WriteLetterSubmitPayload): void {
   editingDraftId.value = null;
   composeResetKey.value += 1;
   noticeText.value = "信已封缄投寄，邮政存根已入档。";
+  const pushed = await pushCurrentState();
+
+  if (!pushed.ok) {
+    noticeText.value = "信已封缄投寄，但同步未送达，稍后请重试。";
+  }
 }
 
-function handleOpenLetter(letterId: string): void {
-  const result = openLetter(appState.value, letterId, new Date());
+async function handleOpenLetter(letterId: string): Promise<void> {
+  const prepared = await prepareMutationOrNotice();
+
+  if (!prepared.ok) {
+    return;
+  }
+
+  const result = openLetter(prepared.state, letterId, new Date());
 
   if (!result.ok) {
     persistState(result.state);
@@ -160,6 +232,11 @@ function handleOpenLetter(letterId: string): void {
 
   persistState(result.state);
   noticeText.value = "信已拆阅，归入旧信匣。";
+  const pushed = await pushCurrentState();
+
+  if (!pushed.ok) {
+    noticeText.value = "信已拆阅，但同步未送达，稍后请重试。";
+  }
 }
 
 function buildSaveDraftInput(payload: WriteLetterSubmitPayload): SaveDraftPaperInput {
@@ -172,6 +249,153 @@ function buildSaveDraftInput(payload: WriteLetterSubmitPayload): SaveDraftPaperI
     draftId: payload.draftId
   };
 }
+
+async function prepareMutationOrNotice(): Promise<SyncRuntimeResult> {
+  return enqueueSyncOperation(async () => {
+    const startedRevision = appStateRevision;
+    markSyncing();
+    const result = await prepareOnlineMutation({
+      state: appState.value,
+      syncState: syncState.value,
+      adapter: remoteAdapter
+    });
+
+    persistSyncState(result.syncState);
+
+    if (!result.ok) {
+      noticeText.value = result.syncState.lastError ?? "同步未完成，请稍后重试。";
+      return result;
+    }
+
+    if (appStateRevision !== startedRevision) {
+      const staleResult = createStaleLocalChangeResult(result.syncState);
+      persistSyncState(staleResult.syncState);
+      noticeText.value = staleLocalChangeText;
+      return staleResult;
+    }
+
+    persistState(result.state);
+    return result;
+  });
+}
+
+async function syncNowAndPersist(): Promise<SyncRuntimeResult> {
+  return enqueueSyncOperation(async () => {
+    const startedRevision = appStateRevision;
+    markSyncing();
+    const result = await runSyncNow({
+      state: appState.value,
+      syncState: syncState.value,
+      adapter: remoteAdapter
+    });
+
+    persistSyncResult(result, startedRevision);
+    return result;
+  });
+}
+
+async function pushCurrentState(): Promise<SyncRuntimeResult> {
+  return enqueueSyncOperation(async () => {
+    const startedRevision = appStateRevision;
+    markSyncing();
+    const result = await pushLocalChanges({
+      state: appState.value,
+      syncState: syncState.value,
+      adapter: remoteAdapter
+    });
+
+    persistSyncResult(result, startedRevision);
+    return result;
+  });
+}
+
+function persistSyncResult(result: SyncRuntimeResult, startedRevision: number): void {
+  if (result.ok) {
+    if (appStateRevision !== startedRevision) {
+      persistSyncState({
+        ...result.syncState,
+        status: "idle"
+      });
+      return;
+    }
+
+    persistState(result.state);
+  }
+
+  persistSyncState(result.syncState);
+}
+
+function enqueueSyncOperation(operation: () => Promise<SyncRuntimeResult>): Promise<SyncRuntimeResult> {
+  const queued = syncQueue.then(operation, operation);
+  syncQueue = queued.then(
+    () => undefined,
+    () => undefined
+  );
+
+  return queued;
+}
+
+function createStaleLocalChangeResult(syncStateAfterPull: typeof syncState.value): SyncRuntimeResult {
+  return {
+    ok: false,
+    state: appState.value,
+    syncState: {
+      ...syncStateAfterPull,
+      status: "failed",
+      lastError: staleLocalChangeText
+    },
+    reason: "conflict"
+  };
+}
+
+function markSyncing(): void {
+  persistSyncState({
+    ...syncState.value,
+    status: "syncing",
+    lastError: null
+  });
+}
+
+function handleVisibilityChange(): void {
+  if (document.visibilityState === "visible") {
+    settleAndPersist();
+    void syncNowAndPersist();
+  }
+}
+
+function alignAppStateWithSyncMember(state: AppState, memberId: string): { state: AppState; changed: boolean } {
+  if (state.currentMemberId === memberId && state.wallet.ownerMemberId === memberId) {
+    return { state, changed: false };
+  }
+
+  const currentMember = state.members.find((member) => member.id === memberId);
+  const recipientMember = state.members.find((member) => member.id !== memberId);
+
+  if (currentMember === undefined || recipientMember === undefined) {
+    return { state, changed: false };
+  }
+
+  const nextState = cloneAppState(state);
+  nextState.currentMemberId = currentMember.id;
+  nextState.recipientMemberId = recipientMember.id;
+  nextState.wallet.ownerMemberId = currentMember.id;
+  nextState.writingRoute = {
+    fromCity: currentMember.city,
+    toCity: recipientMember.city,
+    distanceKm: nextState.writingRoute.distanceKm
+  };
+
+  return { state: nextState, changed: true };
+}
+
+onMounted(() => {
+  void syncNowAndPersist();
+  document.addEventListener("visibilitychange", handleVisibilityChange);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("visibilitychange", handleVisibilityChange);
+});
 </script>
 
 <template>
@@ -183,7 +407,21 @@ function buildSaveDraftInput(payload: WriteLetterSubmitPayload): SaveDraftPaperI
             <p class="text-xs text-[var(--app-muted)]">清波门邮政代办处</p>
             <h1 class="mt-1 text-3xl font-semibold leading-none">平安批</h1>
           </div>
-          <div class="stamp shrink-0">慢信</div>
+          <div class="flex shrink-0 items-center gap-3">
+            <button
+              v-if="canRetrySync"
+              type="button"
+              class="border border-[var(--app-rule)] px-3 py-1 text-xs text-[var(--app-muted)]"
+              @click="syncNowAndPersist"
+            >
+              重试同步
+            </button>
+            <div class="text-right text-xs text-[var(--app-muted)]">
+              <p>同步</p>
+              <p class="mt-1 text-[var(--app-ink)]">{{ syncStatusText }}</p>
+            </div>
+            <div class="stamp">慢信</div>
+          </div>
         </div>
       </header>
 

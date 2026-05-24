@@ -783,7 +783,7 @@ function stripRemoteLetter(remote: RemoteLetter, options: RemoteSnapshotMergeOpt
 }
 
 function redactRemoteLetterForMember(letter: RemoteLetter, memberId: string): RemoteLetter {
-  if (letter.senderId === memberId || letter.recipientId !== memberId || contentVisibleStates.has(letter.state)) {
+  if (letter.senderId === memberId || (letter.recipientId === memberId && contentVisibleStates.has(letter.state))) {
     return letter;
   }
 
