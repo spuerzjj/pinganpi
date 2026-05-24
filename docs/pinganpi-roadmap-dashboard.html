@@ -482,8 +482,9 @@
           <span class="badge done">旧 App：阶段 19 收口</span>
           <span class="badge info">新主线：微信小程序</span>
           <span class="badge done">阶段 26 工程闭环完成</span>
+          <span class="badge done">DevTools 自动化已接入</span>
           <span class="badge done">codex/wechat-miniprogram-pivot</span>
-          <span class="badge">更新：2026-05-24</span>
+          <span class="badge">更新：2026-05-25</span>
         </div>
       </header>
 
@@ -495,8 +496,8 @@
         </article>
         <article class="metric">
           <p class="metric-label">验证状态</p>
-          <p class="metric-value">388 tests</p>
-          <p class="metric-note">全量测试、旧 Vue typecheck、小程序检查和小程序云函数构建已通过。</p>
+          <p class="metric-value">389 tests</p>
+          <p class="metric-note">全量测试、小程序检查、云函数构建和 DevTools 自动化巡检已通过。</p>
         </article>
         <article class="metric">
           <p class="metric-label">下一推荐</p>
@@ -505,8 +506,8 @@
         </article>
         <article class="metric">
           <p class="metric-label">主要风险</p>
-          <p class="metric-value">8 项</p>
-          <p class="metric-note">AppID、prd 环境、手机号能力、隐私审核、流式 AI、真实双端、发布和 UI 打磨。</p>
+          <p class="metric-value">9 项</p>
+          <p class="metric-note">AppID、prd 环境、手机号能力、隐私审核、流式 AI、DevTools 端口、真实双端、发布和 UI 打磨。</p>
         </article>
       </section>
 
@@ -766,13 +767,17 @@
               <span class="badge done">npm test</span>
               <span class="badge done">typecheck</span>
               <span class="badge done">miniprogram</span>
+              <span class="badge done">devtools flow</span>
               <span class="badge warn">chunk warning</span>
             </div>
             <ul class="plain-list" style="margin-top: 12px">
+              <li>微信开发者工具控制台曾报 `app.json: 未找到 ["pages"][0] 对应的 pages/account/index.js 文件`；根因是 TypeScript 编译插件未启用，已通过 `setting.useCompilerPlugins: ["typescript"]` 修复。</li>
+              <li>`WECHAT_DEVTOOLS_PORT=62046 npm run miniprogram:devtools:smoke` 已通过，覆盖账号页无效手机号校验。</li>
+              <li>`WECHAT_DEVTOOLS_PORT=62046 npm run miniprogram:devtools:flow` 已通过，覆盖账号、关系、今日、写信、先生、钱匣、信箱和档案；不点击上传、发布、真机预览、真实手机号授权或投寄。</li>
               <li>阶段 26 已完成工程闭环：账号页接入微信手机号 code 登录和受控兜底入口，关系页接入创建关系、邀请码和加入。</li>
               <li>服务端账号 / 关系云函数已改为从可信微信 / CloudBase 上下文推导账号身份，不信任客户端传入的身份字段。</li>
               <li>`npm run cloudbase:build:miniprogram` 已通过，生成目录仍被 Git 忽略。</li>
-              <li>全量 57 个测试文件，388 个测试通过。</li>
+              <li>全量 58 个测试文件，389 个测试通过。</li>
               <li>阶段 24 已完成基础：今日、写信、代笔先生、钱匣、信箱 / 档案已接入本地 mock view-model，写信 tab 切换保留进度，口述变更会重新起稿。</li>
               <li>`miniprogram/services/local-model.test.ts` 已通过，4 个测试覆盖今日、先生、钱匣、信箱 / 档案 view-model。</li>
               <li>`miniprogram/services/write-flow.test.ts` 已通过，6 个测试覆盖本地写信费用、起稿、校改、挂号、投寄存根和口述变更后旧稿失效。</li>
@@ -895,6 +900,7 @@
               <li>CloudBase `dev` / `prd` 双环境需要确认环境 ID、绑定小程序 AppID、套餐和费用策略；当前免费体验版不能直接视为线上环境。</li>
               <li>微信一键手机号能力可能需要开通和审核；短信验证码兜底必须保留。</li>
               <li>小程序端流式 AI 不能默认复用浏览器 SSE；阶段 27 单独验证，MVP 允许先非流式。</li>
+              <li>微信开发者工具自动化需要先开启 `设置 -> 安全设置 -> 服务端口`；本机当前验证端口为 `62046`。</li>
               <li>旧 App 的 Vue / Varlet / Tailwind 页面不能直接复用，小程序页面需要 WXML / WXSS 重建。</li>
               <li>共享领域核心需要保持纯 TypeScript，不得引入小程序、CloudBase 或 Vue 依赖。</li>
               <li>真实双端验证从旧 App 阶段 20 顺延到小程序阶段 29。</li>

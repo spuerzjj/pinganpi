@@ -274,11 +274,20 @@
 
 ## 验证基线
 
+微信开发者工具自动化新增验证记录：
+
+- 控制台已确认历史阻断错误为 `app.json: 未找到 ["pages"][0] 对应的 pages/account/index.js 文件`；根因是微信开发者工具未启用 TypeScript 编译插件，导致页面 `.ts` 入口被按 `.js` 查找。
+- `miniprogram/project.config.json` 已显式配置 `setting.useCompilerPlugins: ["typescript"]`；本机 `miniprogram/project.private.config.json` 也需保持同项配置，避免私有配置覆盖后复现该错误。
+- 重新打开并编译项目后，开发者工具 Console 不再出现 app.json 阻断错误；剩余为 WeChatLib、LazyCodeLoading 和 HarmonyOS `getSystemInfo` 兼容提示。
+- `WECHAT_DEVTOOLS_PORT=62046 npm run miniprogram:devtools:smoke`：通过；自动打开账号页，输入无效手机号 `123`，点击 `使用兜底入口`，断言错误文案为 `请填写 11 位中国大陆手机号。`。
+- `WECHAT_DEVTOOLS_PORT=62046 npm run miniprogram:devtools:flow`：通过；覆盖账号、关系、今日、写信、代笔先生、钱匣、信箱和档案；写信场景停在投寄核算页，不点击本地投寄。
+- 自动化安全边界：不点击上传、发布、真机预览、真实微信手机号授权或审核提交；只做低风险页面巡检和本地输入校验。
+
 Roadmap Viewer 新增验证记录：
 
 - `npm test -- roadmap-viewer/src/roadmap.test.ts`：通过，1 个测试通过。
 - `npm run roadmap:build`：通过，独立 Vue viewer 可完成类型检查和 Vite 构建。
-- `npm run roadmap:dev -- --port 5190`：通过，浏览器验证 `http://localhost:5190/` 能显示 `平安批 Roadmap`、阶段 27 和 `388 tests`；`/docs/pinganpi-roadmap.md` 文档链接返回 200。
+- `npm run roadmap:dev -- --port 5190`：通过，浏览器验证 `http://localhost:5190/` 能显示 `平安批 Roadmap`、阶段 27 和 `389 tests`；`/docs/pinganpi-roadmap.md` 文档链接返回 200。
 
 最近阶段 26 小程序登录与双人关系工程闭环新增验证记录：
 
@@ -287,7 +296,7 @@ Roadmap Viewer 新增验证记录：
 - `CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:miniprogram`：阶段 26 账号 / 关系可信身份改造后通过，四个 event 云函数均部署成功。
 - `CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:smoke:miniprogram`：阶段 26 账号 / 关系可信身份改造后通过，四个 event 云函数 health invoke 均通过；AI 起稿 smoke 默认跳过，未产生 provider 调用。
 - `npm run miniprogram:check`：通过；包含共享副本一致性检查和小程序 typecheck。
-- `npm test`：通过，57 个测试文件，388 个测试通过。
+- `npm test`：通过，58 个测试文件，389 个测试通过。
 - `npm run typecheck`：通过。
 - `git diff --check`：通过。
 
@@ -314,6 +323,7 @@ Roadmap Viewer 新增验证记录：
 阶段 22 小程序工程基座验证记录：
 
 - `npm test -- miniprogram/config/env.test.ts`：通过，1 个测试文件，3 个测试通过；确认当前小程序默认使用 `dev` CloudBase 环境 `pinganpi-d7gml1f6sbcc172ea`，`prd` 仍为空等待用户创建。
+- `npm test -- miniprogram/project-config.test.ts`：覆盖微信开发者工具 TypeScript 编译插件配置，避免页面 `.ts` 入口被按 `.js` 查找。
 - `npm run miniprogram:typecheck`：通过，小程序 TypeScript 入口、环境配置和页面骨架可检查。
 - `npm test`：42 个测试文件，328 个测试通过。
 - `npm run typecheck`：通过。
@@ -979,6 +989,7 @@ npx cap doctor
 - 建立小程序页面骨架和底部导航。
 - 建立 `dev` CloudBase 环境配置入口，但不提交 secret。
 - 明确微信开发者工具打开路径和本地调试步骤。
+- 微信开发者工具必须启用 TypeScript 编译插件：`miniprogram/project.config.json` 的 `setting.useCompilerPlugins` 包含 `typescript`。本机 `miniprogram/project.private.config.json` 被 Git 忽略，但若其中有 `setting` 覆盖项，也要保持同样配置。
 
 ### 阶段 23：共享领域核心迁移
 
@@ -1126,6 +1137,8 @@ npx cap doctor
 ## 操作备注
 
 - 新主线优先使用微信开发者工具调试 `miniprogram/`，并连接 CloudBase `dev` 环境。
+- 微信开发者工具自动化命令为 `WECHAT_DEVTOOLS_PORT=<port> npm run miniprogram:devtools:smoke` 和 `WECHAT_DEVTOOLS_PORT=<port> npm run miniprogram:devtools:flow`；服务端口需先在 `设置 -> 安全设置` 开启。当前本机验证端口为 `62046`。
+- 若控制台报 `app.json: 未找到 ["pages"][0] 对应的 ...index.js 文件`，先检查 `project.config.json` / 本机 `project.private.config.json` 是否启用 `setting.useCompilerPlugins: ["typescript"]`，然后关闭并重新打开项目。
 - 旧浏览器调试 `npm run dev`、`cap:sync`、`cap doctor` 只用于历史 Capacitor / Vue 实现诊断，不再作为新功能主链路。
 - 不要提交生成的 `dist/`、`cloudbase/functions/`、微信开发者工具私有配置或任何真实 secret。
 - 小程序 UI 保持移动端优先，同时保证微信开发者工具和 PC 预览可用。

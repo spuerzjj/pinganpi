@@ -419,12 +419,17 @@ Create `miniprogram/project.config.json`:
     "es6": true,
     "enhance": true,
     "postcss": true,
+    "useCompilerPlugins": [
+      "typescript"
+    ],
     "minified": true,
     "minifyWXSS": true,
     "minifyWXML": true
   }
 }
 ```
+
+`useCompilerPlugins` 必须包含 `typescript`。否则微信开发者工具会按 `.js` 查找页面入口，并在编译 `app.json` 时报 `未找到 ["pages"][0] 对应的 pages/account/index.js 文件`。
 
 Create `miniprogram/sitemap.json`:
 
@@ -643,6 +648,7 @@ Add verification snapshot item:
 
 ```html
 <li><code>npm run miniprogram:typecheck</code> 已通过，小程序页面骨架和 CloudBase dev 配置入口可检查。</li>
+<li>微信开发者工具 TypeScript 编译插件已启用，避免页面 <code>.ts</code> 入口被按 <code>.js</code> 查找。</li>
 ```
 
 - [ ] **Step 3: 更新 `AGENTS.md`**

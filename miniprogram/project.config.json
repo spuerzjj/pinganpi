@@ -7,6 +7,9 @@
     "es6": true,
     "enhance": true,
     "postcss": true,
+    "useCompilerPlugins": [
+      "typescript"
+    ],
     "minified": true,
     "minifyWXSS": true,
     "minifyWXML": true

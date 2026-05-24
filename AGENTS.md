@@ -67,12 +67,16 @@ CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:deploy:sync
 npm run miniprogram:sync-shared
 npm run miniprogram:check-shared
 npm run miniprogram:check
+WECHAT_DEVTOOLS_PORT=<port> npm run miniprogram:devtools:smoke
+WECHAT_DEVTOOLS_PORT=<port> npm run miniprogram:devtools:flow
 npm run roadmap:dev
 npm run roadmap:build
 npx cap doctor
 ```
 
 新主线的日常开发方式：用微信开发者工具打开 `miniprogram/`，连接 CloudBase `dev` 环境，通过 `wx.cloud.callFunction` 调用云函数。`npm run dev`、`cap:sync`、`cap doctor` 只代表旧 Capacitor / Vue 历史基线。
+
+微信开发者工具自动化调试：先在微信开发者工具 `设置 -> 安全设置` 开启服务端口；优先显式传入 `WECHAT_DEVTOOLS_PORT=<端口>`，也可让脚本读取最近的 `.ide` 端口文件。`npm run miniprogram:devtools:smoke` 只做账号页无效手机号校验；`npm run miniprogram:devtools:flow` 覆盖账号、关系、今日、写信、先生、钱匣、信箱和档案的低风险页面巡检。脚本不点击上传、发布、真机预览、真实微信手机号授权或审核提交。
 
 Roadmap 日常查看方式：使用独立 Vue 工具 `roadmap-viewer/`，执行 `npm run roadmap:dev`。该工具独立于旧 App `src/` 和小程序 `miniprogram/`，数据源是 `docs/roadmap-data.json`；旧 `docs/pinganpi-roadmap-dashboard.html` 仅保留为静态快照。
 
@@ -163,7 +167,7 @@ Roadmap 日常查看方式：使用独立 Vue 工具 `roadmap-viewer/`，执行 
 - `docs/superpowers/specs/2026-05-23-pinganpi-ai-scribe-design.md`
 - `docs/superpowers/plans/2026-05-23-pinganpi-minimal-ai-proxy.md`
 
-最近验证基线：Roadmap Viewer 已通过 `npm test -- roadmap-viewer/src/roadmap.test.ts`、`npm run roadmap:build`、浏览器访问 `http://localhost:5190/` 和 `/docs/pinganpi-roadmap.md` 文档链接 200 验证。阶段 26 已通过 `npm run miniprogram:check`、`npm test`（57 个测试文件，388 个测试通过）、`npm run typecheck`、`npm run cloudbase:build:miniprogram`、`git diff --check` 和阶段 26 聚焦测试（5 个测试文件，23 个测试通过），覆盖小程序可信身份、账号云函数、关系云函数、会话缓存和 cloud service；`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:miniprogram` 与 `npm run cloudbase:smoke:miniprogram` 已在阶段 26 账号 / 关系可信身份改造后通过。阶段 25 基线保留：小程序 CloudBase dev 主链路已通过构建、部署和 health smoke，AI / sync / account / pair event wrapper、小程序 cloud adapter、账号关系 CloudBase store 和 smoke helper 均有测试覆盖。阶段 24 基线保留：`npm test -- miniprogram/services/local-model.test.ts`（4 个测试通过）、`npm test -- miniprogram/services/write-flow.test.ts`（6 个测试通过）。阶段 23 基线保留：`npm test -- src/domain`（5 个测试文件，85 个测试通过）、`npm run miniprogram:check-shared`、`npm test -- miniprogram/services/domain-summary.test.ts`（1 个测试通过）、`npm test -- scripts/sync-miniprogram-shared-domain.test.ts`（4 个测试通过）。阶段 17 / 18 旧 App 基线保留：`npm test` 曾为 40 个测试文件、320 个测试通过，`vue-tsc --noEmit`、`vite build`、`cap sync`、`cap doctor`、`npm audit --omit=dev` 均通过；Varlet 首包超过 500 KB 是旧 App 优化项。阶段 16B 云端基线保留：`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:sync` 通过，`npm run cloudbase:smoke:sync` 已通过真实云端 smoke。为避免 `@cloudbase/node-sdk` 传递引入存在原型污染公告的 `lodash.set` / `lodash.unset` 小包，已通过 `vendor/lodash-set` 和 `vendor/lodash-unset` 提供兼容 shim，内部调用已修复的主 `lodash` 子模块。
+最近验证基线：微信开发者工具控制台已确认 `app.json` 缺少 `pages/account/index.js` 的阻断错误来自 TypeScript 编译插件未启用，`project.config.json` 已显式配置 `setting.useCompilerPlugins: ["typescript"]`，重新打开并编译后仅剩微信基础库系统 warning；`WECHAT_DEVTOOLS_PORT=62046 npm run miniprogram:devtools:smoke` 与 `WECHAT_DEVTOOLS_PORT=62046 npm run miniprogram:devtools:flow` 已通过，覆盖账号、关系、今日、写信、先生、钱匣、信箱和档案的低风险 DevTools 自动化巡检。Roadmap Viewer 已通过 `npm test -- roadmap-viewer/src/roadmap.test.ts`、`npm run roadmap:build`、浏览器访问 `http://localhost:5190/` 和 `/docs/pinganpi-roadmap.md` 文档链接 200 验证。阶段 26 已通过 `npm run miniprogram:check`、`npm test`（58 个测试文件，389 个测试通过）、`npm run typecheck`、`npm run cloudbase:build:miniprogram`、`git diff --check` 和阶段 26 聚焦测试（5 个测试文件，23 个测试通过），覆盖小程序可信身份、账号云函数、关系云函数、会话缓存和 cloud service；`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:miniprogram` 与 `npm run cloudbase:smoke:miniprogram` 已在阶段 26 账号 / 关系可信身份改造后通过。阶段 25 基线保留：小程序 CloudBase dev 主链路已通过构建、部署和 health smoke，AI / sync / account / pair event wrapper、小程序 cloud adapter、账号关系 CloudBase store 和 smoke helper 均有测试覆盖。阶段 24 基线保留：`npm test -- miniprogram/services/local-model.test.ts`（4 个测试通过）、`npm test -- miniprogram/services/write-flow.test.ts`（6 个测试通过）。阶段 23 基线保留：`npm test -- src/domain`（5 个测试文件，85 个测试通过）、`npm run miniprogram:check-shared`、`npm test -- miniprogram/services/domain-summary.test.ts`（1 个测试通过）、`npm test -- scripts/sync-miniprogram-shared-domain.test.ts`（4 个测试通过）。阶段 17 / 18 旧 App 基线保留：`npm test` 曾为 40 个测试文件、320 个测试通过，`vue-tsc --noEmit`、`vite build`、`cap sync`、`cap doctor`、`npm audit --omit=dev` 均通过；Varlet 首包超过 500 KB 是旧 App 优化项。阶段 16B 云端基线保留：`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:sync` 通过，`npm run cloudbase:smoke:sync` 已通过真实云端 smoke。为避免 `@cloudbase/node-sdk` 传递引入存在原型污染公告的 `lodash.set` / `lodash.unset` 小包，已通过 `vendor/lodash-set` 和 `vendor/lodash-unset` 提供兼容 shim，内部调用已修复的主 `lodash` 子模块。
 
 ## 后续路线
 
@@ -217,6 +221,7 @@ Roadmap 日常查看方式：使用独立 Vue 工具 `roadmap-viewer/`，执行 
 2. **阶段 22：小程序工程基座**
    - 状态：已完成基础。
    - 已创建 `miniprogram/`、小程序配置、TypeScript 页面骨架、基础样式、开发者工具打开方式和 `dev` 环境配置入口。
+   - `miniprogram/project.config.json` 必须保留 `setting.useCompilerPlugins: ["typescript"]`；否则微信开发者工具会按 `.js` 查找页面并报 `app.json: 未找到 ["pages"][0] 对应的 pages/account/index.js 文件`。
    - 不继续扩展 Capacitor 壳层。
 
 3. **阶段 23：共享领域核心迁移**
@@ -440,6 +445,8 @@ npm audit --omit=dev
 npm run miniprogram:typecheck
 npm run miniprogram:check-shared
 npm run miniprogram:check
+WECHAT_DEVTOOLS_PORT=<port> npm run miniprogram:devtools:smoke
+WECHAT_DEVTOOLS_PORT=<port> npm run miniprogram:devtools:flow
 npm run cloudbase:build:miniprogram
 npm test -- miniprogram/config/env.test.ts
 npm test -- miniprogram/services/domain-summary.test.ts
@@ -455,7 +462,7 @@ npm test -- scripts/smoke-cloudbase-miniprogram-functions.test.ts
 
 修改 `shared/domain/` 后必须运行 `npm run miniprogram:sync-shared` 更新小程序根内副本，并用 `npm run miniprogram:check-shared` 确认副本未陈旧；该检查会动态发现新增 `.ts` 领域文件。
 
-后续接入云函数后，应补充微信开发者工具构建、云函数构建、`dev` 环境 smoke 命令，并把它们作为新主线默认验证。
+微信开发者工具自动化依赖 `设置 -> 安全设置 -> 服务端口`。当前已验证端口为 `62046`；端口变化时改用新的 `WECHAT_DEVTOOLS_PORT`，不要硬编码到源码。
 
 已知现象：
 
@@ -466,6 +473,7 @@ npm test -- scripts/smoke-cloudbase-miniprogram-functions.test.ts
 - 用微信开发者工具打开 `miniprogram/`。
 - 小程序本地开发默认连接 CloudBase `dev` 环境。
 - 小程序端通过 `wx.cloud.callFunction` 调用云函数，不依赖本地 proxy 才能完成主流程。
+- 若开发者工具控制台报 `app.json: 未找到 ["pages"][0] 对应的 ...index.js 文件`，先检查 `miniprogram/project.config.json` 和本机 `miniprogram/project.private.config.json` 是否启用了 `setting.useCompilerPlugins: ["typescript"]`，然后关闭并重新打开项目。
 - `prd` 只用于审核、发布和线上 smoke；部署生产必须显式指定环境。
 - AppID、手机号能力、隐私保护指引、CloudBase 环境关联和审核发布需要用户在微信公众平台 / 微信开发者工具 / 腾讯云控制台确认。
 
