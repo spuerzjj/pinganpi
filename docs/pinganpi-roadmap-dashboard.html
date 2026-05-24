@@ -479,7 +479,7 @@
           </p>
         </div>
         <div class="meta">
-          <span class="badge done">工程：阶段 15 基础完成</span>
+          <span class="badge info">工程：阶段 16A 启动</span>
           <span class="badge warn">人工收口：阶段 13</span>
           <span class="badge done">main</span>
           <span class="badge">更新：2026-05-24</span>
@@ -489,8 +489,8 @@
       <section class="grid-4" aria-label="关键状态">
         <article class="metric">
           <p class="metric-label">当前基线</p>
-          <p class="metric-value">阶段 15 基础完成</p>
-          <p class="metric-note">远端模型、sync adapter、快照合并和本地 mock remote 双设备验证已完成。</p>
+          <p class="metric-value">阶段 16A 计划已建</p>
+          <p class="metric-note">同步 runtime、同步状态、联网操作护栏和本地双设备闭环已进入实施。</p>
         </article>
         <article class="metric">
           <p class="metric-label">验证状态</p>
@@ -499,13 +499,13 @@
         </article>
         <article class="metric">
           <p class="metric-label">下一推荐</p>
-          <p class="metric-value">真实同步</p>
-          <p class="metric-note">下一工程阶段可进入阶段 16；控制台费用告警统一最后人工收口。</p>
+          <p class="metric-value">同步闭环</p>
+          <p class="metric-note">先用本地 / 模拟远端跑通 App 同步，再接真实 CloudBase 数据库 adapter。</p>
         </article>
         <article class="metric">
           <p class="metric-label">主要风险</p>
-          <p class="metric-value">7 项</p>
-          <p class="metric-note">控制台收口、GUI 补测、同步、异常、推送、附件、发布质量。</p>
+          <p class="metric-value">8 项</p>
+          <p class="metric-note">控制台收口、GUI 补测、16A 同步闭环、16B 云数据库、异常、推送、附件、发布质量。</p>
         </article>
       </section>
 
@@ -513,9 +513,9 @@
         <div class="card-header">
           <div>
             <h2>阶段进度</h2>
-            <p class="muted">阶段 15 同步准备基础已完成；阶段 13 还剩 MiMo / CloudBase 控制台费用告警、默认角色收敛和 key 轮换入口等人工收口。</p>
+            <p class="muted">阶段 16A 已启动：先完成 App 侧同步 runtime 与本地双设备闭环；阶段 13 还剩 MiMo / CloudBase 控制台费用告警、默认角色收敛和 key 轮换入口等人工收口。</p>
           </div>
-          <span class="badge done">70%</span>
+          <span class="badge info">72%</span>
         </div>
         <div class="card-body progress">
           <div class="progress-track" aria-hidden="true">
@@ -715,7 +715,7 @@
         <article class="card">
           <div class="card-header">
             <h2>后续主线</h2>
-            <span class="badge info">下一工程：阶段 16</span>
+            <span class="badge info">当前工程：阶段 16A</span>
           </div>
           <div class="card-body priority-grid">
             <div class="priority">
@@ -758,7 +758,14 @@
                 <span class="badge done">阶段 15 完成基础</span>
               </div>
               <h3>云端与双人同步准备</h3>
-              <p>远端模型、同步 adapter、本地 mock remote、append-only 去重、跨设备 id 防冲突、未到达正文红action、信件状态单向推进和草稿冲突策略已完成；真实 CloudBase 数据库接入留到阶段 16。</p>
+              <p>远端模型、同步 adapter、本地 mock remote、append-only 去重、跨设备 id 防冲突、未到达正文红action、信件状态单向推进和草稿冲突策略已完成；真实 CloudBase 数据库 adapter 留到阶段 16B。</p>
+            </div>
+            <div class="priority">
+              <div class="meta" style="justify-content: flex-start">
+                <span class="badge info">阶段 16A 进行中</span>
+              </div>
+              <h3>双人同步本地闭环</h3>
+              <p>已建立阶段 16 设计与实施计划；下一步接入同步 runtime、同步状态、联网投寄 / 拆阅护栏和本地双设备生命周期测试。</p>
             </div>
           </div>
         </article>
@@ -772,7 +779,7 @@
             <ul class="plain-list">
               <li>CloudBase / MiMo 费用告警、月费用上限或人工检查频率仍需配置和记录。</li>
               <li>Chrome GUI 点击验证需要先授予 Codex Computer Use 的 Accessibility / Screen Recording 权限。</li>
-              <li>真实 CloudBase 数据库接入、双人账户绑定和真实双设备同步留到阶段 16。</li>
+              <li>阶段 16A 正在推进本地 / 模拟远端同步闭环；真实 CloudBase 数据库 adapter 放到 16B。</li>
               <li>阶段 13 尚未完成 CloudBase 默认角色收敛检查、控制台告警配置和 MiMo 控制台 key 轮换入口记录。</li>
               <li>延误、迷失、找回、退回尚未接入自动确定性推进规则。</li>
               <li>系统推送和照片附件尚未开始。</li>
@@ -795,6 +802,8 @@
             <a class="button" href="./superpowers/plans/2026-05-23-pinganpi-cloud-ai-proxy.md">阶段 13 实施计划</a>
             <a class="button" href="./superpowers/specs/2026-05-24-pinganpi-cloud-sync-design.md">阶段 15 同步设计</a>
             <a class="button" href="./superpowers/plans/2026-05-24-pinganpi-cloud-sync-foundation.md">阶段 15 实施计划</a>
+            <a class="button" href="./superpowers/specs/2026-05-24-pinganpi-dual-sync-mvp-design.md">阶段 16 设计</a>
+            <a class="button" href="./superpowers/plans/2026-05-24-pinganpi-dual-sync-mvp.md">阶段 16 实施计划</a>
           </div>
         </div>
       </section>
