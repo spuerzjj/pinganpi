@@ -230,7 +230,7 @@
 | 16 | 双人真实同步 MVP | 已完成云端 smoke | 本地 / 模拟远端同步闭环、CloudBase HTTP 同步代理、数据库集合、显式 HTTP 路由、env 配置和云端 pull / push smoke 已完成。 |
 | 17 | 手机号账号系统 | 已完成工程闭环 | 本地手机号登录 mock、稳定 `PinganpiAccount`、登录态恢复、账号入口页和手机号展示已完成；真实 CloudBase Auth / SMS 放入阶段 19。 |
 | 18 | 双人绑定与同步授权 | 已完成工程闭环 | 本地创建关系、24 小时一次性邀请码、输入即加入、唯一 active household、App 同步命名空间接入、服务端关系约束和 sync-proxy 账号授权边界已完成。 |
-| 19 | 外部平台人工配置收口 | 新增，未开始 | 统一处理 CloudBase / MiMo 控制台、短信验证码、费用告警、权限、HTTP 路由、真实环境配置等需用户介入事项。 |
+| 19 | 外部平台人工配置收口 | 进行中 | 已新增脱敏 CloudBase 审计脚本并记录用量 / 函数状态；下一步由用户进入控制台确认 Auth、短信、预算、权限和 MiMo key 管理。 |
 | 20 | 完整人工验证引导 | 新增，未开始 | 由 Codex 引导用户完整验证账号、绑定、同步、AI、写信、送达、拆阅、断网和原生真机流程。 |
 | 21 | 邮政异常规则 | 未开始 | 延误、错分、迷失、找回、退回的确定性推进。 |
 | 22 | 系统推送 | 未开始 | 重要信、挂号信、找回、退回等克制提醒。 |
@@ -815,6 +815,20 @@ npx cap doctor
 ### 阶段 19：外部平台人工配置收口
 
 目标：把所有需要用户登录控制台、输入验证码、确认费用或操作真实设备前置配置的事项统一处理，避免打断阶段 17 / 18 的工程开发。
+
+状态：进行中。已新增阶段 19 执行计划和脱敏 CloudBase 审计脚本；已记录当前 CloudBase 用量、函数状态、公开面、默认角色和 env key 存在情况。下一步需要用户进入 CloudBase / 腾讯云费用中心 / Xiaomi MiMo 控制台完成人工确认。
+
+执行计划：
+
+- `docs/superpowers/plans/2026-05-24-pinganpi-external-platform-closure.md`
+
+已完成自动项：
+
+- 新增 `scripts/audit-cloudbase-stage19.ts` 和 `npm run cloudbase:audit:stage19`，用于脱敏审计 CloudBase 用量和函数状态。
+- 当前计费周期 `2026-05-23 ~ 2026-06-23`，CloudBase 用量为 `1.67 / 3000 credits`。
+- `ai-scribe-proxy` 和 `sync-proxy` 均为 `Active / Available`，运行时均为 `Nodejs20.19`，HTTP 类型，PublicNet `ENABLE`，触发器 `0`，VPC 未配置。
+- 两个函数当前角色均为 `TCB_QcsRole`，是否可收敛仍待控制台确认。
+- `ai-scribe-proxy` 的 `MIMO_API_KEY` 存在但审计输出已脱敏；后续不要直接用会打印完整 env 的 CLI 输出。
 
 推荐范围：
 
