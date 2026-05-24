@@ -816,7 +816,7 @@ npx cap doctor
 
 目标：把所有需要用户登录控制台、输入验证码、确认费用或操作真实设备前置配置的事项统一处理，避免打断阶段 17 / 18 的工程开发。
 
-状态：进行中。已新增阶段 19 执行计划和脱敏 CloudBase 审计脚本；已记录当前 CloudBase 用量、函数状态、公开面、默认角色和 env key 存在情况。下一步需要用户进入 CloudBase / 腾讯云费用中心 / Xiaomi MiMo 控制台完成人工确认。
+状态：进行中。已新增阶段 19 执行计划和脱敏 CloudBase 审计脚本；已记录当前 CloudBase 用量、函数状态、公开面、默认角色和 env key 存在情况。用户已在 CloudBase 控制台开启手机号短信登录，且两个真实手机号验证码均已实际收到。下一步需要记录短信签名 / 模板 / 发送限制 / 费用策略。
 
 执行计划：
 
@@ -829,6 +829,8 @@ npx cap doctor
 - `ai-scribe-proxy` 和 `sync-proxy` 均为 `Active / Available`，运行时均为 `Nodejs20.19`，HTTP 类型，PublicNet `ENABLE`，触发器 `0`，VPC 未配置。
 - 两个函数当前角色均为 `TCB_QcsRole`，是否可收敛仍待控制台确认。
 - `ai-scribe-proxy` 的 `MIMO_API_KEY` 存在但审计输出已脱敏；后续不要直接用会打印完整 env 的 CLI 输出。
+- CloudBase Auth 手机号短信登录已由用户在控制台开启；本环境为 `ap-shanghai`，符合短信登录地域要求。
+- Auth 发送验证码应使用 CloudBase HTTP API 统一域名 `https://pinganpi-d7gml1f6sbcc172ea.api.tcloudbasegateway.com/auth/v1/verification`；已对两个真实手机号各触发一次发送请求，均返回 HTTP 200 和 `verification_id`，用户已确认两台手机均收到验证码。
 
 推荐范围：
 

@@ -65,16 +65,23 @@ CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:audit:stage19
 
 ### 1. CloudBase Auth 手机号登录
 
-- [ ] 用户打开 CloudBase 控制台：`https://tcb.cloud.tencent.com/`
-- [ ] 进入环境 `pinganpi-d7gml1f6sbcc172ea`
-- [ ] 进入 Authentication / Login Methods 或登录授权页面
-- [ ] 开启手机号短信登录
-- [ ] 确认地域限制：手机号短信登录官方文档标注仅支持上海地域；本环境是 `ap-shanghai`
+- [x] 用户打开 CloudBase 控制台：`https://tcb.cloud.tencent.com/`
+- [x] 进入环境 `pinganpi-d7gml1f6sbcc172ea`
+- [x] 进入 Authentication / Login Methods 或登录授权页面
+- [x] 开启手机号短信登录
+- [x] 确认地域限制：手机号短信登录官方文档标注仅支持上海地域；本环境是 `ap-shanghai`
 - [ ] 记录是否需要短信签名、短信模板、资质审核或资源包购买
 - [ ] 记录发送限制和费用策略
-- [ ] 真实手机号 A 可收到验证码
-- [ ] 真实手机号 B 可收到验证码
+- [x] 真实手机号 A 可收到验证码
+- [x] 真实手机号 B 可收到验证码
 - [ ] 若出现图片验证码或频率限制，记录具体提示，不把验证码写进仓库
+
+当前触发记录：
+
+- 已确认 Auth 发送入口应使用 CloudBase HTTP API 统一域名：`https://pinganpi-d7gml1f6sbcc172ea.api.tcloudbasegateway.com/auth/v1/verification`
+- 曾误用 HTTP 访问服务默认域名 `/auth/v1/verification`，返回 `INVALID_PATH`；不要再用 `app.tcloudbase.com` 域名触发 Auth API。
+- 已对两个真实手机号各触发一次发送请求，均返回 HTTP 200，响应包含 `verification_id`，`expires_in` 为 `300` 秒。
+- 用户已确认两台手机均实际收到验证码；验证码不要写入聊天、文档或 Git。
 
 ### 2. 账号 / 关系 CloudBase 持久化准备
 
