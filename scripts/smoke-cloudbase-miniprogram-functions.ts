@@ -148,6 +148,7 @@ export function sanitizeSmokeLog(value: unknown, env: Record<string, string | un
   text = text.replace(/\b1[3-9]\d{9}\b/g, "[redacted-phone]");
   text = text.replace(/\b[A-Z0-9]{4}-[A-Z0-9]{4}\b/g, "[redacted-invite]");
   text = text.replace(/\binvite=\d{6}\b/gi, "invite=[redacted-invite]");
+  text = text.replace(/("?(?:code|invite|inviteCode)"?\s*[:=]\s*"?)(\d{6})(")?/giu, "$1[redacted-invite]$3");
   text = text.replace(/\b(?:sk|tp)-[A-Za-z0-9_-]{6,}\b/g, "[redacted-secret]");
 
   for (const [key, rawValue] of Object.entries(env)) {
