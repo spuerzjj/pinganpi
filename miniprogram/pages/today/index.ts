@@ -1,7 +1,11 @@
+import { createTodayDomainSummary } from "../../services/domain-summary.js";
+
+const todaySummary = createTodayDomainSummary(new Date());
+
 Page({
   data: {
     kicker: "平安批 / 今日",
-    title: "今日",
-    body: "旧历日期、钱匣摘要、来信提示和待办事项会放在这里。"
+    title: todaySummary.eraDateText,
+    body: `${todaySummary.presentDateText}。本埠邮资：${todaySummary.localPostageText}；挂号邮资：${todaySummary.registeredPostageText}。`
   }
 });
