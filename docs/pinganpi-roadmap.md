@@ -230,7 +230,7 @@
 | 16 | 双人真实同步 MVP | 已完成云端 smoke | 本地 / 模拟远端同步闭环、CloudBase HTTP 同步代理、数据库集合、显式 HTTP 路由、env 配置和云端 pull / push smoke 已完成。 |
 | 17 | 手机号账号系统 | 已完成工程闭环 | 本地手机号登录 mock、稳定 `PinganpiAccount`、登录态恢复、账号入口页和手机号展示已完成；真实 CloudBase Auth / SMS 放入阶段 19。 |
 | 18 | 双人绑定与同步授权 | 已完成工程闭环 | 本地创建关系、24 小时一次性邀请码、输入即加入、唯一 active household、App 同步命名空间接入、服务端关系约束和 sync-proxy 账号授权边界已完成。 |
-| 19 | 外部平台人工配置收口 | 进行中 | 已新增脱敏 CloudBase 审计脚本并记录用量 / 函数状态；CloudBase Auth HTTP API、账号 / 关系集合命名、短信真实可达和 HTTP 路由 smoke 已确认；下一步由用户进入控制台确认短信模板、预算、权限和 MiMo key 管理。 |
+| 19 | 外部平台人工配置收口 | 进行中 | 已新增脱敏 CloudBase 审计脚本并记录用量 / 函数状态；CloudBase Auth HTTP API、账号 / 关系集合命名、短信真实可达、短信频率 / 费用基线和 HTTP 路由 smoke 已确认；下一步由用户按阶段 19 回报模板确认短信模板、预算、权限和 MiMo key 管理。 |
 | 20 | 完整人工验证引导 | 新增，未开始 | 由 Codex 引导用户完整验证账号、绑定、同步、AI、写信、送达、拆阅、断网和原生真机流程。 |
 | 21 | 邮政异常规则 | 未开始 | 延误、错分、迷失、找回、退回的确定性推进。 |
 | 22 | 系统推送 | 未开始 | 重要信、挂号信、找回、退回等克制提醒。 |
@@ -816,7 +816,7 @@ npx cap doctor
 
 目标：把所有需要用户登录控制台、输入验证码、确认费用或操作真实设备前置配置的事项统一处理，避免打断阶段 17 / 18 的工程开发。
 
-状态：进行中。已新增阶段 19 执行计划和脱敏 CloudBase 审计脚本；已记录当前 CloudBase 用量、函数状态、公开面、默认角色和 env key 存在情况。用户已在 CloudBase 控制台开启手机号短信登录，且两个真实手机号验证码均已实际收到。App 侧手机号登录接入方式已确定为 CloudBase Auth v2 HTTP API，账号 / 关系集合命名已定稿，HTTP 路由 smoke、CLI 路由查询、集合权限查询和角色列表查询已通过。下一步需要记录短信签名 / 模板 / 发送限制 / 费用策略，并继续确认预算、函数运行角色收敛和 MiMo key 管理。
+状态：进行中。已新增阶段 19 执行计划和脱敏 CloudBase 审计脚本；已记录当前 CloudBase 用量、函数状态、公开面、默认角色和 env key 存在情况。用户已在 CloudBase 控制台开启手机号短信登录，且两个真实手机号验证码均已实际收到。App 侧手机号登录接入方式已确定为 CloudBase Auth v2 HTTP API，账号 / 关系集合命名已定稿，HTTP 路由 smoke、CLI 路由查询、集合权限查询和角色列表查询已通过。短信发送限制和费用基线已按官方资料记录，预算建议已给出 `10 元/月`、`80%` / `100%` 阈值提醒。下一步需要用户按阶段 19 回报模板确认短信签名 / 模板、预算告警、函数运行角色收敛和 MiMo key 管理。
 
 执行计划：
 
@@ -831,12 +831,15 @@ npx cap doctor
 - `ai-scribe-proxy` 的 `MIMO_API_KEY` 存在但审计输出已脱敏；后续不要直接用会打印完整 env 的 CLI 输出。
 - CloudBase Auth 手机号短信登录已由用户在控制台开启；本环境为 `ap-shanghai`，符合短信登录地域要求。
 - Auth 发送验证码应使用 CloudBase HTTP API 统一域名 `https://pinganpi-d7gml1f6sbcc172ea.api.tcloudbasegateway.com/auth/v1/verification`；已对两个真实手机号各触发一次发送请求，均返回 HTTP 200 和 `verification_id`，用户已确认两台手机均收到验证码。
+- 短信发送限制和费用基线已记录：新开通按量计费环境首月 100 条免费额度；超出免费额度可购买资源包；同一号码 30 秒最多 1 条，同一手机号一个自然日最多 10 条。
 - App 第一版手机号登录采用 CloudBase Auth v2 HTTP API，不引入 CloudBase JS SDK：发送验证码 `/auth/v1/verification`，验证验证码 `/auth/v1/verification/verify`，登录 `/auth/v1/signin`，刷新 `/auth/v1/token`。
 - 账号 / 关系集合名确定为 `pinganpi_accounts`、`pinganpi_households`、`pinganpi_members`、`pinganpi_invites`；账号 / 关系写入必须走服务端可信身份边界，客户端不得直接写授权结果。
 - 2026-05-24 HTTP 路由 smoke：`/api/health` 和 `/sync/health` 返回 200；`/sync/pull` 与 `/sync/push` 在未带 token 时返回 401，公网路由和 fail-closed 行为可达。
 - 2026-05-24 CLI 路由查询：`/api` 指向 `ai-scribe-proxy`；`/sync/health`、`/sync/pull`、`/sync/push` 指向 `sync-proxy`；四条路由均启用，类型均为 `WEB_SCF`。
 - 2026-05-24 CLI 权限查询：`pinganpi_sync_snapshots`、`pinganpi_accounts`、`pinganpi_households`、`pinganpi_members`、`pinganpi_invites` 均为 `PRIVATE`；函数 invoke 权限为自定义规则，但 HTTP 访问服务路由 `enableAuth=false`，所以代理 handler 的应用层校验仍是必须边界。
 - 2026-05-24 CLI 角色查询：当前只有系统角色，自定义角色 0 个；函数运行角色仍显示为 `TCB_QcsRole`，是否能收敛仍需控制台 / 云函数平台确认。
+- 腾讯云预算建议已记录：先建月度费用预算，费用范围选全部范围，推荐 `10 元/月`，阈值提醒使用 `80%` 和 `100%`；具体金额由用户最终确认。
+- 阶段 19 计划已新增剩余人工回报模板；用户按模板回报后再把对应人工项标记为完成、暂缓或不可配置。
 
 推荐范围：
 

@@ -279,12 +279,15 @@ npx cap doctor
    - 已新增 `scripts/audit-cloudbase-stage19.ts` 和 `npm run cloudbase:audit:stage19`，用于脱敏审计 CloudBase 用量和函数状态；不要再直接把 `cloudbase fn detail` 原始输出发给用户，因为它会明文返回 env。
    - 当前审计基线：CloudBase 计费周期 `2026-05-23 ~ 2026-06-23`，用量 `1.67 / 3000 credits`；`ai-scribe-proxy` 与 `sync-proxy` 均为 `Active / Available`，运行时 `Nodejs20.19`，PublicNet `ENABLE`，触发器 `0`，VPC 未配置，角色均为 `TCB_QcsRole`。
    - 用户已在 CloudBase 控制台开启手机号短信登录；两个真实手机号验证码均已实际收到，下一步记录短信签名 / 模板 / 发送限制 / 费用策略。
+   - 短信发送限制和费用基线已记录：新开通按量计费环境首月 100 条免费额度；超出免费额度可购买资源包；同一号码 30 秒最多 1 条，同一手机号一个自然日最多 10 条。
    - App 第一版手机号登录采用 CloudBase Auth v2 HTTP API，不引入 CloudBase JS SDK：发送验证码 `/auth/v1/verification`，验证验证码 `/auth/v1/verification/verify`，登录 `/auth/v1/signin`，刷新 `/auth/v1/token`。
    - 账号 / 关系集合名确定为 `pinganpi_accounts`、`pinganpi_households`、`pinganpi_members`、`pinganpi_invites`；账号 / 关系写入必须走服务端可信身份边界，客户端不得直接写授权结果。
    - 2026-05-24 HTTP 路由 smoke 已确认：`/api/health` 和 `/sync/health` 返回 200；`/sync/pull` 与 `/sync/push` 未带 token 返回 401。
    - 2026-05-24 CLI 路由查询已确认：`/api` 指向 `ai-scribe-proxy`；`/sync/health`、`/sync/pull`、`/sync/push` 指向 `sync-proxy`；四条路由均启用，类型均为 `WEB_SCF`。
    - 2026-05-24 CLI 权限查询已确认：`pinganpi_sync_snapshots`、`pinganpi_accounts`、`pinganpi_households`、`pinganpi_members`、`pinganpi_invites` 均为 `PRIVATE`；函数 invoke 权限为自定义规则，但 HTTP 访问服务路由 `enableAuth=false`，代理 handler 仍必须继续做应用层校验。
    - 2026-05-24 CLI 角色查询：只有系统角色，自定义角色 0 个；函数运行角色仍显示为 `TCB_QcsRole`，是否能收敛仍需控制台 / 云函数平台确认。
+   - 腾讯云预算建议已记录：先建月度费用预算，费用范围选全部范围，推荐 `10 元/月`，阈值提醒使用 `80%` 和 `100%`；具体金额由用户最终确认。
+   - 阶段 19 计划已新增剩余人工回报模板；用户按模板回报后再把对应人工项标记为完成、暂缓或不可配置。
    - 包括 CloudBase Auth 手机号验证码、短信签名 / 模板、账号 / 关系 CloudBase 持久化、数据库集合权限、HTTP 路由、费用告警、默认角色收敛、MiMo key 撤销 / 轮换入口和真实手机号验证码。
    - 不在本阶段新增业务功能，不把控制台 secret、验证码或真实 key 写入仓库。
 
