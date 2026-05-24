@@ -1,0 +1,49 @@
+{
+  "pages": [
+    "pages/account/index",
+    "pages/pair/index",
+    "pages/today/index",
+    "pages/write/index",
+    "pages/scribes/index",
+    "pages/wallet/index",
+    "pages/mailbox/index",
+    "pages/archive/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "平安批",
+    "navigationBarBackgroundColor": "#f7f1e4",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f7f1e4",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "color": "#7b6a55",
+    "selectedColor": "#2f2418",
+    "backgroundColor": "#f7f1e4",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/today/index",
+        "text": "今日"
+      },
+      {
+        "pagePath": "pages/write/index",
+        "text": "写信"
+      },
+      {
+        "pagePath": "pages/scribes/index",
+        "text": "先生"
+      },
+      {
+        "pagePath": "pages/wallet/index",
+        "text": "钱匣"
+      },
+      {
+        "pagePath": "pages/mailbox/index",
+        "text": "信箱"
+      }
+    ]
+  },
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents"
+}

@@ -1,0 +1,7 @@
+<view class="page-shell">
+  <view class="archive-panel">
+    <view class="kicker">{{kicker}}</view>
+    <view class="title">{{title}}</view>
+    <view class="body-copy">{{body}}</view>
+  </view>
+</view>

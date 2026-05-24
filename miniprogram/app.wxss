@@ -1,0 +1,41 @@
+@import "./styles/tokens.wxss";
+
+page {
+  min-height: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", sans-serif;
+}
+
+.page-shell {
+  min-height: 100vh;
+  padding: 32rpx 28rpx 56rpx;
+  box-sizing: border-box;
+}
+
+.archive-panel {
+  border: 2rpx solid var(--line);
+  background: var(--surface);
+  padding: 28rpx;
+}
+
+.kicker {
+  color: var(--muted);
+  font-size: 24rpx;
+  line-height: 1.5;
+}
+
+.title {
+  margin-top: 12rpx;
+  font-size: 44rpx;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.body-copy {
+  margin-top: 20rpx;
+  color: var(--muted);
+  font-size: 28rpx;
+  line-height: 1.75;
+}

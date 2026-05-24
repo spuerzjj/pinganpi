@@ -14,3 +14,7 @@ cloudbase/functions/
 # Native IDE and package-manager state
 android/.idea/
 ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
+
+# WeChat Mini Program local IDE state
+miniprogram/project.private.config.json
+miniprogram/miniprogram_npm/

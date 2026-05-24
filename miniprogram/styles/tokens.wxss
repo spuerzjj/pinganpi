@@ -1,0 +1,9 @@
+page {
+  --paper: #f7f1e4;
+  --paper-strong: #efe1c5;
+  --ink: #2f2418;
+  --muted: #7b6a55;
+  --line: #d9c9a8;
+  --seal: #8f2f1f;
+  --surface: #fffaf0;
+}

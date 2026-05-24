@@ -21,6 +21,8 @@
     "cloudbase:deploy:sync": "npm run cloudbase:build:sync && cloudbase fn deploy sync-proxy --httpFn --force",
     "cap:sync": "npm run build && npx cap sync",
     "typecheck": "vue-tsc --noEmit",
+    "miniprogram:typecheck": "tsc -p tsconfig.miniprogram.json --noEmit",
+    "miniprogram:check": "npm run miniprogram:typecheck",
     "test": "vitest run",
     "test:watch": "vitest"
   },
