@@ -6,7 +6,7 @@
 
 **当前分支：** `main`
 
-**当前开发基线：** 已完成阶段 12 的 App 侧 AI 起稿链路；阶段 13 已跑通本机 Xiaomi MiMo、本地代理、App 写信页、CloudBase HTTP 云函数部署、云端 secret 配置、云端 AI 起稿接口、浏览器写信页云端 AI 烟测、CloudBase 用量基线、禁用 key 安全失败验证和恢复验证，并已删除历史遗留 `/*` 路由，只保留 `/api`。阶段 14 已完成 AI 起稿流式工程链路：本地 / 云端代理支持受控 SSE，App 起稿页可边收边显示，完成前不会进入可投寄正文，云端 `/api/ai/scribe-draft/stream` 已通过非敏感烟测。阶段 13 仍需完成 MiMo / CloudBase 控制台费用告警和 CloudBase 默认角色收敛检查；阶段 14 仍需在用户授予 Computer Use 权限后补一次 GUI 浏览器操作验证。精确提交以 `git log --oneline --decorate -5` 为准。
+**当前开发基线：** 已完成阶段 12 的 App 侧 AI 起稿链路；阶段 13 已跑通本机 Xiaomi MiMo、本地代理、App 写信页、CloudBase HTTP 云函数部署、云端 secret 配置、云端 AI 起稿接口、浏览器写信页云端 AI 烟测、CloudBase 用量基线、禁用 key 安全失败验证和恢复验证，并已删除历史遗留 `/*` 路由，只保留 `/api`。阶段 14 已完成 AI 起稿流式工程链路：本地 / 云端代理支持受控 SSE，App 起稿页可边收边显示，完成前不会进入可投寄正文，云端 `/api/ai/scribe-draft/stream` 已通过非敏感烟测。阶段 15 已完成云端与双人同步准备基础：新增远端模型、sync adapter 边界、AppState / RemoteSnapshot 转换、远端快照合并和本地 mock remote adapter，已用本地测试验证双设备 push / pull / merge；远端实体使用 `remoteId` 避免跨设备 id 冲突，pull 会对收件方未到达来信正文做红action，删除草稿可同步 tombstone。本阶段未接真实 CloudBase 数据库 SDK。阶段 13 仍需完成 MiMo / CloudBase 控制台费用告警和 CloudBase 默认角色收敛检查；阶段 14 仍需在用户授予 Computer Use 权限后补一次 GUI 浏览器操作验证。精确提交以 `git log --oneline --decorate -5` 为准。
 
 **工作区策略：** 日常开发直接在 `/Users/zhujunjie/code/pinganpi` 进行。除非用户明确要求隔离开发，否则不要创建或使用 `.worktrees/`。
 
@@ -226,7 +226,7 @@
 | 12 | AI 生成信件正文落地 | 已完成 App 侧链路 | 已接入 AI adapter、写信页异步起稿、AI metadata 保存和失败提示；真实云端配置在阶段 13。 |
 | 13 | 云端 AI 代理与费用配置 | 进行中 | CloudBase HTTP 云函数、云端 secret、`/api` 路由、云端 AI 起稿、浏览器烟测、禁用 key 安全失败、恢复验证和 `/*` 路由清理已完成；控制台费用告警和默认角色收敛检查待完成。 |
 | 14 | AI 起稿流式体验优化 | 已完成工程实现 | 本地 / 云端受控 SSE、App 流式 adapter、写信页 partial 预览、完成前不可投寄、云端流式烟测已通过；GUI 浏览器操作验证待权限补测。 |
-| 15 | 云端同步准备 | 未开始 | 远端模型、同步边界、账户绑定和冲突策略设计，不接真实云 SDK。 |
+| 15 | 云端同步准备 | 已完成基础 | 已新增远端模型、sync adapter、快照转换/合并和本地 mock remote adapter；不接真实云 SDK。 |
 | 16 | 双人真实同步 MVP | 未开始 | 两台设备共享信件、草稿、账本与邮政记录。 |
 | 17 | 邮政异常规则 | 未开始 | 延误、错分、迷失、找回、退回的确定性推进。 |
 | 18 | 系统推送 | 未开始 | 重要信、挂号信、找回、退回等克制提醒。 |
@@ -239,7 +239,7 @@
 - 阶段 11 已提供阶段 12 开发期所需的本地代理边界；阶段 12 已接入 App 侧 AI adapter，不阻塞于云端购买和部署。
 - 阶段 13 是生产级 AI 能力的前置条件：真实 MiMo env、费用告警、服务端 secret、云函数 / CloudBase 落点和回滚删除步骤在本阶段完成。
 - 阶段 14 是体验优化阶段：本地 / 云端流式代理和 App partial 预览已实现；它不改变写信、投寄、等待和拆阅规则。
-- 阶段 15 是阶段 16 的前置条件：先定义远端模型与同步协议，再接真实双设备同步；阶段 15 依赖阶段 13 和本地流程稳定，不被阶段 14 阻塞。
+- 阶段 15 是阶段 16 的前置条件：远端模型、同步协议和本地 mock remote 验证已完成基础；阶段 16 可在此边界上接真实 CloudBase 数据库或生产同步 adapter。
 - 阶段 17 可以在阶段 15 后独立设计；若与真实双设备同步并行推进，必须保证邮政事件幂等。
 - 阶段 18 依赖阶段 15 的远端事件边界，也依赖阶段 17 的异常事件定义。
 - 阶段 19 依赖阶段 15 的文件存储规划；具体云存储购买 / 配置在阶段 19 实施，UI 原型可以提前做本地 mock。
@@ -247,11 +247,14 @@
 
 ## 验证基线
 
-最近阶段 14 AI 流式起稿验证记录：
+最近阶段 15 云端同步准备新增验证记录：
 
 - `git diff --check`：通过。
-- `npm test`：21 个测试文件，209 个测试通过。
-- `npm run typecheck`：通过。
+- `node node_modules/vitest/vitest.mjs run`：23 个测试文件，225 个测试通过。当前 Codex shell 中 `npm` 不在 PATH，因此使用项目依赖的等价 Vitest 入口。
+- `node node_modules/vue-tsc/bin/vue-tsc.js --noEmit`：通过。当前 Codex shell 中 `npm` 不在 PATH，因此使用项目依赖的等价 Vue TSC 入口。
+
+既有阶段 13 / 14 云端、构建和原生基线如下，本次阶段 15 纯 TypeScript 同步模块未重跑这些云端 / 原生命令：
+
 - `npm run build`：通过，保留 Varlet / 首包超过 500 KB 的既有提示。
 - `npx cap sync`：通过，已同步 iOS / Android Web assets。
 - `npx cap doctor`：通过，iOS / Android Capacitor 依赖正常。
@@ -295,7 +298,7 @@ npx cap doctor
 
 - 生产级 AI 能力：本机 MiMo、本地代理、本地费用护栏、可复用 handler 边界、CloudBase HTTP 云函数、云端 secret、云端代理地址、浏览器云端起稿烟测、流式起稿、禁用 key 安全失败验证、恢复验证和 `/*` 路由清理已跑通；CloudBase / MiMo 控制台费用告警和默认角色收敛检查仍在阶段 13。
 - AI 起稿流式输出已完成本地 / 云端工程实现；GUI 浏览器点击验证因 Computer Use 权限未授予，需后续补测。
-- 云端同步、双人账户绑定和真实双设备数据同步。
+- 真实 CloudBase 数据库同步、双人账户绑定和真实双设备数据同步。
 - 阶段 13 的 AI 能力额度、云端费用限额和 CloudBase 默认角色收敛检查；回滚 / 删除命令已记录，但控制台告警仍需手工确认。
 - 延误、错分、迷失、找回、退回的自动确定性推进规则。
 - 系统推送：重要信、挂号信、迷失信找回、退回信件。
@@ -603,6 +606,24 @@ npx cap doctor
 
 ### 阶段 15：云端与双人同步准备
 
+状态：已完成基础。阶段设计与实施计划已建立，`src/app/sync/` 纯 TypeScript 同步边界和本地 mock remote adapter 已完成；真实 CloudBase 数据库接入留到阶段 16。
+
+设计文档：
+
+- `docs/superpowers/specs/2026-05-24-pinganpi-cloud-sync-design.md`
+
+实施计划：
+
+- `docs/superpowers/plans/2026-05-24-pinganpi-cloud-sync-foundation.md`
+
+已实现：
+
+- 新增 `src/app/sync/remote-model.ts`，定义 `RemoteHousehold`、`RemoteMember`、`RemoteWallet`、`RemoteLedgerEntry`、`RemoteDraftPaper`、`RemoteLetter`、`RemotePostalRecord`、`RemoteSyncCursor`、`RemotePhotoAttachment`、`RemoteSnapshot` 和 `SyncAdapter`。
+- 新增 `src/app/sync/remote-snapshot.ts`，支持从 `AppState` 导出远端拆分实体，并把远端快照合并回本地状态。
+- 新增 `mergeRemoteSnapshots`，供 mock remote adapter 合并远端实体，不把远端存储降级成单一 `AppState` blob。
+- 新增 `src/app/sync/mock-remote-adapter.ts`，用本地内存模拟 household 远端快照、revision 和 device cursor。
+- 新增测试覆盖：AI metadata 安全字段、白名单转换、append-only 去重、跨设备同 id 不丢数据、未到达来信正文红action、信件状态单向推进、草稿冲突、草稿 tombstone、对方私有草稿过滤、双设备 push / pull / opened 合并和深拷贝隔离。
+
 目标：本地流程和生产级 AI 调用边界稳定后，为真实两人使用做云端同步准备。
 
 推荐范围：
@@ -617,8 +638,9 @@ npx cap doctor
 - 设计冲突策略：
   - ledger entries 和 postal records 采用 append-only，按稳定 id 去重。
   - letters 状态采用受状态机约束的单向推进，不能被旧状态覆盖。
-  - draft papers 采用 `updatedAtIso` + `deviceId` 的最后写入胜出，后续可升级为版本历史。
+  - draft papers 采用 `updatedAtIso` + `deviceId` 的最后写入胜出，远端模型预留删除 tombstone，后续可升级为版本历史。
   - wallet 余额不能简单覆盖，应由 ledger 或明确 settlement snapshot 推导。
+- 远端记录预留 `deviceId` / `createdByDeviceId` / `updatedByDeviceId`，避免双设备同毫秒 id 或冲突决胜不稳定。
 - 规划照片附件的文件 key、归属关系和上传状态。
 - 规划系统推送事件表，但本阶段不真正接推送。
 

@@ -24,6 +24,7 @@ export interface AppState {
   wallet: WalletState;
   ledgerEntries: LedgerEntry[];
   draftPapers: DraftPaper[];
+  draftTombstones?: DraftPaperTombstone[];
   letters: PersistedLetter[];
   postalRecords: PostalRecord[];
 }
@@ -66,6 +67,13 @@ export interface DraftPaper {
   draftSource?: DraftSource;
   generationMeta?: ScribeGenerationMeta;
   status: "draft" | "scribed" | "revised" | "sealed";
+}
+
+export interface DraftPaperTombstone {
+  id: string;
+  authorMemberId: string;
+  recipientMemberId: string;
+  deletedAtIso: string;
 }
 
 export interface PersistedLetter {
@@ -122,6 +130,7 @@ export function createDefaultAppState(): AppState {
     },
     ledgerEntries: [],
     draftPapers: [],
+    draftTombstones: [],
     letters: letters.map((letter) => ({
       id: letter.id,
       senderId: letter.senderId,
@@ -229,6 +238,7 @@ function isAppState(value: unknown): value is AppState {
     isWalletState(value.wallet) &&
     isArrayOf(value.ledgerEntries, isLedgerEntry) &&
     isArrayOf(value.draftPapers, isDraftPaper) &&
+    (value.draftTombstones === undefined || isArrayOf(value.draftTombstones, isDraftPaperTombstone)) &&
     isArrayOf(value.letters, isPersistedLetter) &&
     isArrayOf(value.postalRecords, isPostalRecord)
   );
@@ -325,6 +335,19 @@ function isDraftPaper(value: unknown): value is DraftPaper {
     isOptionalDraftSource(value.draftSource) &&
     isOptionalGenerationMeta(value.generationMeta) &&
     isDraftPaperStatus(value.status)
+  );
+}
+
+function isDraftPaperTombstone(value: unknown): value is DraftPaperTombstone {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return (
+    isString(value.id) &&
+    isString(value.authorMemberId) &&
+    isString(value.recipientMemberId) &&
+    isIsoDateString(value.deletedAtIso)
   );
 }
 

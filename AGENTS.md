@@ -64,7 +64,7 @@ npx cap doctor
 
 ## 当前代码状态
 
-当前主线开发基于 `main`，最新路线图基线为：**已完成阶段 14 的 AI 起稿流式工程链路；阶段 13 已跑通本机 Xiaomi MiMo、本地代理、App 写信页、CloudBase HTTP 云函数部署、云端 secret 配置、云端 AI 起稿接口、浏览器写信页云端 AI 烟测、CloudBase 用量基线、禁用 key 安全失败验证、恢复验证和 `/*` 路由清理。阶段 14 已新增本地 / 云端受控 SSE、App streaming adapter、写信页 partial 预览和完成前不可投寄保护，并已部署 CloudBase 后通过 `/api/ai/scribe-draft/stream` 非敏感烟测。阶段 13 仍需完成 MiMo / CloudBase 控制台费用告警和 CloudBase 默认角色收敛检查；阶段 14 的 GUI 浏览器点击验证因 Computer Use 权限未授予待补**。继续开发前以 `git log --oneline --decorate -5` 为准。
+当前主线开发基于 `main`，最新路线图基线为：**已完成阶段 15 的云端与双人同步准备基础，新增远端模型、sync adapter 边界、AppState / RemoteSnapshot 转换、远端快照合并和本地 mock remote adapter；远端实体使用 `remoteId` 避免跨设备同本地 id 数据丢失，pull 会按成员红action 未到达来信正文，本地删除草稿会生成 tombstone。阶段 16 可在此边界上接真实 CloudBase 数据库或生产同步 adapter。阶段 13 已跑通本机 Xiaomi MiMo、本地代理、App 写信页、CloudBase HTTP 云函数部署、云端 secret 配置、云端 AI 起稿接口、浏览器写信页云端 AI 烟测、CloudBase 用量基线、禁用 key 安全失败验证、恢复验证和 `/*` 路由清理。阶段 14 已完成本地 / 云端受控 SSE、App streaming adapter、写信页 partial 预览和完成前不可投寄保护，并已部署 CloudBase 后通过 `/api/ai/scribe-draft/stream` 非敏感烟测。阶段 13 仍需完成 MiMo / CloudBase 控制台费用告警和 CloudBase 默认角色收敛检查；阶段 14 的 GUI 浏览器点击验证因 Computer Use 权限未授予待补**。继续开发前以 `git log --oneline --decorate -5` 为准。
 
 最新关键提交以 `git log --oneline --decorate -8` 为准；阶段 13 相关提交包括：
 
@@ -147,7 +147,7 @@ npx cap doctor
 - `docs/superpowers/specs/2026-05-23-pinganpi-ai-scribe-design.md`
 - `docs/superpowers/plans/2026-05-23-pinganpi-minimal-ai-proxy.md`
 
-最近验证基线：`npm test` 为 21 个测试文件、209 个测试通过；`npm run typecheck`、`npm run build`、`npx cap sync`、`npx cap doctor` 均通过。`npm run build` 仍保留 Varlet 首包超过 500 KB 的既有提示。
+最近验证基线：阶段 15 使用项目依赖入口跑通 `node node_modules/vitest/vitest.mjs run`，23 个测试文件、225 个测试通过；`node node_modules/vue-tsc/bin/vue-tsc.js --noEmit` 通过。当前 Codex shell 中 `npm` 不在 PATH；如果用户终端有 npm，仍可按常规执行 `npm test` 和 `npm run typecheck`。此前 `npm run build`、`npx cap sync`、`npx cap doctor` 均通过，`npm run build` 仍保留 Varlet 首包超过 500 KB 的既有提示。
 
 ## 后续路线
 
@@ -155,6 +155,8 @@ npx cap doctor
 
 - `docs/pinganpi-roadmap.md`
 - `docs/pinganpi-roadmap-dashboard.html`
+- `docs/superpowers/specs/2026-05-24-pinganpi-cloud-sync-design.md`
+- `docs/superpowers/plans/2026-05-24-pinganpi-cloud-sync-foundation.md`
 - `docs/superpowers/plans/2026-05-24-pinganpi-ai-scribe-streaming.md`
 - `docs/superpowers/plans/2026-05-23-pinganpi-cloud-ai-proxy.md`
 - `docs/superpowers/plans/2026-05-23-pinganpi-mobile-capacitor-shell.md`
@@ -208,13 +210,18 @@ npx cap doctor
    - 不改变写信、投寄、费用、送达和拆阅规则。
 
 3. **阶段 15：云端与双人同步准备**
+   - 阶段 15 已完成基础；设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-cloud-sync-design.md`，实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-cloud-sync-foundation.md`。
+   - 新同步模块位于 `src/app/sync/`：`remote-model.ts`、`remote-snapshot.ts`、`mock-remote-adapter.ts` 及对应测试。
    - 定义远端数据模型，不把整个 `AppState` 当成唯一同步单位。
    - 建立 sync adapter 边界，保持 `src/domain` 无云端依赖。
    - 设计 household / pair、members、wallets、ledger entries、draft papers、letters、postal records、sync cursors。
    - 远端模型显式包含 AI metadata，但不保存完整 prompt、原始 provider response 或敏感日志。
    - 预留邮政异常状态和记录类型，以及照片附件到达前不可访问的控制原则。
-   - 设计 append-only 记录去重、信件状态单向推进、草稿冲突和钱包结算策略。
-   - 先使用本地 mock remote adapter 和测试验证双设备合并。
+   - 设计 append-only 记录去重、信件状态单向推进、草稿冲突、草稿删除 tombstone 和钱包结算策略。
+   - 远端记录预留 `deviceId` / `createdByDeviceId` / `updatedByDeviceId`，避免双设备 id 冲突和同时间冲突决胜不稳定。
+   - 远端实体实际按 `remoteId` 去重，`id` 仅保留原始本地 id；收件方 pull 未到达来信时拿不到正文、摘要、口述、起稿正文或 AI metadata。
+   - 已使用本地 mock remote adapter 和测试验证双设备合并。
+   - 本阶段不接真实 CloudBase 数据库 SDK，不改 `src/domain`，不让远端同步绕过投寄、拆阅、钱匣和邮政状态机规则。
 
 4. **阶段 16：双人真实同步 MVP**
    - 两台设备共享同一对通信关系的数据。

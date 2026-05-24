@@ -68,7 +68,7 @@ export function saveDraftPaper(state: AppState, input: SaveDraftPaperInput, now:
   };
 }
 
-export function deleteDraftPaper(state: AppState, draftId: string): DeleteDraftPaperResult {
+export function deleteDraftPaper(state: AppState, draftId: string, now = new Date()): DeleteDraftPaperResult {
   const existingDraft = state.draftPapers.find((draft) => draft.id === draftId);
 
   if (existingDraft === undefined) {
@@ -81,6 +81,15 @@ export function deleteDraftPaper(state: AppState, draftId: string): DeleteDraftP
 
   const nextState = cloneAppState(state);
   nextState.draftPapers = nextState.draftPapers.filter((draft) => draft.id !== draftId);
+  nextState.draftTombstones = [
+    ...(nextState.draftTombstones ?? []).filter((tombstone) => tombstone.id !== existingDraft.id),
+    {
+      id: existingDraft.id,
+      authorMemberId: existingDraft.authorMemberId,
+      recipientMemberId: existingDraft.recipientMemberId,
+      deletedAtIso: now.toISOString()
+    }
+  ];
 
   return {
     ok: true,

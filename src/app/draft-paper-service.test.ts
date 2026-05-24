@@ -157,11 +157,19 @@ describe("draft paper service", () => {
     );
     if (!created.ok) throw new Error(created.reason);
 
-    const deleted = deleteDraftPaper(created.state, created.draftId);
+    const deleted = deleteDraftPaper(created.state, created.draftId, later);
 
     expect(deleted.ok).toBe(true);
     if (!deleted.ok) throw new Error(deleted.reason);
     expect(deleted.state.draftPapers).toHaveLength(0);
+    expect(deleted.state.draftTombstones).toEqual([
+      {
+        id: created.draftId,
+        authorMemberId: "member-zhou",
+        recipientMemberId: "member-lan",
+        deletedAtIso: later.toISOString()
+      }
+    ]);
   });
 
   it("keeps state unchanged when deleting a missing draft", () => {
