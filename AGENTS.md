@@ -278,7 +278,8 @@ npx cap doctor
    - 状态：进行中；执行计划为 `docs/superpowers/plans/2026-05-24-pinganpi-external-platform-closure.md`。
    - 已新增 `scripts/audit-cloudbase-stage19.ts` 和 `npm run cloudbase:audit:stage19`，用于脱敏审计 CloudBase 用量和函数状态；不要再直接把 `cloudbase fn detail` 原始输出发给用户，因为它会明文返回 env。
    - 当前审计基线：CloudBase 计费周期 `2026-05-23 ~ 2026-06-23`，用量 `1.67 / 3000 credits`；`ai-scribe-proxy` 与 `sync-proxy` 均为 `Active / Available`，运行时 `Nodejs20.19`，PublicNet `ENABLE`，触发器 `0`，VPC 未配置，角色均为 `TCB_QcsRole`。
-   - 用户确认当前 CloudBase 套餐 / 版本为腾讯云开发免费体验版；官方价格文档显示免费体验环境提供 `3000 点/月`，单次可续费 6 个月，不支持自动续费；免费环境可购买 Token 点资源包，暂不支持加购扩展资源包、大促资源包和开启按量付费；这不替代预算 / 余额提醒，仍需确认是否可配置费用告警。
+   - 用户确认当前 CloudBase 套餐 / 版本为腾讯云开发免费体验版；官方价格文档显示免费体验环境提供 `3000 点/月`，单次可续费 6 个月，不支持自动续费；免费环境可购买 Token 点资源包，暂不支持加购扩展资源包、大促资源包和开启按量付费。
+   - 用户确认当前策略是不启用 CloudBase 按量付费，仅使用套餐内资源点；若后续资源不够再升级套餐。因此阶段 19 不把预算管理作为阻塞项；后续只要升级套餐、转付费、开启按量付费或新增腾讯云资源，必须重新配置预算 / 费用提醒检查。
    - 用户已在 CloudBase 控制台开启手机号短信登录；两个真实手机号验证码均已实际收到；短信资源包已购买；短信签名入口未找到；控制台未看到发送限制和费用说明，发送限制和费用策略暂以官方资料基线为准。
    - 短信发送限制和费用基线已记录：新开通按量计费环境首月 100 条免费额度；超出免费额度可购买资源包；同一号码 30 秒最多 1 条，同一手机号一个自然日最多 10 条。
    - App 第一版手机号登录采用 CloudBase Auth v2 HTTP API，不引入 CloudBase JS SDK：发送验证码 `/auth/v1/verification`，验证验证码 `/auth/v1/verification/verify`，登录 `/auth/v1/signin`，刷新 `/auth/v1/token`。
@@ -287,7 +288,7 @@ npx cap doctor
    - 2026-05-24 CLI 路由查询已确认：`/api` 指向 `ai-scribe-proxy`；`/sync/health`、`/sync/pull`、`/sync/push` 指向 `sync-proxy`；四条路由均启用，类型均为 `WEB_SCF`。
    - 2026-05-24 CLI 权限查询已确认：`pinganpi_sync_snapshots`、`pinganpi_accounts`、`pinganpi_households`、`pinganpi_members`、`pinganpi_invites` 均为 `PRIVATE`；函数 invoke 权限为自定义规则，但 HTTP 访问服务路由 `enableAuth=false`，代理 handler 仍必须继续做应用层校验。
    - 2026-05-24 CLI 角色查询：只有系统角色，自定义角色 0 个；函数运行角色仍显示为 `TCB_QcsRole`，是否能收敛仍需控制台 / 云函数平台确认。
-   - 腾讯云预算建议已记录：先建月度费用预算，费用范围选全部范围，推荐 `10 元/月`，阈值提醒使用 `80%` 和 `100%`；具体金额由用户最终确认。
+   - 腾讯云预算建议保留为后续升级付费时使用：先建月度费用预算，费用范围选全部范围，推荐 `10 元/月`，阈值提醒使用 `80%` 和 `100%`；当前免费体验版不启用按量付费，本阶段暂缓预算管理。
    - 阶段 19 计划已新增剩余人工回报模板；用户按模板回报后再把对应人工项标记为完成、暂缓或不可配置。
    - 包括 CloudBase Auth 手机号验证码、短信签名 / 模板、账号 / 关系 CloudBase 持久化、数据库集合权限、HTTP 路由、费用告警、默认角色收敛、MiMo key 撤销 / 轮换入口和真实手机号验证码。
    - 不在本阶段新增业务功能，不把控制台 secret、验证码或真实 key 写入仓库。
