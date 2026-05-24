@@ -240,7 +240,7 @@
       }
 
       .progress-fill {
-        width: 67%;
+        width: 75%;
         height: 100%;
         border-radius: inherit;
         background: linear-gradient(90deg, #2563eb, #059669);
@@ -479,7 +479,7 @@
           </p>
         </div>
         <div class="meta">
-          <span class="badge done">工程：阶段 16B 实现</span>
+          <span class="badge done">工程：阶段 18 闭环</span>
           <span class="badge warn">人工收口：阶段 19</span>
           <span class="badge done">main</span>
           <span class="badge">更新：2026-05-24</span>
@@ -489,23 +489,23 @@
       <section class="grid-4" aria-label="关键状态">
         <article class="metric">
           <p class="metric-label">当前基线</p>
-          <p class="metric-value">阶段 16 完成</p>
-          <p class="metric-note">本地双设备闭环、CloudBase sync-proxy、数据库集合、显式路由和云端 smoke 已完成。</p>
+          <p class="metric-value">阶段 18 完成</p>
+          <p class="metric-note">账号入口、本地绑定、邀请码、同步命名空间和服务端账号授权边界已完成。</p>
         </article>
         <article class="metric">
           <p class="metric-label">验证状态</p>
-          <p class="metric-value">303 tests</p>
-          <p class="metric-note">新增 HTTP adapter、sync-proxy、CloudBase store、env 配置和 smoke helper 测试。</p>
+          <p class="metric-value">320 tests</p>
+          <p class="metric-note">新增账号、绑定、服务端关系约束、sync-proxy 账号授权和 runtime env 测试。</p>
         </article>
         <article class="metric">
           <p class="metric-label">下一推荐</p>
-          <p class="metric-value">账号 / 绑定</p>
-          <p class="metric-note">先推进阶段 17 手机号账号系统，再进入阶段 18 双人绑定与同步授权。</p>
+          <p class="metric-value">人工收口</p>
+          <p class="metric-note">进入阶段 19：CloudBase Auth、短信验证码、账号 / 关系持久化和控制台配置。</p>
         </article>
         <article class="metric">
           <p class="metric-label">主要风险</p>
-          <p class="metric-value">11 项</p>
-          <p class="metric-note">账号、绑定、人工配置、完整验证、GUI 补测、异常、推送、附件、发布质量。</p>
+          <p class="metric-value">9 项</p>
+          <p class="metric-note">人工配置、完整验证、GUI 补测、真实双设备、异常、推送、附件、发布质量。</p>
         </article>
       </section>
 
@@ -513,13 +513,13 @@
         <div class="card-header">
           <div>
             <h2>阶段进度</h2>
-            <p class="muted">阶段 16 双人真实同步 MVP 已完成云端 smoke；阶段 17 / 18 已明确为手机号账号与双人绑定同步授权，费用和真机人工项放入阶段 19 / 20。</p>
+            <p class="muted">阶段 17 / 18 已完成工程闭环；CloudBase Auth、短信、账号 / 关系持久化、费用和真机人工项放入阶段 19 / 20。</p>
           </div>
-          <span class="badge done">67%</span>
+          <span class="badge done">75%</span>
         </div>
         <div class="card-body progress">
           <div class="progress-track" aria-hidden="true">
-            <div class="progress-fill"></div>
+            <div class="progress-fill" style="width: 75%"></div>
           </div>
           <div class="phase-grid">
             <div class="phase done">
@@ -586,15 +586,15 @@
               <span class="phase-number">16</span>
               <span class="phase-title">双人同步 MVP</span>
             </div>
-            <div class="phase">
+            <div class="phase done">
               <span class="phase-number">17</span>
               <span class="phase-title">手机号账号</span>
             </div>
-            <div class="phase">
+            <div class="phase done">
               <span class="phase-number">18</span>
               <span class="phase-title">绑定授权</span>
             </div>
-            <div class="phase">
+            <div class="phase next">
               <span class="phase-number">19</span>
               <span class="phase-title">人工配置</span>
             </div>
@@ -700,6 +700,16 @@
                 <span>HTTP SyncAdapter、sync-proxy 云函数、数据库 snapshot store、显式 HTTP 路由、服务端 redaction / 私有草稿 / 照片附件过滤、member token fail-closed、stale revision CAS、构建部署和 smoke 脚本已接入。</span>
                 <span class="badge done">阶段 16</span>
               </li>
+              <li class="list-item">
+                <strong>账号入口</strong>
+                <span>本地手机号 mock 登录、稳定 PinganpiAccount、登录态恢复、账号簿入口和手机号展示已接入；真实 CloudBase Auth 放入阶段 19。</span>
+                <span class="badge done">阶段 17</span>
+              </li>
+              <li class="list-item">
+                <strong>双人绑定</strong>
+                <span>本地创建关系、24 小时一次性邀请码、输入即加入、唯一 active household、同步命名空间和 sync-proxy 账号授权边界已接入。</span>
+                <span class="badge done">阶段 18</span>
+              </li>
             </ul>
           </div>
         </article>
@@ -717,9 +727,9 @@
               <span class="badge warn">chunk warning</span>
             </div>
             <ul class="plain-list" style="margin-top: 12px">
-              <li>全量 36 个测试文件，303 个测试通过。</li>
+              <li>全量 40 个测试文件，320 个测试通过。</li>
               <li>阶段 16 云端 smoke 已通过：`/sync/health`、未带 token 401、合法 pull、push、再 pull。</li>
-              <li>新增测试覆盖 HTTP SyncAdapter、CloudBase sync handler、CloudBase snapshot store、CloudBase event / HTTP server 入口和 App adapter factory。</li>
+              <li>新增测试覆盖账号登录、双人绑定、账号驱动同步配置、服务端账号 / 关系约束、sync-proxy 账号授权和 CloudBase runtime env。</li>
               <li>测试继续覆盖草稿、写信、模板代书、邮政推进、拆阅服务、AI 代理、同步模型、mock remote、AppModel 和持久化结算。</li>
               <li>`npx cap sync` 与 `npx cap doctor` 已通过，iOS / Android Capacitor 依赖正常。</li>
               <li>`npm audit --omit=dev` 通过，0 vulnerabilities；CloudBase SDK 的 lodash.set / unset 风险已用本仓库 shim 替换。</li>
@@ -739,7 +749,7 @@
         <article class="card">
           <div class="card-header">
             <h2>后续主线</h2>
-            <span class="badge info">下一工程：阶段 17 / 18</span>
+            <span class="badge info">下一工程：阶段 19</span>
           </div>
           <div class="card-body priority-grid">
             <div class="priority">
@@ -796,28 +806,28 @@
                 <span class="badge done">阶段 16B 实现</span>
               </div>
               <h3>CloudBase 同步代理</h3>
-              <p>App 可通过 HTTP SyncAdapter 调用 `sync-proxy`；服务端使用 CloudBase 数据库保存 household snapshot，按开发期 member token 绑定成员，返回前过滤未到达正文、对方私有草稿和照片附件。`/sync` 云端 smoke 已通过，正式账号授权将在阶段 18 替换。</p>
+              <p>App 可通过 HTTP SyncAdapter 调用 `sync-proxy`；服务端使用 CloudBase 数据库保存 household snapshot，返回前过滤未到达正文、对方私有草稿和照片附件。`/sync` 云端 smoke 已通过。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge info">阶段 17 已规划</span>
+                <span class="badge done">阶段 17 完成</span>
               </div>
               <h3>手机号账号系统</h3>
-              <p>单独接入 CloudBase 手机号验证码登录，建立 UID 到平安批账号的映射，保存完整手机号用于账号恢复和展示。</p>
+              <p>已完成本地手机号 mock 登录、稳定账号、登录态恢复和账号入口页；真实 CloudBase 手机号验证码和恢复验证放入阶段 19 / 20。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge info">阶段 18 已改名</span>
+                <span class="badge done">阶段 18 完成</span>
               </div>
               <h3>双人绑定与同步授权</h3>
-              <p>基于阶段 17 的账号身份创建一对关系，邀请码 24 小时有效，另一方输入即加入；同步按登录账号与关系成员授权，不做独立设备授权。</p>
+              <p>已完成创建一对关系、24 小时一次性邀请码、输入即加入、唯一 active household、App 同步命名空间和 sync-proxy 账号授权边界。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge warn">阶段 19 新增</span>
+                <span class="badge info">阶段 19 下一步</span>
               </div>
               <h3>外部平台人工配置收口</h3>
-              <p>统一处理 CloudBase Auth、短信配置、费用告警、数据库权限、HTTP 路由、MiMo key 轮换入口和真实手机号验证码等需用户介入事项。</p>
+              <p>统一处理 CloudBase Auth、短信配置、账号 / 关系 CloudBase 持久化、费用告警、数据库权限、HTTP 路由、MiMo key 轮换入口和真实手机号验证码等需用户介入事项。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
@@ -836,11 +846,10 @@
           </div>
           <div class="card-body">
             <ul class="plain-list">
-              <li>阶段 19 需要统一处理 CloudBase / MiMo 费用告警、月费用上限、短信验证码和控制台角色收敛。</li>
+              <li>阶段 19 需要统一处理 CloudBase Auth、短信验证码、账号 / 关系 CloudBase 持久化、CloudBase / MiMo 费用告警、月费用上限和控制台角色收敛。</li>
               <li>Chrome GUI 点击验证需要先授予 Codex Computer Use 的 Accessibility / Screen Recording 权限。</li>
               <li>阶段 16 云端 smoke 已完成；真实双设备人工验证进入阶段 20。</li>
-              <li>阶段 17 手机号账号系统尚未实现，当前卸载重装后的云端身份恢复仍未闭环。</li>
-              <li>阶段 18 双人绑定与同步授权尚未实现，当前仍依赖开发期手工同步 token。</li>
+              <li>阶段 17 / 18 目前完成的是本地 / 服务端工程边界，真实 CloudBase Auth 与数据库持久化仍待阶段 19。</li>
               <li>阶段 20 尚未执行完整人工验证，真实手机号、真实两端同步和原生真机仍需用户参与。</li>
               <li>延误、迷失、找回、退回尚未接入自动确定性推进规则。</li>
               <li>系统推送和照片附件尚未开始。</li>
@@ -869,6 +878,7 @@
             <a class="button" href="./superpowers/plans/2026-05-24-pinganpi-cloudbase-sync-adapter.md">阶段 16B 实施计划</a>
             <a class="button" href="./superpowers/specs/2026-05-24-pinganpi-phone-account-design.md">阶段 17 账号设计</a>
             <a class="button" href="./superpowers/specs/2026-05-24-pinganpi-pair-binding-design.md">阶段 18 绑定设计</a>
+            <a class="button" href="./superpowers/plans/2026-05-24-pinganpi-account-pair-binding.md">阶段 17/18 实施计划</a>
           </div>
         </div>
       </section>

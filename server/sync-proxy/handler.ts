@@ -32,6 +32,14 @@ export interface SyncSnapshotStore {
 export interface SyncProxyAuthConfig {
   required: boolean;
   memberTokens: Record<string, Record<string, string>>;
+  accountBindings?: Record<string, SyncProxyAccountBinding>;
+  trustedAuthUidHeader?: string;
+}
+
+export interface SyncProxyAccountBinding {
+  accountId: string;
+  householdId: string;
+  memberId: string;
 }
 
 export class StaleRemoteRevisionError extends Error {
@@ -56,14 +64,14 @@ export async function handleSyncProxyRequest(
 
     if (request.method === "POST" && pathname === "/sync/pull") {
       const input = parsePullInput(request.body);
-      assertAuthorized(authConfig, request, input);
-      return await handlePull(store, input);
+      const authorizedInput = authorizeSyncInput(authConfig, request, input);
+      return await handlePull(store, authorizedInput);
     }
 
     if (request.method === "POST" && pathname === "/sync/push") {
       const input = parsePushInput(request.body);
-      assertAuthorized(authConfig, request, input);
-      return await handlePush(store, input);
+      const authorizedInput = authorizeSyncInput(authConfig, request, input);
+      return await handlePush(store, authorizedInput);
     }
 
     return jsonResponse(404, { error: "not_found" });
@@ -163,13 +171,23 @@ function createClientVisibleSnapshot(snapshot: RemoteSnapshot, memberId: string)
   };
 }
 
-function assertAuthorized(
+function authorizeSyncInput<TInput extends Pick<SyncPullInput, "householdId" | "memberId">>(
   authConfig: SyncProxyAuthConfig | undefined,
   request: SyncProxyRequest,
-  input: Pick<SyncPullInput, "householdId" | "memberId">
-): void {
+  input: TInput
+): TInput {
   if (authConfig === undefined || !authConfig.required) {
-    return;
+    return input;
+  }
+
+  const accountBinding = resolveAccountBinding(authConfig, request.headers ?? {});
+
+  if (accountBinding !== null) {
+    return {
+      ...input,
+      householdId: accountBinding.householdId,
+      memberId: accountBinding.memberId
+    };
   }
 
   const expectedToken = authConfig.memberTokens[input.householdId]?.[input.memberId];
@@ -178,6 +196,28 @@ function assertAuthorized(
   if (expectedToken === undefined || receivedToken === null || !safeEqualString(receivedToken, expectedToken)) {
     throw new UnauthorizedError();
   }
+
+  return input;
+}
+
+function resolveAccountBinding(
+  authConfig: SyncProxyAuthConfig,
+  headers: Record<string, string | string[] | undefined>
+): SyncProxyAccountBinding | null {
+  const accountBindings = authConfig.accountBindings;
+
+  if (accountBindings === undefined) {
+    return null;
+  }
+
+  const headerName = authConfig.trustedAuthUidHeader ?? "x-pinganpi-auth-uid";
+  const trustedAuthUid = readHeaderValue(headers, headerName);
+
+  if (trustedAuthUid === null) {
+    return null;
+  }
+
+  return accountBindings[trustedAuthUid] ?? null;
 }
 
 function readRequestToken(headers: Record<string, string | string[] | undefined>): string | null {
@@ -197,6 +237,19 @@ function readRequestToken(headers: Record<string, string | string[] | undefined>
   }
 
   return null;
+}
+
+function readHeaderValue(headers: Record<string, string | string[] | undefined>, name: string): string | null {
+  const directValue = normalizeHeaderValue(headers[name] ?? headers[name.toLowerCase()] ?? headers[name.toUpperCase()]);
+
+  if (directValue !== null) {
+    return directValue;
+  }
+
+  const normalizedName = name.toLowerCase();
+  const found = Object.entries(headers).find(([key]) => key.toLowerCase() === normalizedName);
+
+  return found === undefined ? null : normalizeHeaderValue(found[1]);
 }
 
 function normalizeHeaderValue(value: string | string[] | undefined): string | null {

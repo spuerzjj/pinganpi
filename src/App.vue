@@ -1,17 +1,21 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, type Component } from "vue";
+import { resolveAccountAwareBrowserSyncConfig } from "./app/account/account-sync-config.js";
+import type { PinganpiBinding, PinganpiSession } from "./app/account/account-model.js";
+import { createLocalAccountAdapter, readLocalAccountSession } from "./app/account/local-account-adapter.js";
+import { createLocalPairBindingAdapter, readLocalActiveBinding } from "./app/account/local-pair-binding-adapter.js";
 import { cloneAppState, settleAppState, type AppState, type DraftPaper } from "./app/app-state.js";
 import { createBrowserAppStateStore, createMemoryKeyValueStorage, type KeyValueStorage } from "./app/app-state-storage.js";
 import { buildAppModel } from "./app/app-model.js";
 import { deleteDraftPaper, postDraftPaper, saveDraftPaper, type SaveDraftPaperInput } from "./app/draft-paper-service.js";
 import { openLetter } from "./app/mailbox-service.js";
+import AccountGatePage from "./app/pages/AccountGatePage.vue";
 import MailboxArchivePage from "./app/pages/MailboxArchivePage.vue";
 import ScribesPage from "./app/pages/ScribesPage.vue";
 import TodayPage from "./app/pages/TodayPage.vue";
 import WalletPage from "./app/pages/WalletPage.vue";
 import WriteLetterPage from "./app/pages/WriteLetterPage.vue";
 import { readSyncMemberToken, readSyncProxyUrl } from "./app/runtime-config.js";
-import { resolveBrowserSyncConfig } from "./app/sync/browser-sync-config.js";
 import { createRemoteSyncAdapter } from "./app/sync/remote-adapter-factory.js";
 import { createLocalSyncStateStore } from "./app/sync/sync-state-storage.js";
 import {
@@ -38,7 +42,19 @@ interface WriteLetterSubmitPayload {
 
 const browserStorage: KeyValueStorage = typeof window === "undefined" ? createMemoryKeyValueStorage() : window.localStorage;
 const browserLocation = typeof window === "undefined" ? "" : window.location;
-const syncConfig = resolveBrowserSyncConfig(browserLocation, browserStorage);
+const accountAdapter = createLocalAccountAdapter(browserStorage);
+const pairBindingAdapter = createLocalPairBindingAdapter(browserStorage);
+const initialAccountSession = readLocalAccountSession(browserStorage);
+const initialAccountBinding =
+  initialAccountSession === null ? null : readLocalActiveBinding(browserStorage, initialAccountSession.account.accountId);
+const accountSession = ref<PinganpiSession | null>(initialAccountSession);
+const accountBinding = ref<PinganpiBinding | null>(initialAccountBinding);
+const reloadingAfterBinding = ref(false);
+const shouldShowAccountGate = computed(
+  () => accountSession.value === null || accountBinding.value === null || reloadingAfterBinding.value
+);
+const accountPhoneText = computed(() => accountSession.value?.account.phoneNumber ?? "未登录");
+const syncConfig = resolveAccountAwareBrowserSyncConfig(browserLocation, browserStorage, accountBinding.value);
 const remoteAdapter = createRemoteSyncAdapter({
   storage: browserStorage,
   syncProxyUrl: readSyncProxyUrl(),
@@ -144,6 +160,28 @@ function handleNavClick(key: NavKey): void {
     settleAndPersist();
     void syncNowAndPersist();
   }
+}
+
+function handleAccountSessionChange(nextSession: PinganpiSession | null): void {
+  accountSession.value = nextSession;
+  accountBinding.value =
+    nextSession === null ? null : readLocalActiveBinding(browserStorage, nextSession.account.accountId);
+}
+
+function handleAccountBindingChange(nextBinding: PinganpiBinding): void {
+  accountBinding.value = nextBinding;
+  reloadingAfterBinding.value = true;
+  noticeText.value = "关系已绑定，正在重开账簿。";
+
+  if (typeof window !== "undefined") {
+    window.setTimeout(() => {
+      window.location.reload();
+    }, 0);
+  }
+}
+
+function handleAccountNotice(text: string): void {
+  noticeText.value = text;
 }
 
 function handleEditDraft(draftId: string): void {
@@ -362,7 +400,7 @@ function markSyncing(): void {
 }
 
 function handleVisibilityChange(): void {
-  if (document.visibilityState === "visible") {
+  if (document.visibilityState === "visible" && !shouldShowAccountGate.value) {
     settleAndPersist();
     void syncNowAndPersist();
   }
@@ -394,7 +432,10 @@ function alignAppStateWithSyncMember(state: AppState, memberId: string): { state
 }
 
 onMounted(() => {
-  void syncNowAndPersist();
+  if (!shouldShowAccountGate.value) {
+    void syncNowAndPersist();
+  }
+
   document.addEventListener("visibilitychange", handleVisibilityChange);
 });
 
@@ -405,7 +446,19 @@ onUnmounted(() => {
 
 <template>
   <div class="min-h-dvh px-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-[env(safe-area-inset-top)] text-[var(--app-ink)]">
-    <div class="mx-auto flex min-h-dvh w-full max-w-5xl flex-col">
+    <AccountGatePage
+      v-if="shouldShowAccountGate"
+      :session="accountSession"
+      :binding="accountBinding"
+      :account-adapter="accountAdapter"
+      :pair-binding-adapter="pairBindingAdapter"
+      :reloading="reloadingAfterBinding"
+      @session-change="handleAccountSessionChange"
+      @binding-change="handleAccountBindingChange"
+      @notice="handleAccountNotice"
+    />
+
+    <div v-else class="mx-auto flex min-h-dvh w-full max-w-5xl flex-col">
       <header class="border-b border-[var(--app-rule)] px-1 py-4 sm:px-3">
         <div class="flex items-end justify-between gap-4">
           <div>
@@ -413,6 +466,10 @@ onUnmounted(() => {
             <h1 class="mt-1 text-3xl font-semibold leading-none">平安批</h1>
           </div>
           <div class="flex shrink-0 items-center gap-3">
+            <div class="hidden text-right text-xs text-[var(--app-muted)] sm:block">
+              <p>账号</p>
+              <p class="mt-1 text-[var(--app-ink)]">{{ accountPhoneText }}</p>
+            </div>
             <button
               v-if="canRetrySync"
               type="button"

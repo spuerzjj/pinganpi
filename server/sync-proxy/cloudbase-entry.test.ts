@@ -88,6 +88,34 @@ describe("cloudbase sync entry", () => {
     });
   });
 
+  it("reads account membership bindings from base64 runtime env", () => {
+    const rawBindings = JSON.stringify({
+      "auth-lan": {
+        accountId: "account-lan",
+        householdId,
+        memberId
+      }
+    });
+
+    expect(
+      readSyncProxyAuthConfig({
+        PINGANPI_SYNC_ACCOUNT_BINDINGS_B64: Buffer.from(rawBindings, "utf8").toString("base64"),
+        PINGANPI_SYNC_TRUSTED_AUTH_UID_HEADER: "x-cloudbase-uid"
+      })
+    ).toEqual({
+      required: true,
+      memberTokens: {},
+      accountBindings: {
+        "auth-lan": {
+          accountId: "account-lan",
+          householdId,
+          memberId
+        }
+      },
+      trustedAuthUidHeader: "x-cloudbase-uid"
+    });
+  });
+
   it("fails closed when runtime member tokens are not configured", () => {
     expect(readSyncProxyAuthConfig({})).toEqual({
       required: true,

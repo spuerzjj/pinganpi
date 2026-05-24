@@ -147,3 +147,16 @@ interface PinganpiInvite {
 阶段 19 统一处理外部平台人工配置收口，包括 CloudBase 身份认证、短信验证码、费用告警、数据库权限、HTTP 路由、真实双设备配置和控制台人工确认。
 
 阶段 20 由 Codex 引导用户进行完整人工验证，覆盖账号登录、创建关系、邀请加入、双人同步、写信、送达、拆阅、AI 起稿、断网恢复和原生真机检查。
+
+## 实现状态
+
+截至阶段 17 / 18 工程闭环：
+
+- 已新增 `src/app/account/local-pair-binding-adapter.ts`，支持本地创建 household / pair、创建方 first member、24 小时一次性邀请码、另一方输入即加入 second member。
+- 已实现唯一 active household、自邀、过期、已用、满员等拒绝规则。
+- 已新增 `src/app/account/account-sync-config.ts`，已有绑定时用绑定的 household / member 驱动现有浏览器同步命名空间；无绑定时继续兼容阶段 16 URL 参数调试。
+- `src/App.vue` 已接入账号 / 绑定入口；创建或加入关系后刷新一次，让同步 runtime 以正确 household / member 启动。
+- `server/account-pair/account-pair-service.ts` 已实现服务端账号 / 关系约束纯逻辑。
+- `server/sync-proxy/handler.ts` 已支持账号成员授权配置：服务端可从可信 auth uid 映射出 `householdId/memberId` 并覆盖客户端传入值，避免篡改 `memberId` 或 `householdId` 冒充另一方。
+- `server/sync-proxy/runtime-auth.ts` 已支持 `PINGANPI_SYNC_ACCOUNT_BINDINGS` / `PINGANPI_SYNC_ACCOUNT_BINDINGS_B64` 和 `PINGANPI_SYNC_TRUSTED_AUTH_UID_HEADER`；手工 member token 仍保留为阶段 16B 开发 fallback。
+- 真实 CloudBase Auth、账号 / 关系数据库持久化、可信 UID 注入、短信验证码和双真机验证进入阶段 19 / 20。

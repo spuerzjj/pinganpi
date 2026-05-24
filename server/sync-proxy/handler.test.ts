@@ -207,6 +207,37 @@ describe("sync proxy handler", () => {
     const body = parseBody<{ snapshot: RemoteSnapshot }>(response.body);
     expect(body.snapshot.draftPapers.map((draft) => draft.authorMemberId)).toEqual([memberLan]);
   });
+
+  it("uses account membership auth instead of trusting client household or member ids", async () => {
+    const store = createMemoryStore(createSnapshot(createStateWithPrivateData(), deviceA, 3));
+
+    const response = await handleSyncProxyRequest(
+      store,
+      createPullRequest(2, "member-tampered", {
+        "x-pinganpi-auth-uid": "auth-lan"
+      }, "household-tampered"),
+      createAccountAuthConfig()
+    );
+
+    expect(response.statusCode).toBe(200);
+    const body = parseBody<{ snapshot: RemoteSnapshot }>(response.body);
+    expect(body.snapshot.draftPapers.map((draft) => draft.authorMemberId)).toEqual([memberLan]);
+    expect(body.snapshot.syncCursors.find((cursor) => cursor.deviceId === deviceA)).toMatchObject({
+      householdId,
+      memberId: memberLan
+    });
+  });
+
+  it("rejects account membership auth when no trusted uid is present", async () => {
+    const store = createMemoryStore(createSnapshot(createStateWithPrivateData(), deviceA, 3));
+
+    const response = await handleSyncProxyRequest(store, createPullRequest(2, memberLan), createAccountAuthConfig());
+
+    expect(response.statusCode).toBe(401);
+    expect(parseBody(response.body)).toEqual({
+      error: "unauthorized"
+    });
+  });
 });
 
 interface MemoryStore extends SyncSnapshotStore {
@@ -243,14 +274,15 @@ function createMemoryStore(snapshot: RemoteSnapshot | null = null): MemoryStore 
 function createPullRequest(
   sinceRemoteRevision: number | null,
   memberId = memberZhou,
-  headers: Record<string, string | undefined> = {}
+  headers: Record<string, string | undefined> = {},
+  requestedHouseholdId = householdId
 ): SyncProxyRequest {
   return {
     method: "POST",
     url: "/api/sync/pull",
     headers,
     body: JSON.stringify({
-      householdId,
+      householdId: requestedHouseholdId,
       deviceId: deviceA,
       memberId,
       sinceRemoteRevision
@@ -389,6 +421,20 @@ function createAuthConfig(): SyncProxyAuthConfig {
       [householdId]: {
         [memberZhou]: "token-zhou",
         [memberLan]: "token-lan"
+      }
+    }
+  };
+}
+
+function createAccountAuthConfig(): SyncProxyAuthConfig {
+  return {
+    required: true,
+    memberTokens: {},
+    accountBindings: {
+      "auth-lan": {
+        accountId: "account-lan",
+        householdId,
+        memberId: memberLan
       }
     }
   };

@@ -141,3 +141,14 @@ interface PinganpiAccount {
 - 限制一个账号只能属于一个有效双人关系。
 - 改造 `sync-proxy` 为登录账号和关系成员授权查询。
 - 不做独立设备授权；`deviceId` 只作为本地实例和同步调试字段。
+
+## 实现状态
+
+截至阶段 17 / 18 工程闭环：
+
+- 已新增 `src/app/account/account-model.ts`，定义账号、会话、关系、成员、邀请和 adapter 边界。
+- 已新增 `src/app/account/local-account-adapter.ts`，用于本地开发和浏览器调试的手机号 mock 登录、稳定 `PinganpiAccount`、登录态恢复和登出。
+- 已新增 `src/app/pages/AccountGatePage.vue`，App 未登录或未绑定时先进入账号簿入口。
+- 已新增 `server/account-pair/account-pair-service.ts`，服务端按受信任 `authUid` 确保同一平安批账号，并更新 `lastLoginAtIso`。
+- 手机号仍只出现在账号档案和账号入口展示；不得写入信件、邮政记录、AI metadata 或无关日志。
+- 真实 CloudBase 手机号验证码、CloudBase token / refresh token、账号集合持久化和卸载重装后的真实恢复验证进入阶段 19 / 20。
