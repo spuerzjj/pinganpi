@@ -67,6 +67,7 @@ CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:audit:stage19
 - CloudBase 验证短信 / 邮箱验证码 HTTP API：`https://docs.cloudbase.net/http-api/auth/auth-verify-verification`
 - CloudBase 用户登录 HTTP API：`https://docs.cloudbase.net/http-api/auth/auth-sign-in`
 - CloudBase token 获取 / 刷新 HTTP API：`https://docs.cloudbase.net/http-api/auth/auth-grant-token`
+- CloudBase 简介 / SCF 角色安全提示：`https://cloud.tencent.com/document/product/876/34808`
 - CloudBase 短信验证码登录旧版说明与费用 / 频率限制：`https://docs.cloudbase.net/authentication/method/sms-login`
 - CloudBase 价格文档：`https://cloud.tencent.com/document/product/876/75213`
 - 腾讯云费用中心预算管理：`https://cloud.tencent.com/document/product/555/65784`
@@ -144,10 +145,10 @@ CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:audit:stage19
 - [x] 当前 CloudBase 套餐 / 版本：用户确认开通的是腾讯云开发免费体验版；官方价格文档显示免费体验环境提供 `3000 点/月`，单次可续费 6 个月，不支持自动续费
 - [x] 在腾讯云费用中心创建或确认预算：当前不启用 CloudBase 按量付费，仅使用套餐内资源点；预算管理本阶段暂缓，后续升级套餐、转付费、开启按量或新增腾讯云资源时必须重新配置
 - [x] 预算建议：先建月度费用预算，费用范围选全部范围；建议月上限先用低额，推荐 `10 元/月`，阈值提醒用 `80%` 和 `100%`，具体金额由用户最终确认
-- [ ] 配置余额提醒或可用额度提醒
-- [ ] 配置 CloudBase / 云函数 / 数据库相关告警
-- [ ] 确认 `TCB_QcsRole` 是否可收敛为更小权限
-- [ ] 若不能收敛，记录理由和风险
+- [x] 配置余额提醒或可用额度提醒：当前免费体验版不启用按量付费，本阶段暂缓；升级套餐、转付费、开启按量或新增腾讯云资源时必须重新配置
+- [x] 配置 CloudBase / 云函数 / 数据库相关告警：当前免费体验版不启用按量付费，本阶段暂缓；继续使用 `npm run cloudbase:audit:stage19` 做人工审计
+- [x] 确认 `TCB_QcsRole` 是否可收敛为更小权限：官方文档说明普通单环境账号可直接使用默认 `TCB_QcsRole`，本项目是单 CloudBase 环境，本阶段接受默认角色
+- [x] 若不能收敛，记录理由和风险：跨环境管理多个小租户时默认角色存在越权风险；本项目当前不是平台型多租户场景，后续新增多环境 / 多租户 / 商业化管理后台时必须复查并考虑每环境独立 CAM 角色
 - [x] 只读查询当前 CloudBase 环境角色：系统角色 5 个，自定义角色 0 个
 - [x] 确认是否开启自动续费：当前免费体验环境官方文档标注不支持自动续费；第一版不购买高规格包年资源
 
@@ -162,14 +163,20 @@ CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:audit:stage19
 
 ### 5. Xiaomi MiMo 费用与 key 管理
 
-- [ ] 打开 Xiaomi MiMo 平台控制台
-- [ ] 确认当前模型 ID：本地记录为 `mimo-v2.5-pro`
-- [ ] 确认 API Base URL：本地记录为 `https://api.xiaomimimo.com/v1`
-- [ ] 确认当前 key 类型，不在聊天中粘贴完整 key
-- [ ] 确认额度、费用提醒、余额提醒或月上限
-- [ ] 找到 key 撤销入口
-- [ ] 找到 key 轮换 / 新建入口
+- [x] 打开 Xiaomi MiMo 平台控制台：本阶段暂缓，用户确认不阻塞开发
+- [x] 确认当前模型 ID：暂缓；本地记录仍为 `mimo-v2.5-pro`
+- [x] 确认 API Base URL：暂缓；本地记录仍为 `https://api.xiaomimimo.com/v1`
+- [x] 确认当前 key 类型，不在聊天中粘贴完整 key：暂缓；不得在聊天、文档或 Git 中记录完整 key
+- [x] 确认额度、费用提醒、余额提醒或月上限：暂缓；本地和云端已有单次字符 / token 护栏，不能替代平台费用提醒
+- [x] 找到 key 撤销入口：暂缓；若出现异常费用，先用 `cloudbase:disable:ai-env` 让云端 AI fail closed
+- [x] 找到 key 轮换 / 新建入口：暂缓；后续正式发布或怀疑 key 泄露前必须复查
 - [x] 记录“出现异常费用时如何停用”：运行 `CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:disable:ai-env` 移除 CloudBase `MIMO_API_KEY`，使云端 AI 代理 fail closed
+
+MiMo 暂缓记录：
+
+- 用户确认如果不阻塞开发，MiMo 额度、费用提醒、key 撤销 / 轮换入口可以暂缓。
+- 当前 AI 工程链路已跑通，本地和云端已有 `PINGANPI_AI_MAX_ORAL_TEXT_CHARS` 与 `MIMO_MAX_COMPLETION_TOKENS` 护栏；异常时可移除云端 `MIMO_API_KEY` 使代理 fail closed。
+- 暂缓不等于删除风险：正式发布、扩大使用范围、怀疑 key 泄露、接入新模型或发生异常费用前，必须重新检查 MiMo 额度、费用提醒、key 撤销和轮换入口。
 
 ### 6. 阶段 19 结束条件
 

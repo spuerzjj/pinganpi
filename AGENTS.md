@@ -287,8 +287,9 @@ npx cap doctor
    - 2026-05-24 HTTP 路由 smoke 已确认：`/api/health` 和 `/sync/health` 返回 200；`/sync/pull` 与 `/sync/push` 未带 token 返回 401。
    - 2026-05-24 CLI 路由查询已确认：`/api` 指向 `ai-scribe-proxy`；`/sync/health`、`/sync/pull`、`/sync/push` 指向 `sync-proxy`；四条路由均启用，类型均为 `WEB_SCF`。
    - 2026-05-24 CLI 权限查询已确认：`pinganpi_sync_snapshots`、`pinganpi_accounts`、`pinganpi_households`、`pinganpi_members`、`pinganpi_invites` 均为 `PRIVATE`；函数 invoke 权限为自定义规则，但 HTTP 访问服务路由 `enableAuth=false`，代理 handler 仍必须继续做应用层校验。
-   - 2026-05-24 CLI 角色查询：只有系统角色，自定义角色 0 个；函数运行角色仍显示为 `TCB_QcsRole`，是否能收敛仍需控制台 / 云函数平台确认。
+   - 2026-05-24 CLI 角色查询：只有系统角色，自定义角色 0 个；函数运行角色仍显示为 `TCB_QcsRole`。官方文档说明普通单环境账号可直接使用默认角色，本项目当前是单 CloudBase 环境，本阶段接受默认角色；后续多环境 / 多租户 / 商业化管理后台前必须复查并考虑每环境独立 CAM 角色。
    - 腾讯云预算建议保留为后续升级付费时使用：先建月度费用预算，费用范围选全部范围，推荐 `10 元/月`，阈值提醒使用 `80%` 和 `100%`；当前免费体验版不启用按量付费，本阶段暂缓预算管理。
+   - MiMo 额度、费用提醒、key 撤销 / 轮换入口已暂缓；当前已有字符 / token 护栏和 `cloudbase:disable:ai-env` 停用方案。正式发布、扩大使用范围、怀疑 key 泄露、接入新模型或发生异常费用前必须复查。
    - 阶段 19 计划已新增剩余人工回报模板；用户按模板回报后再把对应人工项标记为完成、暂缓或不可配置。
    - 包括 CloudBase Auth 手机号验证码、短信签名 / 模板、账号 / 关系 CloudBase 持久化、数据库集合权限、HTTP 路由、费用告警、默认角色收敛、MiMo key 撤销 / 轮换入口和真实手机号验证码。
    - 不在本阶段新增业务功能，不把控制台 secret、验证码或真实 key 写入仓库。

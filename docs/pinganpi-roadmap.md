@@ -816,7 +816,7 @@ npx cap doctor
 
 目标：把所有需要用户登录控制台、输入验证码、确认费用或操作真实设备前置配置的事项统一处理，避免打断阶段 17 / 18 的工程开发。
 
-状态：进行中。已新增阶段 19 执行计划和脱敏 CloudBase 审计脚本；已记录当前 CloudBase 用量、函数状态、公开面、默认角色和 env key 存在情况。用户已在 CloudBase 控制台开启手机号短信登录，且两个真实手机号验证码均已实际收到。CloudBase 短信资源包已购买，短信签名入口未找到，控制台未看到发送限制和费用说明；发送限制和费用策略暂以官方资料基线为准。当前 CloudBase 套餐 / 版本为腾讯云开发免费体验版；官方价格文档显示免费体验环境提供 `3000 点/月`，单次可续费 6 个月，不支持自动续费。用户确认当前不启用 CloudBase 按量付费，仅使用套餐内资源点；预算管理本阶段暂缓，后续升级套餐、转付费、开启按量或新增腾讯云资源时必须重新配置。App 侧手机号登录接入方式已确定为 CloudBase Auth v2 HTTP API，账号 / 关系集合命名已定稿，HTTP 路由 smoke、CLI 路由查询、集合权限查询和角色列表查询已通过。下一步需要用户按阶段 19 回报模板确认函数运行角色收敛和 MiMo key 管理。
+状态：进行中。已新增阶段 19 执行计划和脱敏 CloudBase 审计脚本；已记录当前 CloudBase 用量、函数状态、公开面、默认角色和 env key 存在情况。用户已在 CloudBase 控制台开启手机号短信登录，且两个真实手机号验证码均已实际收到。CloudBase 短信资源包已购买，短信签名入口未找到，控制台未看到发送限制和费用说明；发送限制和费用策略暂以官方资料基线为准。当前 CloudBase 套餐 / 版本为腾讯云开发免费体验版；官方价格文档显示免费体验环境提供 `3000 点/月`，单次可续费 6 个月，不支持自动续费。用户确认当前不启用 CloudBase 按量付费，仅使用套餐内资源点；预算管理本阶段暂缓，后续升级套餐、转付费、开启按量或新增腾讯云资源时必须重新配置。官方文档说明普通单环境账号可直接使用默认 `TCB_QcsRole`，本项目是单 CloudBase 环境，本阶段接受默认角色。MiMo 额度、费用提醒、key 撤销 / 轮换入口不阻塞开发，已暂缓到正式发布、扩大使用范围、怀疑 key 泄露、接入新模型或发生异常费用前复查。App 侧手机号登录接入方式已确定为 CloudBase Auth v2 HTTP API，账号 / 关系集合命名已定稿，HTTP 路由 smoke、CLI 路由查询、集合权限查询和角色列表查询已通过。
 
 执行计划：
 
@@ -830,7 +830,7 @@ npx cap doctor
 - 官方价格文档还说明免费环境可购买 Token 点资源包，暂不支持加购扩展资源包、大促资源包和开启按量付费；当前阶段不升级付费套餐、不购买 CVM、不启用自动续费。
 - 用户确认当前策略是不启用 CloudBase 按量付费，仅使用套餐内资源点；若后续资源不够再升级套餐。因此阶段 19 不把预算管理作为阻塞项；后续只要升级套餐、转付费、开启按量付费或新增腾讯云资源，必须重新配置预算 / 费用提醒检查。
 - `ai-scribe-proxy` 和 `sync-proxy` 均为 `Active / Available`，运行时均为 `Nodejs20.19`，HTTP 类型，PublicNet `ENABLE`，触发器 `0`，VPC 未配置。
-- 两个函数当前角色均为 `TCB_QcsRole`，是否可收敛仍待控制台确认。
+- 两个函数当前角色均为 `TCB_QcsRole`；官方文档说明普通单环境账号可直接使用默认角色，本项目当前是单 CloudBase 环境，本阶段接受默认角色。若后续变成多环境 / 多租户 / 商业化管理后台，必须复查并考虑每环境独立 CAM 角色。
 - `ai-scribe-proxy` 的 `MIMO_API_KEY` 存在但审计输出已脱敏；后续不要直接用会打印完整 env 的 CLI 输出。
 - CloudBase Auth 手机号短信登录已由用户在控制台开启；本环境为 `ap-shanghai`，符合短信登录地域要求。
 - Auth 发送验证码应使用 CloudBase HTTP API 统一域名 `https://pinganpi-d7gml1f6sbcc172ea.api.tcloudbasegateway.com/auth/v1/verification`；已对两个真实手机号各触发一次发送请求，均返回 HTTP 200 和 `verification_id`，用户已确认两台手机均收到验证码。
@@ -841,8 +841,9 @@ npx cap doctor
 - 2026-05-24 HTTP 路由 smoke：`/api/health` 和 `/sync/health` 返回 200；`/sync/pull` 与 `/sync/push` 在未带 token 时返回 401，公网路由和 fail-closed 行为可达。
 - 2026-05-24 CLI 路由查询：`/api` 指向 `ai-scribe-proxy`；`/sync/health`、`/sync/pull`、`/sync/push` 指向 `sync-proxy`；四条路由均启用，类型均为 `WEB_SCF`。
 - 2026-05-24 CLI 权限查询：`pinganpi_sync_snapshots`、`pinganpi_accounts`、`pinganpi_households`、`pinganpi_members`、`pinganpi_invites` 均为 `PRIVATE`；函数 invoke 权限为自定义规则，但 HTTP 访问服务路由 `enableAuth=false`，所以代理 handler 的应用层校验仍是必须边界。
-- 2026-05-24 CLI 角色查询：当前只有系统角色，自定义角色 0 个；函数运行角色仍显示为 `TCB_QcsRole`，是否能收敛仍需控制台 / 云函数平台确认。
+- 2026-05-24 CLI 角色查询：当前只有系统角色，自定义角色 0 个；函数运行角色仍显示为 `TCB_QcsRole`。结合官方文档和当前单环境场景，本阶段不创建自定义角色。
 - 腾讯云预算建议保留为后续升级付费时使用：先建月度费用预算，费用范围选全部范围，推荐 `10 元/月`，阈值提醒使用 `80%` 和 `100%`；当前免费体验版不启用按量付费，本阶段暂缓预算管理。
+- MiMo 额度、费用提醒、key 撤销 / 轮换入口已暂缓；当前已有字符 / token 护栏和 `cloudbase:disable:ai-env` 停用方案。正式发布、扩大使用范围、怀疑 key 泄露、接入新模型或发生异常费用前必须复查。
 - 阶段 19 计划已新增剩余人工回报模板；用户按模板回报后再把对应人工项标记为完成、暂缓或不可配置。
 
 推荐范围：
@@ -851,8 +852,8 @@ npx cap doctor
 - CloudBase 数据库：确认账号、关系、邀请、同步 snapshot 等集合权限。
 - CloudBase HTTP 路由：确认 AI 代理和同步代理路由可访问。
 - CloudBase 费用：配置或记录费用告警、月费用上限、人工检查频率。
-- CloudBase 默认角色：确认函数运行角色 `TCB_QcsRole` 是否可收敛，若不能收敛则记录风险。
-- Xiaomi MiMo：确认额度、费用提醒、key 撤销 / 轮换入口。
+- CloudBase 默认角色：当前单环境场景接受 `TCB_QcsRole`；多环境 / 多租户 / 商业化管理后台前复查。
+- Xiaomi MiMo：额度、费用提醒、key 撤销 / 轮换入口暂缓；正式发布或异常费用前复查。
 - 真实环境变量：确认云端 env 已配置且不打印真实 secret。
 - 真实手机号：由用户输入验证码完成至少两个账号登录准备。
 
