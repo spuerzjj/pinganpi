@@ -59,29 +59,38 @@ a {
 }
 
 .hero {
+  border: none;
+  background: transparent;
+  padding: 0;
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
-  padding: 32px;
-  background: var(--surface);
-  border-radius: 24px;
-  box-shadow: var(--shadow);
+  align-items: flex-start;
 }
 
 .eyebrow {
-  margin: 0 0 8px;
-  color: var(--subtle);
-  font-family: monospace;
-  font-size: 12px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  color: var(--active);
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: inherit;
 }
 
 h1 {
-  font-size: 32px;
+  font-size: 44px;
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   margin: 0;
+}
+
+.panel h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+  text-transform: none;
+  font-family: inherit;
+  letter-spacing: normal;
 }
 
 .summary {
@@ -102,16 +111,16 @@ h1 {
   align-items: center;
   height: 28px;
   padding: 0 12px;
-  border-radius: 14px;
-  background: var(--bg);
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--muted);
-  font-size: 12px;
-  font-weight: 500;
 }
 
 .badge.active {
   background: var(--active);
-  color: white;
+  color: #fff;
 }
 
 .bento-grid {
@@ -137,7 +146,14 @@ h1 {
 }
 
 .panel-active {
-  border: 1px solid var(--active);
+  background: linear-gradient(135deg, #007aff, #00c7be);
+  color: #fff;
+}
+
+.panel-active .eyebrow,
+.panel-active h2,
+.panel-active p {
+  color: #fff;
 }
 
 .metrics {
@@ -147,9 +163,9 @@ h1 {
 }
 
 .metric {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
+  padding: 14px;
+  min-height: auto;
+  text-align: center;
 }
 
 .metric .label {
@@ -160,9 +176,9 @@ h1 {
 }
 
 .metric strong {
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 28px;
   color: var(--ink);
+  margin: 4px 0;
 }
 
 .metric span {
@@ -233,13 +249,13 @@ h1 {
 }
 
 .badge-mini {
-  font-size: 10px;
   font-style: normal;
+  font-size: 11px;
+  font-weight: 600;
   padding: 2px 8px;
-  border-radius: 10px;
-  background: var(--bg);
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 999px;
   color: var(--muted);
-  text-transform: uppercase;
 }
 
 /* Phase Statuses */
@@ -296,16 +312,6 @@ h1 {
 
 .panel {
   padding: 24px;
-}
-
-.panel h2 {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--ink);
-  margin: 0;
-  text-transform: none;
-  font-family: inherit;
-  letter-spacing: normal;
 }
 
 .panel p {
