@@ -35,7 +35,7 @@
 ## 当前技术栈
 
 - TypeScript
-- 微信原生小程序（新主线，待阶段 22 创建 `miniprogram/`）
+- 微信原生小程序（新主线，`miniprogram/` 已创建）
 - CloudBase 云函数，多环境目标为 `dev` / `prd`
 - Vitest
 - Vue 3 / Vite / Tailwind CSS / Varlet / Capacitor（旧 App 历史实现，暂存为业务和体验参考）
@@ -48,6 +48,8 @@
 npm ci
 npm test
 npm run typecheck
+npm run miniprogram:typecheck
+npm run miniprogram:check
 npm run dev
 npm run build
 npm run cap:sync
@@ -65,11 +67,11 @@ CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:deploy:sync
 npx cap doctor
 ```
 
-新主线的日常开发方式将改为：用微信开发者工具打开 `miniprogram/`，连接 CloudBase `dev` 环境，通过 `wx.cloud.callFunction` 调用云函数。阶段 22 创建小程序工程前，`npm run dev`、`cap:sync`、`cap doctor` 只代表旧 Capacitor / Vue 历史基线。
+新主线的日常开发方式：用微信开发者工具打开 `miniprogram/`，连接 CloudBase `dev` 环境，通过 `wx.cloud.callFunction` 调用云函数。`npm run dev`、`cap:sync`、`cap doctor` 只代表旧 Capacitor / Vue 历史基线。
 
 ## 当前代码状态
 
-当前迁移工作在 `codex/wechat-miniprogram-pivot` 分支推进。最新路线图基线为：**阶段 1-19 的旧 Capacitor / Vue App 工程能力已形成完整业务参考；2026-05-24 用户确认项目主线切换为微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境。手机号仍是《平安批》业务账号主键，微信一键获取手机号为默认登录入口，短信验证码登录保留兜底。本地开发和上线都优先走 CloudBase 云函数，本地 proxy 降级为诊断工具。阶段 20 原“完整人工验证引导”计划暂存为旧 App 验证资料；当前进入阶段 21“微信小程序迁移设计与重基线”。迁移设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`。**
+当前迁移工作在 `codex/wechat-miniprogram-pivot` 分支推进。最新路线图基线为：**阶段 1-19 的旧 Capacitor / Vue App 工程能力已形成完整业务参考；2026-05-24 用户确认项目主线切换为微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境。手机号仍是《平安批》业务账号主键，微信一键获取手机号为默认登录入口，短信验证码登录保留兜底。本地开发和上线都优先走 CloudBase 云函数，本地 proxy 降级为诊断工具。阶段 21 已完成迁移设计与重基线；阶段 22 已完成小程序工程基座：`miniprogram/`、页面骨架、TypeScript 检查、微信开发者工具配置和 `dev` CloudBase 环境入口。下一步进入阶段 23：共享领域核心迁移。迁移设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`，阶段 22 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md`。**
 
 旧 App 能力基线仍然重要：阶段 16 双人真实同步 MVP 已完成云端 smoke；阶段 17 手机号账号本地工程闭环已完成；阶段 18 双人绑定与同步授权工程闭环已完成；阶段 19 外部平台配置已收口。阶段 13 / 14 的 CloudBase AI 代理、非流式 / 流式起稿、禁用 key 安全失败验证和恢复验证已跑通。继续开发前以 `git log --oneline --decorate -5` 为准。
 
@@ -154,7 +156,7 @@ npx cap doctor
 - `docs/superpowers/specs/2026-05-23-pinganpi-ai-scribe-design.md`
 - `docs/superpowers/plans/2026-05-23-pinganpi-minimal-ai-proxy.md`
 
-最近验证基线：阶段 17 / 18 已通过 `git diff --check`；`npm test`：40 个测试文件、320 个测试通过；`/Users/zhujunjie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node node_modules/vue-tsc/bin/vue-tsc.js --noEmit` 通过；`/Users/zhujunjie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node node_modules/vite/bin/vite.js build` 通过但保留 Varlet 首包超过 500 KB 的既有提示；`/Users/zhujunjie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node --import tsx scripts/build-cloudbase-sync-proxy.ts` 通过；`cap sync` / `cap doctor` 通过；`npm audit --omit=dev` 通过，0 vulnerabilities；真实 key 正则扫描无命中；浏览器烟测 `http://localhost:5174/` 已验证账号簿、手机号本地登录、创建关系、生成邀请码和进入主界面。阶段 16B 云端基线保留：`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:sync` 通过，`npm run cloudbase:smoke:sync` 已通过真实云端 smoke。为避免 `@cloudbase/node-sdk` 传递引入存在原型污染公告的 `lodash.set` / `lodash.unset` 小包，已通过 `vendor/lodash-set` 和 `vendor/lodash-unset` 提供兼容 shim，内部调用已修复的主 `lodash` 子模块。
+最近验证基线：阶段 22 已通过 `npm test -- miniprogram/config/env.test.ts`（1 个测试文件，3 个测试通过）、`npm run miniprogram:typecheck`、`npm test`（42 个测试文件，328 个测试通过）、`npm run typecheck` 和 `git diff --check`。阶段 17 / 18 旧 App 基线保留：`npm test` 曾为 40 个测试文件、320 个测试通过，`vue-tsc --noEmit`、`vite build`、`cap sync`、`cap doctor`、`npm audit --omit=dev` 均通过；Varlet 首包超过 500 KB 是旧 App 优化项。阶段 16B 云端基线保留：`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:sync` 通过，`npm run cloudbase:smoke:sync` 已通过真实云端 smoke。为避免 `@cloudbase/node-sdk` 传递引入存在原型污染公告的 `lodash.set` / `lodash.unset` 小包，已通过 `vendor/lodash-set` 和 `vendor/lodash-unset` 提供兼容 shim，内部调用已修复的主 `lodash` 子模块。
 
 ## 后续路线
 
@@ -198,16 +200,18 @@ npx cap doctor
 当前新主线顺序如下，旧 App 阶段 13-20 仅作为历史基线和迁移参考：
 
 1. **阶段 21：微信小程序迁移设计与重基线**
-   - 状态：进行中。
+   - 状态：已完成。
    - 设计文档：`docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`。
    - 目标：同步迁移设计、roadmap、dashboard、AGENTS，并写出实施计划。
    - 用户已确认：采用微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境；手机号仍是业务账号主键；微信一键获取手机号为默认入口，短信验证码兜底。
 
 2. **阶段 22：小程序工程基座**
-   - 创建 `miniprogram/`、小程序配置、TypeScript 页面骨架、基础样式、开发者工具打开方式和 `dev` 环境配置入口。
+   - 状态：已完成基础。
+   - 已创建 `miniprogram/`、小程序配置、TypeScript 页面骨架、基础样式、开发者工具打开方式和 `dev` 环境配置入口。
    - 不继续扩展 Capacitor 壳层。
 
 3. **阶段 23：共享领域核心迁移**
+   - 状态：下一步。
    - 抽取或适配 `src/domain` 等纯 TypeScript 规则，让小程序复用时间、钱匣、代笔先生、邮资、送达和状态机。
    - 领域层不得引入小程序、CloudBase、Vue、浏览器或 Capacitor 依赖。
 
@@ -360,7 +364,7 @@ npx cap doctor
 
 11. **阶段 32：照片附件**
    - 夹寄照片、费用、附件状态、到达前不泄露。
-   - 云端文件存储依赖阶段 15 的规划；具体云存储购买 / 配置在阶段 23 实施，必要的控制台动作归入阶段 19。
+   - 云端文件存储依赖阶段 15 的规划；具体云存储购买 / 配置在阶段 32 实施，必要的控制台动作归入阶段 28 或当期上架配置阶段。
 
 12. **阶段 33：发布准备与体验打磨**
    - toast / snackbar、小程序图标、启动配置、真机验证、隐私与备份检查。
@@ -401,7 +405,14 @@ npx cap doctor
 npm audit --omit=dev
 ```
 
-小程序工程创建后，应补充微信小程序构建 / 类型检查 / 云函数构建 / dev 环境 smoke 命令，并把它们作为新主线默认验证。
+阶段 22 后，小程序相关改动至少运行：
+
+```bash
+npm run miniprogram:typecheck
+npm test -- miniprogram/config/env.test.ts
+```
+
+后续接入云函数后，应补充微信开发者工具构建、云函数构建、`dev` 环境 smoke 命令，并把它们作为新主线默认验证。
 
 已知现象：
 
@@ -409,7 +420,7 @@ npm audit --omit=dev
 
 ## 小程序调试提示
 
-- 阶段 22 后，用微信开发者工具打开 `miniprogram/`。
+- 用微信开发者工具打开 `miniprogram/`。
 - 小程序本地开发默认连接 CloudBase `dev` 环境。
 - 小程序端通过 `wx.cloud.callFunction` 调用云函数，不依赖本地 proxy 才能完成主流程。
 - `prd` 只用于审核、发布和线上 smoke；部署生产必须显式指定环境。

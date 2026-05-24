@@ -6,7 +6,7 @@
 
 **当前分支：** `codex/wechat-miniprogram-pivot`
 
-**当前开发基线：** 阶段 1-19 的 Capacitor / Vue App 工程能力已形成完整业务参考：领域层、写信流程、AI 起稿、流式起稿、CloudBase AI 代理、同步模型、CloudBase 同步代理、手机号账号本地闭环、双人绑定本地 / 服务端边界和外部平台配置收口均已完成对应验证。2026-05-24 用户确认重大方向调整：目标运行环境从 iOS / Android App 改为微信小程序并需要上架；新主线采用微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境；手机号仍是《平安批》业务账号主键；微信一键获取手机号为默认登录入口，短信验证码保留兜底；本地开发和线上都优先走 CloudBase 云函数，本地 proxy 降级为诊断工具。阶段 20 原“完整人工验证引导”计划暂存为旧 App 验证资料，当前进入阶段 21“微信小程序迁移设计与重基线”。迁移设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`。精确提交以 `git log --oneline --decorate -5` 为准。
+**当前开发基线：** 阶段 1-19 的 Capacitor / Vue App 工程能力已形成完整业务参考：领域层、写信流程、AI 起稿、流式起稿、CloudBase AI 代理、同步模型、CloudBase 同步代理、手机号账号本地闭环、双人绑定本地 / 服务端边界和外部平台配置收口均已完成对应验证。2026-05-24 用户确认重大方向调整：目标运行环境从 iOS / Android App 改为微信小程序并需要上架；新主线采用微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境；手机号仍是《平安批》业务账号主键；微信一键获取手机号为默认登录入口，短信验证码保留兜底；本地开发和线上都优先走 CloudBase 云函数，本地 proxy 降级为诊断工具。阶段 21 已完成迁移设计与重基线；阶段 22 已完成小程序工程基座，新增 `miniprogram/`、TypeScript 检查、页面骨架、微信开发者工具配置和 `dev` CloudBase 环境入口。下一步进入阶段 23：共享领域核心迁移。迁移设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`，阶段 22 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md`。精确提交以 `git log --oneline --decorate -5` 为准。
 
 **工作区策略：** 日常开发直接在 `/Users/zhujunjie/code/pinganpi` 进行。除非用户明确要求隔离开发，否则不要创建或使用 `.worktrees/`。
 
@@ -210,7 +210,7 @@
 
 新主线从阶段 21 开始改为“微信小程序迁移设计 → 小程序工程基座 → 共享领域核心 → 小程序核心界面 → CloudBase dev 主链路 → 登录绑定真实闭环 → AI 与同步补齐 → 小程序上架配置 → 小程序完整人工验证 → 邮政异常 / 推送 / 附件 / 发布打磨”。
 
-**本期目标：** 完成阶段 21，把迁移设计、roadmap、dashboard、AGENTS 和实施计划同步成微信小程序主线。之后进入阶段 22：建立 `miniprogram/` 工程基座、微信开发者工具配置、TypeScript 页面骨架和 `dev` CloudBase 环境配置。旧 Capacitor / Vue 实现暂存为历史参考，不再作为主开发目标。
+**本期目标：** 阶段 22 已建立 `miniprogram/` 工程基座、微信开发者工具配置、TypeScript 页面骨架和 `dev` CloudBase 环境配置。下一步进入阶段 23：抽取或适配共享领域核心，确保小程序复用现有时间、钱匣、代笔先生、邮资、送达和状态机规则。旧 Capacitor / Vue 实现暂存为历史参考，不再作为主开发目标。
 
 | 阶段 | 名称 | 状态 | 说明 |
 | --- | --- | --- | --- |
@@ -234,8 +234,8 @@
 | 18 | 双人绑定与同步授权 | 已完成工程闭环 | 本地创建关系、24 小时一次性邀请码、输入即加入、唯一 active household、App 同步命名空间接入、服务端关系约束和 sync-proxy 账号授权边界已完成。 |
 | 19 | 外部平台人工配置收口 | 已收口 | CloudBase Auth HTTP API、账号 / 关系集合命名、短信真实可达、短信资源包、免费体验版费用边界、预算暂缓、默认角色接受、MiMo 暂缓和 HTTP 路由 smoke 已确认。 |
 | 20 | 旧 App 完整人工验证引导 | 暂存 | 已新增原 iOS / Android App 完整人工验证计划；小程序迁移后不作为当前主线执行。 |
-| 21 | 微信小程序迁移设计与重基线 | 进行中 | 新增小程序迁移设计，更新 roadmap / dashboard / AGENTS，并准备实施计划。 |
-| 22 | 小程序工程基座 | 未开始 | 建立 `miniprogram/`、TypeScript、页面骨架、微信开发者工具配置和 `dev` 环境配置。 |
+| 21 | 微信小程序迁移设计与重基线 | 已完成 | 新增小程序迁移设计，更新 roadmap / dashboard / AGENTS，并提交阶段 22 实施计划。 |
+| 22 | 小程序工程基座 | 已完成基础 | 已新增 `miniprogram/`、TypeScript 检查、页面骨架、微信开发者工具配置和 `dev` CloudBase 环境入口。 |
 | 23 | 共享领域核心迁移 | 未开始 | 抽取或适配可复用领域规则，让小程序复用规则而不是重写。 |
 | 24 | 小程序本地核心界面 | 未开始 | 今日、写信、先生、钱匣、信箱 / 档案的本地 mock 闭环。 |
 | 25 | 小程序 CloudBase dev 主链路 | 未开始 | 账号、绑定、同步、AI 云函数 event wrapper 与 `dev` 环境 smoke。 |
@@ -272,7 +272,15 @@
 
 ## 验证基线
 
-最近阶段 17 / 18 账号与双人绑定工程闭环新增验证记录：
+最近阶段 22 小程序工程基座新增验证记录：
+
+- `npm test -- miniprogram/config/env.test.ts`：通过，1 个测试文件，3 个测试通过；确认当前小程序默认使用 `dev` CloudBase 环境 `pinganpi-d7gml1f6sbcc172ea`，`prd` 仍为空等待用户创建。
+- `npm run miniprogram:typecheck`：通过，小程序 TypeScript 入口、环境配置和页面骨架可检查。
+- `npm test`：42 个测试文件，328 个测试通过。
+- `npm run typecheck`：通过。
+- `git diff --check`：通过。
+
+阶段 17 / 18 账号与双人绑定工程闭环验证记录：
 
 - 新增聚焦验证：`src/app/account/local-account-adapter.test.ts`、`src/app/account/local-pair-binding-adapter.test.ts`、`src/app/account/account-sync-config.test.ts`、`server/account-pair/account-pair-service.test.ts`、`server/sync-proxy/handler.test.ts`、`server/sync-proxy/cloudbase-entry.test.ts` 覆盖本地手机号登录、登录态恢复、创建关系、24 小时一次性邀请码、输入即加入、账号驱动同步配置、服务端账号 / 关系约束、sync-proxy 账号成员授权和 CloudBase runtime env。
 - `git diff --check`：通过。
@@ -334,10 +342,9 @@ npx cap doctor
 
 项目目前还没有完成：
 
-- 阶段 21 的实施计划仍需写出并提交。
-- `miniprogram/` 微信原生小程序工程尚未创建。
+- 阶段 23 共享领域核心迁移计划仍需写出并提交。
 - `src/domain` 等共享领域规则尚未抽取或适配到小程序可复用边界。
-- 小程序今日、写信、先生、钱匣、信箱 / 档案页面尚未迁移。
+- 小程序今日、写信、先生、钱匣、信箱 / 档案页面目前只有骨架，尚未接入真实业务状态。
 - 小程序 CloudBase `dev` 主链路尚未接通；现有 HTTP proxy 需要降级为诊断工具。
 - 微信一键手机号登录、短信兜底、真实账号恢复和小程序双人绑定尚未实现。
 - CloudBase `prd` 环境、微信小程序 AppID、隐私保护指引、手机号能力和审核发布仍需用户人工配置。

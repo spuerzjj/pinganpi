@@ -481,7 +481,7 @@
         <div class="meta">
           <span class="badge done">旧 App：阶段 19 收口</span>
           <span class="badge info">新主线：微信小程序</span>
-          <span class="badge done">阶段 19 已收口</span>
+          <span class="badge done">阶段 22 已完成基础</span>
           <span class="badge done">codex/wechat-miniprogram-pivot</span>
           <span class="badge">更新：2026-05-24</span>
         </div>
@@ -490,18 +490,18 @@
       <section class="grid-4" aria-label="关键状态">
         <article class="metric">
           <p class="metric-label">当前基线</p>
-          <p class="metric-value">阶段 21</p>
-          <p class="metric-note">项目主线转向微信原生小程序，旧 Capacitor / Vue 实现暂存为历史参考。</p>
+          <p class="metric-value">阶段 22</p>
+          <p class="metric-note">已建立 miniprogram 工程、页面骨架、TypeScript 检查和 dev 环境入口。</p>
         </article>
         <article class="metric">
           <p class="metric-label">验证状态</p>
-          <p class="metric-value">320 tests</p>
-          <p class="metric-note">旧 App 账号、绑定、同步、AI 和领域层验证基线保留，供小程序迁移复用。</p>
+          <p class="metric-value">328 tests</p>
+          <p class="metric-note">全量测试、旧 Vue typecheck、小程序 typecheck 和环境配置测试已通过。</p>
         </article>
         <article class="metric">
           <p class="metric-label">下一推荐</p>
-          <p class="metric-value">工程基座</p>
-          <p class="metric-note">进入阶段 22：创建 miniprogram、TypeScript 页面骨架和 dev 环境配置。</p>
+          <p class="metric-value">共享核心</p>
+          <p class="metric-note">进入阶段 23：抽取或适配领域规则，确保小程序不重复实现业务规则。</p>
         </article>
         <article class="metric">
           <p class="metric-label">主要风险</p>
@@ -514,13 +514,13 @@
         <div class="card-header">
           <div>
             <h2>阶段进度</h2>
-            <p class="muted">阶段 1-19 的旧 App 工程能力保留为业务参考；当前主线从阶段 21 开始迁移到微信原生小程序。</p>
+            <p class="muted">阶段 1-19 的旧 App 工程能力保留为业务参考；阶段 22 已建立小程序工程基座，下一步迁移共享领域核心。</p>
           </div>
-          <span class="badge info">重基线中</span>
+          <span class="badge done">阶段 22</span>
         </div>
         <div class="card-body progress">
           <div class="progress-track" aria-hidden="true">
-            <div class="progress-fill" style="width: 60%"></div>
+            <div class="progress-fill" style="width: 63%"></div>
           </div>
           <div class="phase-grid">
             <div class="phase done">
@@ -603,15 +603,15 @@
               <span class="phase-number">20</span>
               <span class="phase-title">旧 App 验证</span>
             </div>
-            <div class="phase next">
+            <div class="phase done">
               <span class="phase-number">21</span>
               <span class="phase-title">小程序重基线</span>
             </div>
-            <div class="phase">
+            <div class="phase done">
               <span class="phase-number">22</span>
               <span class="phase-title">小程序基座</span>
             </div>
-            <div class="phase">
+            <div class="phase next">
               <span class="phase-number">23</span>
               <span class="phase-title">共享核心</span>
             </div>
@@ -765,12 +765,14 @@
             <div class="meta" style="justify-content: flex-start">
               <span class="badge done">npm test</span>
               <span class="badge done">typecheck</span>
-              <span class="badge done">build</span>
+              <span class="badge done">miniprogram</span>
               <span class="badge warn">chunk warning</span>
             </div>
             <ul class="plain-list" style="margin-top: 12px">
-              <li>全量 40 个测试文件，320 个测试通过。</li>
-              <li>阶段 21 当前为文档与路线重基线；小程序工程尚未创建，下一步进入阶段 22。</li>
+              <li>全量 42 个测试文件，328 个测试通过。</li>
+              <li>阶段 22 已完成基础：`miniprogram/`、页面骨架、TypeScript 检查、微信开发者工具配置和 CloudBase dev 环境入口已创建。</li>
+              <li>`npm test -- miniprogram/config/env.test.ts` 已通过，确认小程序默认使用 `dev` 环境 `pinganpi-d7gml1f6sbcc172ea`，`prd` 仍为空等待用户创建。</li>
+              <li>`npm run miniprogram:typecheck` 已通过，小程序页面骨架和 CloudBase dev 配置入口可检查。</li>
               <li>阶段 16 云端 smoke 已通过：`/sync/health`、未带 token 401、合法 pull、push、再 pull。</li>
               <li>新增测试覆盖账号登录、双人绑定、账号驱动同步配置、服务端账号 / 关系约束、sync-proxy 账号授权和 CloudBase runtime env。</li>
               <li>测试继续覆盖草稿、写信、模板代书、邮政推进、拆阅服务、AI 代理、同步模型、mock remote、AppModel 和持久化结算。</li>
@@ -792,26 +794,26 @@
         <article class="card">
           <div class="card-header">
             <h2>后续主线</h2>
-            <span class="badge info">下一工程：阶段 22</span>
+            <span class="badge info">下一工程：阶段 23</span>
           </div>
           <div class="card-body priority-grid">
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge info">阶段 21 进行中</span>
+                <span class="badge done">阶段 21 完成</span>
               </div>
               <h3>微信小程序迁移设计与重基线</h3>
               <p>迁移设计已确认：微信原生小程序、TypeScript、CloudBase dev/prd、多环境隔离、手机号业务账号、微信一键登录和短信兜底。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge info">阶段 22 下一步</span>
+                <span class="badge done">阶段 22 完成基础</span>
               </div>
               <h3>小程序工程基座</h3>
-              <p>创建 `miniprogram/`、页面骨架、TypeScript 配置、微信开发者工具配置和 dev 环境入口。</p>
+              <p>已创建 `miniprogram/`、页面骨架、TypeScript 配置、微信开发者工具配置和 dev 环境入口。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge">阶段 23</span>
+                <span class="badge info">阶段 23 下一步</span>
               </div>
               <h3>共享领域核心迁移</h3>
               <p>抽取或适配纯 TypeScript 规则，让小程序复用时间、钱匣、代笔先生、邮资、送达和状态机。</p>
