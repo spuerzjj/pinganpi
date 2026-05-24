@@ -1,6 +1,6 @@
 # 小程序 CloudBase dev 主链路 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** 让微信小程序通过 `wx.cloud.callFunction` 调用 CloudBase `dev` 云函数，跑通账号、关系、同步和 AI 的工程通道。
 
@@ -12,7 +12,7 @@
 
 ## Scope
 
-本计划对应路线图阶段 25：小程序 CloudBase dev 主链路。
+本计划对应路线图阶段 25：小程序 CloudBase dev 主链路。当前状态：已完成工程基础；真实 CloudBase dev 部署 smoke 待执行。下方 checkbox 是实施记录，不是待执行事项。
 
 本阶段包含：
 
@@ -106,7 +106,7 @@ Modify:
 
 - Create: `server/miniprogram-functions/result.ts`
 
-- [ ] **Step 1: Implement common helpers**
+- [x] **Step 1: Implement common helpers**
 
 Create `server/miniprogram-functions/result.ts`:
 
@@ -154,7 +154,7 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
 }
 ```
 
-- [ ] **Step 2: Commit Task 1**
+- [x] **Step 2: Commit Task 1**
 
 ```bash
 git add server/miniprogram-functions/result.ts
@@ -170,7 +170,7 @@ git commit -m "feat(miniprogram): 添加云函数返回契约"
 - Create: `server/miniprogram-functions/pinganpi-sync.ts`
 - Create: `server/miniprogram-functions/pinganpi-sync.test.ts`
 
-- [ ] **Step 1: Write AI wrapper tests**
+- [x] **Step 1: Write AI wrapper tests**
 
 Create `server/miniprogram-functions/pinganpi-ai.test.ts` with tests for:
 
@@ -187,7 +187,7 @@ npm test -- server/miniprogram-functions/pinganpi-ai.test.ts
 
 Expected: FAIL because the wrapper file does not exist.
 
-- [ ] **Step 2: Implement AI wrapper**
+- [x] **Step 2: Implement AI wrapper**
 
 Create `server/miniprogram-functions/pinganpi-ai.ts`:
 
@@ -204,7 +204,7 @@ Create `server/miniprogram-functions/pinganpi-ai.ts`:
 - Convert handler errors to `miniFail(action, reason, message, statusCode)`.
 - Catch config errors from `readAiProxyConfig(process.env)` and return `proxy_unavailable`.
 
-- [ ] **Step 3: Write sync wrapper tests**
+- [x] **Step 3: Write sync wrapper tests**
 
 Create `server/miniprogram-functions/pinganpi-sync.test.ts` with tests for:
 
@@ -221,7 +221,7 @@ npm test -- server/miniprogram-functions/pinganpi-sync.test.ts
 
 Expected: FAIL because the wrapper file does not exist.
 
-- [ ] **Step 4: Implement sync wrapper**
+- [x] **Step 4: Implement sync wrapper**
 
 Create `server/miniprogram-functions/pinganpi-sync.ts`:
 
@@ -235,7 +235,7 @@ Create `server/miniprogram-functions/pinganpi-sync.ts`:
 - Runtime `main` reads auth config with `readSyncProxyAuthConfig(process.env)`.
 - Test helper can pass `authConfig` undefined to verify dev channel.
 
-- [ ] **Step 5: Run focused tests**
+- [x] **Step 5: Run focused tests**
 
 ```bash
 npm test -- server/miniprogram-functions/pinganpi-ai.test.ts
@@ -244,7 +244,7 @@ npm test -- server/miniprogram-functions/pinganpi-sync.test.ts
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit Task 2**
+- [x] **Step 6: Commit Task 2**
 
 ```bash
 git add server/miniprogram-functions/pinganpi-ai.ts server/miniprogram-functions/pinganpi-ai.test.ts server/miniprogram-functions/pinganpi-sync.ts server/miniprogram-functions/pinganpi-sync.test.ts
@@ -262,7 +262,7 @@ git commit -m "feat(miniprogram): 添加 AI 与同步云函数入口"
 - Create: `server/miniprogram-functions/pinganpi-pair.ts`
 - Create: `server/miniprogram-functions/pinganpi-pair.test.ts`
 
-- [ ] **Step 1: Write CloudBase account store tests**
+- [x] **Step 1: Write CloudBase account store tests**
 
 Create `server/account-pair/cloudbase-store.test.ts` with tests for:
 
@@ -279,7 +279,7 @@ npm test -- server/account-pair/cloudbase-store.test.ts
 
 Expected: FAIL because `cloudbase-store.ts` does not exist.
 
-- [ ] **Step 2: Implement CloudBase account store**
+- [x] **Step 2: Implement CloudBase account store**
 
 Create `server/account-pair/cloudbase-store.ts`:
 
@@ -296,7 +296,7 @@ Create `server/account-pair/cloudbase-store.ts`:
   - invite -> `inviteId`
 - Do not persist raw invite codes; existing service stores only `codeHash`.
 
-- [ ] **Step 3: Write account wrapper tests**
+- [x] **Step 3: Write account wrapper tests**
 
 Create `server/miniprogram-functions/pinganpi-account.test.ts` with tests for:
 
@@ -306,7 +306,7 @@ Create `server/miniprogram-functions/pinganpi-account.test.ts` with tests for:
 - `getActiveBinding` returns null before relation is created.
 - Invalid payload returns `bad_request`.
 
-- [ ] **Step 4: Implement account wrapper**
+- [x] **Step 4: Implement account wrapper**
 
 Create `server/miniprogram-functions/pinganpi-account.ts`:
 
@@ -319,7 +319,7 @@ Create `server/miniprogram-functions/pinganpi-account.ts`:
 - Runtime `main` creates CloudBase DB with `cloudbase.init({ env: process.env.CLOUDBASE_ENV_ID })` when env is present.
 - Test helper accepts in-memory repository and deterministic `now` / `idGenerator`.
 
-- [ ] **Step 5: Write pair wrapper tests**
+- [x] **Step 5: Write pair wrapper tests**
 
 Create `server/miniprogram-functions/pinganpi-pair.test.ts` with tests for:
 
@@ -328,7 +328,7 @@ Create `server/miniprogram-functions/pinganpi-pair.test.ts` with tests for:
 - `joinByInvite` joins second account.
 - Duplicate household and own invite errors return controlled failure.
 
-- [ ] **Step 6: Implement pair wrapper**
+- [x] **Step 6: Implement pair wrapper**
 
 Create `server/miniprogram-functions/pinganpi-pair.ts`:
 
@@ -342,7 +342,7 @@ Create `server/miniprogram-functions/pinganpi-pair.ts`:
 - Save store after mutating actions.
 - Test helper accepts in-memory repository and deterministic clock/id/code generator.
 
-- [ ] **Step 7: Run focused tests**
+- [x] **Step 7: Run focused tests**
 
 ```bash
 npm test -- server/account-pair/cloudbase-store.test.ts
@@ -352,7 +352,7 @@ npm test -- server/miniprogram-functions/pinganpi-pair.test.ts
 
 Expected: PASS.
 
-- [ ] **Step 8: Commit Task 3**
+- [x] **Step 8: Commit Task 3**
 
 ```bash
 git add server/account-pair/cloudbase-store.ts server/account-pair/cloudbase-store.test.ts server/miniprogram-functions/pinganpi-account.ts server/miniprogram-functions/pinganpi-account.test.ts server/miniprogram-functions/pinganpi-pair.ts server/miniprogram-functions/pinganpi-pair.test.ts
@@ -367,7 +367,7 @@ git commit -m "feat(miniprogram): 添加账号关系云函数入口"
 - Create: `miniprogram/services/cloud-functions.test.ts`
 - Modify: `miniprogram/types/wx.d.ts`
 
-- [ ] **Step 1: Write client adapter tests**
+- [x] **Step 1: Write client adapter tests**
 
 Create `miniprogram/services/cloud-functions.test.ts` with tests for:
 
@@ -376,7 +376,7 @@ Create `miniprogram/services/cloud-functions.test.ts` with tests for:
 - Throws a controlled error when `ok: false`.
 - Throws `cloud_unavailable` when `wx.cloud.callFunction` is absent.
 
-- [ ] **Step 2: Add WeChat cloud call types**
+- [x] **Step 2: Add WeChat cloud call types**
 
 Modify `miniprogram/types/wx.d.ts`:
 
@@ -398,7 +398,7 @@ interface CloudCallFunctionResult<T = unknown> {
 }
 ```
 
-- [ ] **Step 3: Implement client adapter**
+- [x] **Step 3: Implement client adapter**
 
 Create `miniprogram/services/cloud-functions.ts`:
 
@@ -415,7 +415,7 @@ Create `miniprogram/services/cloud-functions.ts`:
   - `callPinganpiAi(action, payload?)`
 - Do not call these from pages yet.
 
-- [ ] **Step 4: Run focused tests**
+- [x] **Step 4: Run focused tests**
 
 ```bash
 npm test -- miniprogram/services/cloud-functions.test.ts
@@ -424,7 +424,7 @@ npm run miniprogram:check
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit Task 4**
+- [x] **Step 5: Commit Task 4**
 
 ```bash
 git add miniprogram/types/wx.d.ts miniprogram/services/cloud-functions.ts miniprogram/services/cloud-functions.test.ts
@@ -441,7 +441,7 @@ git commit -m "feat(miniprogram): 添加云函数调用适配器"
 - Modify: `cloudbaserc.json`
 - Modify: `package.json`
 
-- [ ] **Step 1: Write build script**
+- [x] **Step 1: Write build script**
 
 Create `scripts/build-cloudbase-miniprogram-functions.ts`:
 
@@ -454,7 +454,7 @@ Create `scripts/build-cloudbase-miniprogram-functions.ts`:
 - Event functions do not need `scf_bootstrap`.
 - Write package.json and README in each generated function directory.
 
-- [ ] **Step 2: Update CloudBase config**
+- [x] **Step 2: Update CloudBase config**
 
 Modify `cloudbaserc.json` and append four functions:
 
@@ -465,7 +465,7 @@ Modify `cloudbaserc.json` and append four functions:
 
 Use runtime `Nodejs20.19`, handler `index.main`, timeout `30`, memory `256`, `installDependency: false`, and generated dirs under `cloudbase/functions/<name>`. Use event function type, not HTTP type.
 
-- [ ] **Step 3: Add npm scripts**
+- [x] **Step 3: Add npm scripts**
 
 Modify `package.json`:
 
@@ -475,7 +475,7 @@ Modify `package.json`:
 "cloudbase:smoke:miniprogram": "node --env-file-if-exists=.env.ai.local --env-file-if-exists=.env.sync.local --import tsx scripts/smoke-cloudbase-miniprogram-functions.ts"
 ```
 
-- [ ] **Step 4: Write smoke helper tests**
+- [x] **Step 4: Write smoke helper tests**
 
 Create `scripts/smoke-cloudbase-miniprogram-functions.test.ts`:
 
@@ -483,7 +483,7 @@ Create `scripts/smoke-cloudbase-miniprogram-functions.test.ts`:
 - Test parser accepts CloudBase CLI JSON wrapper and extracts function result.
 - Test redaction never prints phone numbers, invite codes, `MIMO_API_KEY`, token values or provider raw body.
 
-- [ ] **Step 5: Implement smoke script**
+- [x] **Step 5: Implement smoke script**
 
 Create `scripts/smoke-cloudbase-miniprogram-functions.ts`:
 
@@ -496,7 +496,7 @@ Create `scripts/smoke-cloudbase-miniprogram-functions.ts`:
 - If env `PINGANPI_MINIPROGRAM_SMOKE_AI_DRAFT=1` is set, also invoke `pinganpi-ai` `scribeDraft` using a non-sensitive oral text.
 - Print only pass/fail summaries, no raw secrets or real phone numbers.
 
-- [ ] **Step 6: Run build and tests**
+- [x] **Step 6: Run build and tests**
 
 ```bash
 npm run cloudbase:build:miniprogram
@@ -505,7 +505,7 @@ npm test -- scripts/smoke-cloudbase-miniprogram-functions.test.ts
 
 Expected: PASS.
 
-- [ ] **Step 7: Commit Task 5**
+- [x] **Step 7: Commit Task 5**
 
 ```bash
 git add scripts/build-cloudbase-miniprogram-functions.ts scripts/smoke-cloudbase-miniprogram-functions.ts scripts/smoke-cloudbase-miniprogram-functions.test.ts cloudbaserc.json package.json
@@ -521,7 +521,7 @@ git commit -m "build(miniprogram): 添加小程序云函数构建部署脚本"
 - Modify: `AGENTS.md`
 - Modify: `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-cloudbase-dev.md`
 
-- [ ] **Step 1: Run final verification**
+- [x] **Step 1: Run final verification**
 
 ```bash
 npm run miniprogram:check
@@ -531,9 +531,9 @@ npm run cloudbase:build:miniprogram
 git diff --check
 ```
 
-Expected: PASS. `npm test` count will increase from 46 files / 343 tests.
+Expected: PASS. 当前验证基线为 53 个测试文件、372 个测试通过。
 
-- [ ] **Step 2: Update docs**
+- [x] **Step 2: Update docs**
 
 Update docs to record:
 
@@ -544,7 +544,7 @@ Update docs to record:
 - HTTP functions remain diagnostic.
 - `prd` remains unconfigured and not deployed.
 
-- [ ] **Step 3: Commit docs**
+- [x] **Step 3: Commit docs**
 
 ```bash
 git add docs/pinganpi-roadmap.md docs/pinganpi-roadmap-dashboard.html AGENTS.md docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-cloudbase-dev.md

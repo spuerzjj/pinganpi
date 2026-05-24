@@ -6,7 +6,7 @@
 
 **当前分支：** `codex/wechat-miniprogram-pivot`
 
-**当前开发基线：** 阶段 1-19 的 Capacitor / Vue App 工程能力已形成完整业务参考：领域层、写信流程、AI 起稿、流式起稿、CloudBase AI 代理、同步模型、CloudBase 同步代理、手机号账号本地闭环、双人绑定本地 / 服务端边界和外部平台配置收口均已完成对应验证。2026-05-24 用户确认重大方向调整：目标运行环境从 iOS / Android App 改为微信小程序并需要上架；新主线采用微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境；手机号仍是《平安批》业务账号主键；微信一键获取手机号为默认登录入口，短信验证码保留兜底；本地开发和线上都优先走 CloudBase 云函数，本地 proxy 降级为诊断工具。阶段 21 已完成迁移设计与重基线；阶段 22 已完成小程序工程基座；阶段 23 已完成共享领域核心迁移；阶段 24 已完成小程序本地核心界面，今日、写信、先生、钱匣、信箱 / 档案已接入本地 mock view-model，写信页已有本地 5 步流程，切换 tab 不会清空当前写信进度，口述变更会强制重新起稿。下一步进入阶段 25：小程序 CloudBase dev 主链路。迁移设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`，阶段 22 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md`，阶段 23 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-shared-domain-core.md`，阶段 24 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-local-ui.md`。精确提交以 `git log --oneline --decorate -5` 为准。
+**当前开发基线：** 阶段 1-19 的 Capacitor / Vue App 工程能力已形成完整业务参考：领域层、写信流程、AI 起稿、流式起稿、CloudBase AI 代理、同步模型、CloudBase 同步代理、手机号账号本地闭环、双人绑定本地 / 服务端边界和外部平台配置收口均已完成对应验证。2026-05-24 用户确认重大方向调整：目标运行环境从 iOS / Android App 改为微信小程序并需要上架；新主线采用微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境；手机号仍是《平安批》业务账号主键；微信一键获取手机号为默认登录入口，短信验证码保留兜底；本地开发和线上都优先走 CloudBase 云函数，本地 proxy 降级为诊断工具。阶段 21 已完成迁移设计与重基线；阶段 22 已完成小程序工程基座；阶段 23 已完成共享领域核心迁移；阶段 24 已完成小程序本地核心界面；阶段 25 已完成小程序 CloudBase dev 主链路工程基础，新增 `pinganpi-ai`、`pinganpi-sync`、`pinganpi-account`、`pinganpi-pair` 四个 event 云函数入口、小程序 `wx.cloud.callFunction` adapter、构建 / 部署 / smoke 脚本和账号关系 CloudBase store。下一步进入阶段 26：小程序登录与双人关系真实闭环。迁移设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`，阶段 22 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md`，阶段 23 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-shared-domain-core.md`，阶段 24 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-local-ui.md`，阶段 25 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-cloudbase-dev.md`。精确提交以 `git log --oneline --decorate -5` 为准。
 
 **工作区策略：** 日常开发直接在 `/Users/zhujunjie/code/pinganpi` 进行。除非用户明确要求隔离开发，否则不要创建或使用 `.worktrees/`。
 
@@ -210,7 +210,7 @@
 
 新主线从阶段 21 开始改为“微信小程序迁移设计 → 小程序工程基座 → 共享领域核心 → 小程序核心界面 → CloudBase dev 主链路 → 登录绑定真实闭环 → AI 与同步补齐 → 小程序上架配置 → 小程序完整人工验证 → 邮政异常 / 推送 / 附件 / 发布打磨”。
 
-**本期目标：** 阶段 24 已完成小程序本地核心界面。下一步进入阶段 25：接入 CloudBase dev 主链路，让账号、绑定、同步和 AI 通过 `wx.cloud.callFunction` 跑通工程通道。旧 Capacitor / Vue 实现暂存为历史参考，不再作为主开发目标。
+**本期目标：** 阶段 25 已完成小程序 CloudBase dev 主链路工程基础。下一步进入阶段 26：接入微信一键手机号和短信兜底真实账号 / 双人关系闭环。旧 Capacitor / Vue 实现暂存为历史参考，不再作为主开发目标。
 
 | 阶段 | 名称 | 状态 | 说明 |
 | --- | --- | --- | --- |
@@ -238,7 +238,7 @@
 | 22 | 小程序工程基座 | 已完成基础 | 已新增 `miniprogram/`、TypeScript 检查、页面骨架、微信开发者工具配置和 `dev` CloudBase 环境入口。 |
 | 23 | 共享领域核心迁移 | 已完成基础 | 已新增 `shared/domain/` 作为领域规则真实实现，`src/domain/` 保留兼容 re-export，小程序根内副本和一致性检查已建立，今日页已使用共享领域摘要。 |
 | 24 | 小程序本地核心界面 | 已完成基础 | 今日、写信、先生、钱匣、信箱 / 档案已接入本地 mock view-model；写信页已有本地 5 步流程，tab 切换保留进度，口述变更会重新起稿。 |
-| 25 | 小程序 CloudBase dev 主链路 | 未开始 | 账号、绑定、同步、AI 云函数 event wrapper 与 `dev` 环境 smoke。 |
+| 25 | 小程序 CloudBase dev 主链路 | 已完成工程基础 | 已新增账号、绑定、同步、AI event 云函数入口，小程序 cloud function adapter，构建 / 部署 / smoke 脚本；真实云端部署 smoke 待执行。 |
 | 26 | 小程序登录与双人关系真实闭环 | 未开始 | 微信一键手机号、短信兜底、账号恢复、邀请码加入。 |
 | 27 | 小程序 AI 与同步体验补齐 | 未开始 | AI 起稿、失败关闭、同步状态，必要时恢复流式专项。 |
 | 28 | 微信小程序上架配置 | 未开始 | AppID、隐私、手机号能力、`prd` 环境、审核发布人工清单。 |
@@ -272,7 +272,16 @@
 
 ## 验证基线
 
-最近阶段 24 小程序本地核心界面新增验证记录：
+最近阶段 25 小程序 CloudBase dev 主链路新增验证记录：
+
+- `npm test -- server/miniprogram-functions/pinganpi-ai.test.ts server/miniprogram-functions/pinganpi-sync.test.ts server/account-pair/cloudbase-store.test.ts server/miniprogram-functions/pinganpi-account.test.ts server/miniprogram-functions/pinganpi-pair.test.ts miniprogram/services/cloud-functions.test.ts scripts/smoke-cloudbase-miniprogram-functions.test.ts`：通过，7 个测试文件，29 个测试通过。
+- `npm run cloudbase:build:miniprogram`：通过，生成 `pinganpi-ai`、`pinganpi-sync`、`pinganpi-account`、`pinganpi-pair` 四个 event 云函数包；生成目录仍由 `.gitignore` 排除。
+- `npm run miniprogram:check`：通过；包含共享副本一致性检查和小程序 typecheck。
+- `npm test`：通过，53 个测试文件，372 个测试通过。
+- `npm run typecheck`：通过。
+- `git diff --check`：通过。
+
+阶段 24 小程序本地核心界面验证记录：
 
 - `npm test -- miniprogram/services/local-model.test.ts`：通过，4 个测试通过；覆盖今日、先生、钱匣、信箱 / 档案 view-model。
 - `npm test -- miniprogram/services/write-flow.test.ts`：通过，6 个测试通过；覆盖本地写信费用、起稿、校改、挂号、投寄存根和口述变更后旧稿失效。
@@ -997,12 +1006,16 @@ npx cap doctor
 
 目标：让小程序通过 `wx.cloud.callFunction` 调用 `dev` 云函数，跑通账号、绑定、同步和 AI 的工程通道。
 
-推荐范围：
+状态：已完成工程基础；真实 CloudBase dev 部署 smoke 待执行。
 
-- 新增小程序 event wrapper：`pinganpi-account`、`pinganpi-pair`、`pinganpi-sync`、`pinganpi-ai`。
-- 复用现有 `server/` handler 和服务逻辑，不复制校验。
-- `dev` 环境 smoke 覆盖账号、绑定、同步 pull / push、AI 起稿、失败关闭。
+- 已新增小程序 event wrapper：`pinganpi-account`、`pinganpi-pair`、`pinganpi-sync`、`pinganpi-ai`。
+- `pinganpi-ai` 复用既有 AI proxy handler；health 不依赖 MiMo env，非流式 `scribeDraft` 使用受控返回。
+- `pinganpi-sync` 复用既有 sync handler、redaction、CloudBase snapshot store 和 runtime auth。
+- `pinganpi-account` / `pinganpi-pair` 复用 `account-pair-service`，新增账号关系 CloudBase store，集合名为 `pinganpi_accounts`、`pinganpi_households`、`pinganpi_members`、`pinganpi_invites`。
+- 已新增小程序端 `miniprogram/services/cloud-functions.ts`，封装 `wx.cloud.callFunction`；本阶段尚未接入页面。
+- 已新增 `npm run cloudbase:build:miniprogram`、`npm run cloudbase:deploy:miniprogram`、`npm run cloudbase:smoke:miniprogram`。
 - HTTP 入口保留为诊断工具，不作为小程序主链路。
+- `prd` 环境仍未创建 / 配置 / 部署。
 
 ### 阶段 26：小程序登录与双人关系真实闭环
 

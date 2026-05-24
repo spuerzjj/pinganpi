@@ -74,7 +74,7 @@ npx cap doctor
 
 ## 当前代码状态
 
-当前迁移工作在 `codex/wechat-miniprogram-pivot` 分支推进。最新路线图基线为：**阶段 1-19 的旧 Capacitor / Vue App 工程能力已形成完整业务参考；2026-05-24 用户确认项目主线切换为微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境。手机号仍是《平安批》业务账号主键，微信一键获取手机号为默认登录入口，短信验证码登录保留兜底。本地开发和上线都优先走 CloudBase 云函数，本地 proxy 降级为诊断工具。阶段 21 已完成迁移设计与重基线；阶段 22 已完成小程序工程基座；阶段 23 已完成共享领域核心迁移；阶段 24 已完成小程序本地核心界面：今日、写信、代笔先生、钱匣、信箱 / 档案已接入本地 mock view-model，写信页已有本地五步流程，tab 切换保留进度，口述变更会重新起稿。下一步进入阶段 25：小程序 CloudBase dev 主链路。迁移设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`，阶段 22 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md`，阶段 23 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-shared-domain-core.md`，阶段 24 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-local-ui.md`。**
+当前迁移工作在 `codex/wechat-miniprogram-pivot` 分支推进。最新路线图基线为：**阶段 1-19 的旧 Capacitor / Vue App 工程能力已形成完整业务参考；2026-05-24 用户确认项目主线切换为微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境。手机号仍是《平安批》业务账号主键，微信一键获取手机号为默认登录入口，短信验证码登录保留兜底。本地开发和上线都优先走 CloudBase 云函数，本地 proxy 降级为诊断工具。阶段 21 已完成迁移设计与重基线；阶段 22 已完成小程序工程基座；阶段 23 已完成共享领域核心迁移；阶段 24 已完成小程序本地核心界面；阶段 25 已完成小程序 CloudBase dev 主链路工程基础：新增 `pinganpi-ai`、`pinganpi-sync`、`pinganpi-account`、`pinganpi-pair` 四个 event 云函数入口、小程序 `wx.cloud.callFunction` adapter、构建 / 部署 / smoke 脚本和账号关系 CloudBase store。下一步进入阶段 26：小程序登录与双人关系真实闭环。迁移设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`，阶段 22 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md`，阶段 23 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-shared-domain-core.md`，阶段 24 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-local-ui.md`，阶段 25 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-cloudbase-dev.md`。**
 
 旧 App 能力基线仍然重要：阶段 16 双人真实同步 MVP 已完成云端 smoke；阶段 17 手机号账号本地工程闭环已完成；阶段 18 双人绑定与同步授权工程闭环已完成；阶段 19 外部平台配置已收口。阶段 13 / 14 的 CloudBase AI 代理、非流式 / 流式起稿、禁用 key 安全失败验证和恢复验证已跑通。继续开发前以 `git log --oneline --decorate -5` 为准。
 
@@ -159,7 +159,7 @@ npx cap doctor
 - `docs/superpowers/specs/2026-05-23-pinganpi-ai-scribe-design.md`
 - `docs/superpowers/plans/2026-05-23-pinganpi-minimal-ai-proxy.md`
 
-最近验证基线：阶段 24 已通过 `npm test -- miniprogram/services/local-model.test.ts`（4 个测试通过）、`npm test -- miniprogram/services/write-flow.test.ts`（6 个测试通过）、`npm run miniprogram:check`、`npm test`（46 个测试文件，343 个测试通过）、`npm run typecheck` 和 `git diff --check`。阶段 23 基线保留：`npm test -- src/domain`（5 个测试文件，85 个测试通过）、`npm run miniprogram:check-shared`、`npm test -- miniprogram/services/domain-summary.test.ts`（1 个测试通过）、`npm test -- scripts/sync-miniprogram-shared-domain.test.ts`（4 个测试通过）。阶段 22 基线为 `npm test -- miniprogram/config/env.test.ts`（1 个测试文件，3 个测试通过）。阶段 17 / 18 旧 App 基线保留：`npm test` 曾为 40 个测试文件、320 个测试通过，`vue-tsc --noEmit`、`vite build`、`cap sync`、`cap doctor`、`npm audit --omit=dev` 均通过；Varlet 首包超过 500 KB 是旧 App 优化项。阶段 16B 云端基线保留：`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:sync` 通过，`npm run cloudbase:smoke:sync` 已通过真实云端 smoke。为避免 `@cloudbase/node-sdk` 传递引入存在原型污染公告的 `lodash.set` / `lodash.unset` 小包，已通过 `vendor/lodash-set` 和 `vendor/lodash-unset` 提供兼容 shim，内部调用已修复的主 `lodash` 子模块。
+最近验证基线：阶段 25 已通过 `npm run miniprogram:check`、`npm test`（53 个测试文件，372 个测试通过）、`npm run typecheck`、`npm run cloudbase:build:miniprogram` 和 `git diff --check`；阶段 25 聚焦测试为 7 个测试文件、29 个测试通过，覆盖 AI / sync / account / pair event wrapper、小程序 cloud adapter、账号关系 CloudBase store 和 smoke helper。阶段 24 基线保留：`npm test -- miniprogram/services/local-model.test.ts`（4 个测试通过）、`npm test -- miniprogram/services/write-flow.test.ts`（6 个测试通过）。阶段 23 基线保留：`npm test -- src/domain`（5 个测试文件，85 个测试通过）、`npm run miniprogram:check-shared`、`npm test -- miniprogram/services/domain-summary.test.ts`（1 个测试通过）、`npm test -- scripts/sync-miniprogram-shared-domain.test.ts`（4 个测试通过）。阶段 17 / 18 旧 App 基线保留：`npm test` 曾为 40 个测试文件、320 个测试通过，`vue-tsc --noEmit`、`vite build`、`cap sync`、`cap doctor`、`npm audit --omit=dev` 均通过；Varlet 首包超过 500 KB 是旧 App 优化项。阶段 16B 云端基线保留：`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:sync` 通过，`npm run cloudbase:smoke:sync` 已通过真实云端 smoke。为避免 `@cloudbase/node-sdk` 传递引入存在原型污染公告的 `lodash.set` / `lodash.unset` 小包，已通过 `vendor/lodash-set` 和 `vendor/lodash-unset` 提供兼容 shim，内部调用已修复的主 `lodash` 子模块。
 
 ## 后续路线
 
@@ -232,11 +232,17 @@ npx cap doctor
    - 本阶段仍不接 CloudBase、真实登录、真实同步或 AI 起稿。
 
 5. **阶段 25：小程序 CloudBase dev 主链路**
-   - 状态：下一步。
-   - 小程序通过 `wx.cloud.callFunction` 调用 `dev` 云函数。
-   - 新增账号、绑定、同步、AI 的 event wrapper，复用现有 `server/` handler，不复制业务校验。
+   - 状态：已完成工程基础；真实 CloudBase dev 部署 smoke 待执行。
+   - 已新增 `pinganpi-ai`、`pinganpi-sync`、`pinganpi-account`、`pinganpi-pair` 四个小程序 event 云函数入口。
+   - `pinganpi-ai` 复用既有 AI proxy handler；health 不依赖 MiMo env，非流式 `scribeDraft` 使用受控返回。
+   - `pinganpi-sync` 复用既有 sync handler、redaction、CloudBase snapshot store 和 runtime auth。
+   - `pinganpi-account` / `pinganpi-pair` 复用 `account-pair-service`，新增账号关系 CloudBase store，集合名为 `pinganpi_accounts`、`pinganpi_households`、`pinganpi_members`、`pinganpi_invites`。
+   - 已新增 `miniprogram/services/cloud-functions.ts` 封装 `wx.cloud.callFunction`；本阶段尚未接入页面。
+   - 已新增 `npm run cloudbase:build:miniprogram`、`npm run cloudbase:deploy:miniprogram`、`npm run cloudbase:smoke:miniprogram`。
+   - HTTP AI / sync 函数保留为诊断工具，不作为小程序主链路；`prd` 仍未创建 / 配置 / 部署。
 
 6. **阶段 26：小程序登录与双人关系真实闭环**
+   - 状态：下一步。
    - 微信一键手机号登录为默认入口，短信验证码登录兜底。
    - 服务端可信推导 `accountId -> householdId -> memberId`，客户端传入 id 不作为授权依据。
 
@@ -424,10 +430,17 @@ npm audit --omit=dev
 npm run miniprogram:typecheck
 npm run miniprogram:check-shared
 npm run miniprogram:check
+npm run cloudbase:build:miniprogram
 npm test -- miniprogram/config/env.test.ts
 npm test -- miniprogram/services/domain-summary.test.ts
 npm test -- miniprogram/services/local-model.test.ts
 npm test -- miniprogram/services/write-flow.test.ts
+npm test -- miniprogram/services/cloud-functions.test.ts
+npm test -- server/miniprogram-functions/pinganpi-ai.test.ts
+npm test -- server/miniprogram-functions/pinganpi-sync.test.ts
+npm test -- server/miniprogram-functions/pinganpi-account.test.ts
+npm test -- server/miniprogram-functions/pinganpi-pair.test.ts
+npm test -- scripts/smoke-cloudbase-miniprogram-functions.test.ts
 ```
 
 修改 `shared/domain/` 后必须运行 `npm run miniprogram:sync-shared` 更新小程序根内副本，并用 `npm run miniprogram:check-shared` 确认副本未陈旧；该检查会动态发现新增 `.ts` 领域文件。

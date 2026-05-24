@@ -26,6 +26,50 @@
       "memorySize": 256,
       "installDependency": false,
       "dir": "cloudbase/functions/sync-proxy"
+    },
+    {
+      "name": "pinganpi-ai",
+      "description": "平安批小程序 AI event 云函数",
+      "type": "Event",
+      "runtime": "Nodejs20.19",
+      "handler": "index.main",
+      "timeout": 30,
+      "memorySize": 256,
+      "installDependency": false,
+      "dir": "cloudbase/functions/pinganpi-ai"
+    },
+    {
+      "name": "pinganpi-sync",
+      "description": "平安批小程序同步 event 云函数",
+      "type": "Event",
+      "runtime": "Nodejs20.19",
+      "handler": "index.main",
+      "timeout": 30,
+      "memorySize": 256,
+      "installDependency": false,
+      "dir": "cloudbase/functions/pinganpi-sync"
+    },
+    {
+      "name": "pinganpi-account",
+      "description": "平安批小程序账号 event 云函数",
+      "type": "Event",
+      "runtime": "Nodejs20.19",
+      "handler": "index.main",
+      "timeout": 30,
+      "memorySize": 256,
+      "installDependency": false,
+      "dir": "cloudbase/functions/pinganpi-account"
+    },
+    {
+      "name": "pinganpi-pair",
+      "description": "平安批小程序双人关系 event 云函数",
+      "type": "Event",
+      "runtime": "Nodejs20.19",
+      "handler": "index.main",
+      "timeout": 30,
+      "memorySize": 256,
+      "installDependency": false,
+      "dir": "cloudbase/functions/pinganpi-pair"
     }
   ]
 }

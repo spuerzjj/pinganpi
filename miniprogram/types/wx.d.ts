@@ -10,12 +10,22 @@ declare global {
     interface Wx {
       cloud?: {
         init(options: CloudInitOptions): void;
+        callFunction<T = unknown>(options: CloudCallFunctionOptions): Promise<CloudCallFunctionResult<T>>;
       };
     }
 
     interface CloudInitOptions {
       env: string;
       traceUser?: boolean;
+    }
+
+    interface CloudCallFunctionOptions {
+      name: string;
+      data?: unknown;
+    }
+
+    interface CloudCallFunctionResult<T = unknown> {
+      result?: T;
     }
 
     interface AppOptions {
