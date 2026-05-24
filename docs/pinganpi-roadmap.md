@@ -816,7 +816,7 @@ npx cap doctor
 
 目标：把所有需要用户登录控制台、输入验证码、确认费用或操作真实设备前置配置的事项统一处理，避免打断阶段 17 / 18 的工程开发。
 
-状态：进行中。已新增阶段 19 执行计划和脱敏 CloudBase 审计脚本；已记录当前 CloudBase 用量、函数状态、公开面、默认角色和 env key 存在情况。用户已在 CloudBase 控制台开启手机号短信登录，且两个真实手机号验证码均已实际收到。App 侧手机号登录接入方式已确定为 CloudBase Auth v2 HTTP API，账号 / 关系集合命名已定稿，HTTP 路由 smoke、CLI 路由查询、集合权限查询和角色列表查询已通过。短信发送限制和费用基线已按官方资料记录，预算建议已给出 `10 元/月`、`80%` / `100%` 阈值提醒。下一步需要用户按阶段 19 回报模板确认短信签名 / 模板、预算告警、函数运行角色收敛和 MiMo key 管理。
+状态：进行中。已新增阶段 19 执行计划和脱敏 CloudBase 审计脚本；已记录当前 CloudBase 用量、函数状态、公开面、默认角色和 env key 存在情况。用户已在 CloudBase 控制台开启手机号短信登录，且两个真实手机号验证码均已实际收到。CloudBase 短信资源包已购买，短信签名入口未找到，控制台未看到发送限制和费用说明；发送限制和费用策略暂以官方资料基线为准。当前 CloudBase 套餐 / 版本为腾讯云开发免费体验版；官方价格文档显示免费体验环境提供 `3000 点/月`，单次可续费 6 个月，不支持自动续费。App 侧手机号登录接入方式已确定为 CloudBase Auth v2 HTTP API，账号 / 关系集合命名已定稿，HTTP 路由 smoke、CLI 路由查询、集合权限查询和角色列表查询已通过。预算建议已给出 `10 元/月`、`80%` / `100%` 阈值提醒。下一步需要用户按阶段 19 回报模板确认预算告警、函数运行角色收敛和 MiMo key 管理。
 
 执行计划：
 
@@ -826,11 +826,14 @@ npx cap doctor
 
 - 新增 `scripts/audit-cloudbase-stage19.ts` 和 `npm run cloudbase:audit:stage19`，用于脱敏审计 CloudBase 用量和函数状态。
 - 当前计费周期 `2026-05-23 ~ 2026-06-23`，CloudBase 用量为 `1.67 / 3000 credits`。
+- 用户确认当前 CloudBase 套餐 / 版本为腾讯云开发免费体验版；官方价格文档显示免费体验环境提供 `3000 点/月`，单次可续费 6 个月，不支持自动续费；这不替代预算 / 余额提醒，仍需确认是否可配置费用告警。
+- 官方价格文档还说明免费环境可购买 Token 点资源包，暂不支持加购扩展资源包、大促资源包和开启按量付费；当前阶段不升级付费套餐、不购买 CVM、不启用自动续费。
 - `ai-scribe-proxy` 和 `sync-proxy` 均为 `Active / Available`，运行时均为 `Nodejs20.19`，HTTP 类型，PublicNet `ENABLE`，触发器 `0`，VPC 未配置。
 - 两个函数当前角色均为 `TCB_QcsRole`，是否可收敛仍待控制台确认。
 - `ai-scribe-proxy` 的 `MIMO_API_KEY` 存在但审计输出已脱敏；后续不要直接用会打印完整 env 的 CLI 输出。
 - CloudBase Auth 手机号短信登录已由用户在控制台开启；本环境为 `ap-shanghai`，符合短信登录地域要求。
 - Auth 发送验证码应使用 CloudBase HTTP API 统一域名 `https://pinganpi-d7gml1f6sbcc172ea.api.tcloudbasegateway.com/auth/v1/verification`；已对两个真实手机号各触发一次发送请求，均返回 HTTP 200 和 `verification_id`，用户已确认两台手机均收到验证码。
+- CloudBase 控制台确认：手机号短信登录仍为已开启；短信资源包已购买；短信签名入口未找到；控制台未看到发送限制和费用说明。
 - 短信发送限制和费用基线已记录：新开通按量计费环境首月 100 条免费额度；超出免费额度可购买资源包；同一号码 30 秒最多 1 条，同一手机号一个自然日最多 10 条。
 - App 第一版手机号登录采用 CloudBase Auth v2 HTTP API，不引入 CloudBase JS SDK：发送验证码 `/auth/v1/verification`，验证验证码 `/auth/v1/verification/verify`，登录 `/auth/v1/signin`，刷新 `/auth/v1/token`。
 - 账号 / 关系集合名确定为 `pinganpi_accounts`、`pinganpi_households`、`pinganpi_members`、`pinganpi_invites`；账号 / 关系写入必须走服务端可信身份边界，客户端不得直接写授权结果。

@@ -68,6 +68,7 @@ CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:audit:stage19
 - CloudBase 用户登录 HTTP API：`https://docs.cloudbase.net/http-api/auth/auth-sign-in`
 - CloudBase token 获取 / 刷新 HTTP API：`https://docs.cloudbase.net/http-api/auth/auth-grant-token`
 - CloudBase 短信验证码登录旧版说明与费用 / 频率限制：`https://docs.cloudbase.net/authentication/method/sms-login`
+- CloudBase 价格文档：`https://cloud.tencent.com/document/product/876/75213`
 - 腾讯云费用中心预算管理：`https://cloud.tencent.com/document/product/555/65784`
 
 ## Checklist
@@ -79,7 +80,7 @@ CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:audit:stage19
 - [x] 进入 Authentication / Login Methods 或登录授权页面
 - [x] 开启手机号短信登录
 - [x] 确认地域限制：手机号短信登录官方文档标注仅支持上海地域；本环境是 `ap-shanghai`
-- [ ] 记录是否需要短信签名、短信模板、资质审核或资源包购买
+- [x] 记录是否需要短信签名、短信模板、资质审核或资源包购买：用户确认手机号短信登录已开启；控制台未找到短信签名入口；短信资源包已购买
 - [x] 记录发送限制和费用策略：官方资料显示新开通按量计费环境首月 100 条免费额度；超出免费额度可购买资源包；同一号码 30 秒最多 1 条，同一手机号一个自然日最多 10 条
 - [x] 真实手机号 A 可收到验证码
 - [x] 真实手机号 B 可收到验证码
@@ -91,6 +92,7 @@ CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:audit:stage19
 - 曾误用 HTTP 访问服务默认域名 `/auth/v1/verification`，返回 `INVALID_PATH`；不要再用 `app.tcloudbase.com` 域名触发 Auth API。
 - 已对两个真实手机号各触发一次发送请求，均返回 HTTP 200，响应包含 `verification_id`，`expires_in` 为 `300` 秒。
 - 用户已确认两台手机均实际收到验证码；验证码不要写入聊天、文档或 Git。
+- 用户已确认 CloudBase 控制台中手机号短信登录仍为已开启；短信资源包已购买；短信签名入口未找到；控制台页面未看到发送限制和费用说明。发送限制和费用说明暂以官方资料基线为准。
 
 ### 2. 账号 / 关系 CloudBase 持久化准备
 
@@ -139,6 +141,7 @@ CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:audit:stage19
 ### 4. CloudBase 费用与权限
 
 - [x] 当前计费周期用量已记录：`1.67 / 3000 credits`
+- [x] 当前 CloudBase 套餐 / 版本：用户确认开通的是腾讯云开发免费体验版；官方价格文档显示免费体验环境提供 `3000 点/月`，单次可续费 6 个月，不支持自动续费
 - [ ] 在腾讯云费用中心创建或确认预算
 - [x] 预算建议：先建月度费用预算，费用范围选全部范围；建议月上限先用低额，推荐 `10 元/月`，阈值提醒用 `80%` 和 `100%`，具体金额由用户最终确认
 - [ ] 配置余额提醒或可用额度提醒
@@ -146,7 +149,15 @@ CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:audit:stage19
 - [ ] 确认 `TCB_QcsRole` 是否可收敛为更小权限
 - [ ] 若不能收敛，记录理由和风险
 - [x] 只读查询当前 CloudBase 环境角色：系统角色 5 个，自定义角色 0 个
-- [ ] 确认是否开启自动续费；第一版建议不要开启高规格包年资源
+- [x] 确认是否开启自动续费：当前免费体验环境官方文档标注不支持自动续费；第一版不购买高规格包年资源
+
+当前费用基线记录：
+
+- 用户确认当前开通的是腾讯云开发免费体验版。
+- 官方 CloudBase 价格文档最近更新时间为 2026-05-21；其中写明免费体验环境提供 `3000 点/月`，单次可续费 6 个月，到期前 1 个月内可续费 6 个月，不支持自动续费。
+- 免费环境如手动转为付费，会变为付费环境并收到续费提醒。
+- 免费环境可购买 Token 点资源包，暂不支持加购扩展资源包、大促资源包和开启按量付费；如需这些能力需先升级为付费套餐。
+- 结论：当前阶段不购买 CVM、不升级付费套餐、不启用自动续费；预算 / 余额提醒仍建议在腾讯云费用中心确认，防止账号下其他资源或后续误转付费产生费用。
 
 ### 5. Xiaomi MiMo 费用与 key 管理
 

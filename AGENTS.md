@@ -278,7 +278,8 @@ npx cap doctor
    - 状态：进行中；执行计划为 `docs/superpowers/plans/2026-05-24-pinganpi-external-platform-closure.md`。
    - 已新增 `scripts/audit-cloudbase-stage19.ts` 和 `npm run cloudbase:audit:stage19`，用于脱敏审计 CloudBase 用量和函数状态；不要再直接把 `cloudbase fn detail` 原始输出发给用户，因为它会明文返回 env。
    - 当前审计基线：CloudBase 计费周期 `2026-05-23 ~ 2026-06-23`，用量 `1.67 / 3000 credits`；`ai-scribe-proxy` 与 `sync-proxy` 均为 `Active / Available`，运行时 `Nodejs20.19`，PublicNet `ENABLE`，触发器 `0`，VPC 未配置，角色均为 `TCB_QcsRole`。
-   - 用户已在 CloudBase 控制台开启手机号短信登录；两个真实手机号验证码均已实际收到，下一步记录短信签名 / 模板 / 发送限制 / 费用策略。
+   - 用户确认当前 CloudBase 套餐 / 版本为腾讯云开发免费体验版；官方价格文档显示免费体验环境提供 `3000 点/月`，单次可续费 6 个月，不支持自动续费；免费环境可购买 Token 点资源包，暂不支持加购扩展资源包、大促资源包和开启按量付费；这不替代预算 / 余额提醒，仍需确认是否可配置费用告警。
+   - 用户已在 CloudBase 控制台开启手机号短信登录；两个真实手机号验证码均已实际收到；短信资源包已购买；短信签名入口未找到；控制台未看到发送限制和费用说明，发送限制和费用策略暂以官方资料基线为准。
    - 短信发送限制和费用基线已记录：新开通按量计费环境首月 100 条免费额度；超出免费额度可购买资源包；同一号码 30 秒最多 1 条，同一手机号一个自然日最多 10 条。
    - App 第一版手机号登录采用 CloudBase Auth v2 HTTP API，不引入 CloudBase JS SDK：发送验证码 `/auth/v1/verification`，验证验证码 `/auth/v1/verification/verify`，登录 `/auth/v1/signin`，刷新 `/auth/v1/token`。
    - 账号 / 关系集合名确定为 `pinganpi_accounts`、`pinganpi_households`、`pinganpi_members`、`pinganpi_invites`；账号 / 关系写入必须走服务端可信身份边界，客户端不得直接写授权结果。
