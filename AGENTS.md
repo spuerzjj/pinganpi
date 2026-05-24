@@ -37,12 +37,12 @@
 ## 当前技术栈
 
 - TypeScript
-- 微信原生小程序（新主线，`miniprogram/` 已创建）
+- 微信原生小程序（新主线，`apps/miniprogram/` 已创建）
 - CloudBase 云函数，多环境目标为 `dev` / `prd`
 - Vitest
 - Vue 3 / Vite / Tailwind CSS / Varlet / Capacitor（旧 App 历史实现，暂存为业务和体验参考）
-- iOS 原生工程：`ios/`（旧 App）
-- Android 原生工程：`android/`（旧 App）
+- iOS 原生工程：`apps/legacy-capacitor/ios/`（旧 App）
+- Android 原生工程：`apps/legacy-capacitor/android/`（旧 App）
 
 本地开发命令：
 
@@ -73,14 +73,17 @@ WECHAT_DEVTOOLS_PORT=<port> npm run miniprogram:devtools:smoke
 WECHAT_DEVTOOLS_PORT=<port> npm run miniprogram:devtools:flow
 npm run roadmap:dev
 npm run roadmap:build
-npx cap doctor
+npm run structure:audit
+npm run cap:doctor
 ```
 
-新主线的日常开发方式：用微信开发者工具打开 `miniprogram/`，连接 CloudBase `dev` 环境，通过 `wx.cloud.callFunction` 调用云函数。`npm run dev`、`cap:sync`、`cap doctor` 只代表旧 Capacitor / Vue 历史基线。
+新主线的日常开发方式：用微信开发者工具打开 `apps/miniprogram/`，连接 CloudBase `dev` 环境，通过 `wx.cloud.callFunction` 调用云函数。`npm run dev`、`cap:sync`、`cap:doctor` 只代表旧 Capacitor / Vue 历史基线。
 
 微信开发者工具自动化调试：先在微信开发者工具 `设置 -> 安全设置` 开启服务端口；优先显式传入 `WECHAT_DEVTOOLS_PORT=<端口>`，也可让脚本读取最近的 `.ide` 端口文件。`npm run miniprogram:devtools:smoke` 只做账号页无效手机号校验；`npm run miniprogram:devtools:flow` 覆盖账号、关系、今日、写信、先生、钱匣、信箱和档案的低风险页面巡检。脚本不点击上传、发布、真机预览、真实微信手机号授权或审核提交。
 
-Roadmap 日常查看方式：使用独立 Vue 工具 `roadmap-viewer/`，执行 `npm run roadmap:dev`。该工具独立于旧 App `src/` 和小程序 `miniprogram/`，数据源是 `roadmap-viewer/src/roadmap-data.json`；旧 `docs/pinganpi-roadmap-dashboard.html` 已删除，不再维护静态看板。
+Roadmap 日常查看方式：使用独立 Vue 工具 `tools/roadmap-viewer/`，执行 `npm run roadmap:dev`。该工具独立于旧 App `apps/legacy-capacitor/src/` 和小程序 `apps/miniprogram/`，数据源是 `tools/roadmap-viewer/src/roadmap-data.json`；旧 `docs/pinganpi-roadmap-dashboard.html` 已删除，不再维护静态看板。
+
+工程结构边界以 `docs/project-structure.md` 为准：当前仓库按 `apps/`、`packages/`、`services/`、`tools/`、`docs/` 分区。新增 `npm run structure:audit` 用于防止目录边界回退。
 
 多 agent 协作、worktree、独占资源、测试分层和子 agent 交付格式以 `docs/agent-collaboration.md` 为准。
 
@@ -102,7 +105,7 @@ Roadmap 日常查看方式：使用独立 Vue 工具 `roadmap-viewer/`，执行 
 
 ### 阶段 1：领域层基础
 
-位置：`shared/domain/`；`src/domain/` 保留兼容 re-export，旧 App 和旧测试入口仍可继续使用。
+位置：`packages/domain/src/`；`apps/legacy-capacitor/src/domain/` 保留兼容 re-export，旧 App 和旧测试入口仍可继续使用。
 
 已实现：
 
@@ -116,7 +119,7 @@ Roadmap 日常查看方式：使用独立 Vue 工具 `roadmap-viewer/`，执行 
 重要要求：
 
 - 后续 UI、持久化、云端、通知等层不要重复实现领域规则。
-- 所有时间、钱、代书先生出勤、邮资、邮路、信件状态计算优先复用 `shared/domain`；旧 App 代码可继续通过 `src/domain` 兼容入口导入。
+- 所有时间、钱、代书先生出勤、邮资、邮路、信件状态计算优先复用 `packages/domain/src`；旧 App 代码可继续通过 `apps/legacy-capacitor/src/domain` 兼容入口导入。
 
 ### 阶段 2：Capacitor 移动壳层
 
@@ -137,14 +140,14 @@ Roadmap 日常查看方式：使用独立 Vue 工具 `roadmap-viewer/`，执行 
 
 关键文件：
 
-- `src/App.vue`
-- `src/main.ts`
-- `src/styles.css`
-- `src/app/mock-data.ts`
-- `src/app/app-model.ts`
-- `src/app/app-model.test.ts`
-- `src/app/pages/`
-- `capacitor.config.ts`
+- `apps/legacy-capacitor/src/App.vue`
+- `apps/legacy-capacitor/src/main.ts`
+- `apps/legacy-capacitor/src/styles.css`
+- `apps/legacy-capacitor/src/app/mock-data.ts`
+- `apps/legacy-capacitor/src/app/app-model.ts`
+- `apps/legacy-capacitor/src/app/app-model.test.ts`
+- `apps/legacy-capacitor/src/app/pages/`
+- `capacitor.config.ts`（根目录薄路由配置，指向 `apps/legacy-capacitor/`）
 
 ### 阶段 3-14：本地慢通信核心闭环、AI 起稿链路与流式体验
 
@@ -158,8 +161,8 @@ Roadmap 日常查看方式：使用独立 Vue 工具 `roadmap-viewer/`，执行 
 - 草稿管理 / 信纸匣：续写、覆盖保存、删除、从草稿投寄。
 - 信箱真实时间送达推进：`in_transit -> arrived`、到达前不可拆、拆阅写记录、邮政档案记录簿。
 - AI 代笔接入设计：明确 AI 只负责代笔先生起稿，模板转为提示词素材，失败保存口述草稿。
-- 本地最小 AI 代理脚手架：`server/ai-scribe-proxy/`、MiMo config/client、可复用 handler、`GET /health`、`POST /ai/scribe-draft`、本地 Origin 限制、32 KB 请求体限制、`npm run ai-proxy:check`、`npm run ai-proxy:dev`。
-- App 侧 AI 起稿链路：`src/app/ai-scribe-adapter.ts`、`VITE_PINGANPI_AI_PROXY_URL` 代理配置、写信页异步起稿、AI metadata 持久化、失败不回退模板正文。
+- 本地最小 AI 代理脚手架：`services/ai-scribe-proxy/`、MiMo config/client、可复用 handler、`GET /health`、`POST /ai/scribe-draft`、本地 Origin 限制、32 KB 请求体限制、`npm run ai-proxy:check`、`npm run ai-proxy:dev`。
+- App 侧 AI 起稿链路：`apps/legacy-capacitor/src/app/ai-scribe-adapter.ts`、`VITE_PINGANPI_AI_PROXY_URL` 代理配置、写信页异步起稿、AI metadata 持久化、失败不回退模板正文。
 - 阶段 13 工程链路已完成，控制台人工事项已移入阶段 19：`npm run ai-proxy:check` / `npm run ai-proxy:dev` 已读取本机 `.env.ai.local` 并跑通真实 Xiaomi MiMo；本地代理 `/ai/scribe-draft`、写信页真实 AI 起稿烟测、本地费用护栏、可复用 handler 边界、CloudBase HTTP 云函数、云端 secret、`/api` 路由、云端 AI 起稿接口、浏览器写信页云端 AI 烟测、禁用 key 安全失败验证、恢复验证和 `/*` 路由清理已通过。
 - 阶段 14 已完成工程实现：新增 `POST /ai/scribe-draft/stream` 和 CloudBase `POST /api/ai/scribe-draft/stream`，服务端只输出受控 SSE `delta` / `done` / `error`；App 侧 `generateDraftStream` 边收边显示，`done` 前不进入可投寄正文；保存口述草稿不会在 AI 失败后回落到模板正文。
 - MiMo stream client 必须收到 provider `data: [DONE]` 才会完成；partial delta 后 EOF 会转为受控失败，避免半截正文进入可投寄状态。
@@ -167,20 +170,23 @@ Roadmap 日常查看方式：使用独立 Vue 工具 `roadmap-viewer/`，执行 
 已验证基线记录在：
 
 - `docs/pinganpi-roadmap.md`
-- `roadmap-viewer/src/roadmap-data.json`
+- `tools/roadmap-viewer/src/roadmap-data.json`
 - `docs/superpowers/specs/2026-05-23-pinganpi-ai-scribe-design.md`
 - `docs/superpowers/plans/2026-05-23-pinganpi-minimal-ai-proxy.md`
 
-最近验证基线：微信开发者工具控制台已确认 `app.json` 缺少 `pages/account/index.js` 的阻断错误来自 TypeScript 编译插件未启用，`project.config.json` 已显式配置 `setting.useCompilerPlugins: ["typescript"]`，重新打开并编译后仅剩微信基础库系统 warning；`WECHAT_DEVTOOLS_PORT=62046 npm run miniprogram:devtools:smoke` 与 `WECHAT_DEVTOOLS_PORT=62046 npm run miniprogram:devtools:flow` 已通过，覆盖账号、关系、今日、写信、先生、钱匣、信箱和档案的低风险 DevTools 自动化巡检。Roadmap Viewer 已通过 `npm test -- roadmap-viewer/src/roadmap.test.ts`、`npm run roadmap:build`、浏览器访问 `http://localhost:5190/` 和 `/docs/pinganpi-roadmap.md` 文档链接 200 验证；结构化数据源现为 `roadmap-viewer/src/roadmap-data.json`，旧静态看板已删除。阶段 26 已通过 `npm run miniprogram:check`、`npm test`（58 个测试文件，389 个测试通过）、`npm run typecheck`、`npm run cloudbase:build:miniprogram`、`git diff --check` 和阶段 26 聚焦测试（5 个测试文件，23 个测试通过），覆盖小程序可信身份、账号云函数、关系云函数、会话缓存和 cloud service；`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:miniprogram` 与 `npm run cloudbase:smoke:miniprogram` 已在阶段 26 账号 / 关系可信身份改造后通过。阶段 25 基线保留：小程序 CloudBase dev 主链路已通过构建、部署和 health smoke，AI / sync / account / pair event wrapper、小程序 cloud adapter、账号关系 CloudBase store 和 smoke helper 均有测试覆盖。阶段 24 基线保留：`npm test -- miniprogram/services/local-model.test.ts`（4 个测试通过）、`npm test -- miniprogram/services/write-flow.test.ts`（6 个测试通过）。阶段 23 基线保留：`npm test -- src/domain`（5 个测试文件，85 个测试通过）、`npm run miniprogram:check-shared`、`npm test -- miniprogram/services/domain-summary.test.ts`（1 个测试通过）、`npm test -- scripts/sync-miniprogram-shared-domain.test.ts`（4 个测试通过）。阶段 17 / 18 旧 App 基线保留：`npm test` 曾为 40 个测试文件、320 个测试通过，`vue-tsc --noEmit`、`vite build`、`cap sync`、`cap doctor`、`npm audit --omit=dev` 均通过；Varlet 首包超过 500 KB 是旧 App 优化项。阶段 16B 云端基线保留：`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:sync` 通过，`npm run cloudbase:smoke:sync` 已通过真实云端 smoke。为避免 `@cloudbase/node-sdk` 传递引入存在原型污染公告的 `lodash.set` / `lodash.unset` 小包，已通过 `vendor/lodash-set` 和 `vendor/lodash-unset` 提供兼容 shim，内部调用已修复的主 `lodash` 子模块。
+最近验证基线：2026-05-25 工程结构治理后已通过 `npm run structure:audit`、`npm test`（59 个测试文件，395 个测试通过）、`npm run miniprogram:check`、`npm run typecheck`、`npm run cap:sync`、`npm run cap:doctor`、`npm run roadmap:build`、`npm run cloudbase:build:miniprogram` 和 `git diff --check`；`npm run build` 已在 `npm run cap:sync` 内重新执行并通过，保留 Varlet 首包超过 500 KB 的既有提示。Capacitor 根配置现在只作为 CLI 路由，指向 `apps/legacy-capacitor/dist`、`apps/legacy-capacitor/android` 和 `apps/legacy-capacitor/ios`。微信开发者工具基线保留：`WECHAT_DEVTOOLS_PORT=62046 npm run miniprogram:devtools:smoke` 与 `WECHAT_DEVTOOLS_PORT=62046 npm run miniprogram:devtools:flow` 已通过，覆盖账号、关系、今日、写信、先生、钱匣、信箱和档案的低风险 DevTools 自动化巡检。阶段 26 云端基线保留：`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:miniprogram` 与 `npm run cloudbase:smoke:miniprogram` 已在账号 / 关系可信身份改造后通过。阶段 16B 云端基线保留：`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:sync` 通过，`npm run cloudbase:smoke:sync` 已通过真实云端 smoke。为避免 `@cloudbase/node-sdk` 传递引入存在原型污染公告的 `lodash.set` / `lodash.unset` 小包，已通过 `vendor/lodash-set` 和 `vendor/lodash-unset` 提供兼容 shim，内部调用已修复的主 `lodash` 子模块。
 
 ## 后续路线
 
 以后开始新任务前，优先读取：
 
 - `docs/pinganpi-roadmap.md`
-- `roadmap-viewer/src/roadmap-data.json`
+- `tools/roadmap-viewer/src/roadmap-data.json`
+- `docs/project-structure.md`
 - `docs/agent-collaboration.md`
 - `docs/governance-reviews/2026-05-25-project-governance-review.md`
+- `docs/governance-reviews/2026-05-25-project-structure-governance.md`
+- `docs/superpowers/plans/2026-05-25-pinganpi-project-structure-reorganization.md`
 - `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`
 - `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md`
 - `docs/superpowers/plans/2026-05-24-pinganpi-shared-domain-core.md`
@@ -202,8 +208,8 @@ Roadmap 日常查看方式：使用独立 Vue 工具 `roadmap-viewer/`，执行 
 
 路线图维护规则：
 
-- 每次阶段完成、阶段拆分 / 合并、下一阶段推荐顺序变化、验证基线变化或集中 UI 问题变化时，必须同步更新 `docs/pinganpi-roadmap.md`、`roadmap-viewer/src/roadmap-data.json` 和 `AGENTS.md`；如涉及具体设计或实施边界，也要同步相关 spec / plan 文档。
-- `docs/pinganpi-roadmap.md` 是详细文字源；`roadmap-viewer/` 是给用户日常查看的可视化看板，不属于正式 App；旧 `docs/pinganpi-roadmap-dashboard.html` 已删除，不再恢复。
+- 每次阶段完成、阶段拆分 / 合并、下一阶段推荐顺序变化、验证基线变化或集中 UI 问题变化时，必须同步更新 `docs/pinganpi-roadmap.md`、`tools/roadmap-viewer/src/roadmap-data.json` 和 `AGENTS.md`；如涉及具体设计或实施边界，也要同步相关 spec / plan 文档。
+- `docs/pinganpi-roadmap.md` 是详细文字源；`tools/roadmap-viewer/` 是给用户日常查看的可视化看板，不属于正式 App；旧 `docs/pinganpi-roadmap-dashboard.html` 已删除，不再恢复。
 - 治理审查是固定节奏：每完成 2-3 个阶段，或发生架构 / 平台 / 目标运行环境 / 部署方式变化时，必须创建 `docs/governance-reviews/YYYY-MM-DD-*.md` 并同步必要的 roadmap / AGENTS / plan。
 - 开发过程中遇到关键节点，必须同步更新 roadmap 和相关设计 / 计划 / AGENTS 文档。关键节点的判断标准是：该变化会影响后续代理判断、用户查看进度、实现边界、验证方式、部署方式或安全隐私边界。
 - 关键节点包括：
@@ -228,22 +234,22 @@ Roadmap 日常查看方式：使用独立 Vue 工具 `roadmap-viewer/`，执行 
 
 2. **阶段 22：小程序工程基座**
    - 状态：已完成基础。
-   - 已创建 `miniprogram/`、小程序配置、TypeScript 页面骨架、基础样式、开发者工具打开方式和 `dev` 环境配置入口。
-   - `miniprogram/project.config.json` 必须保留 `setting.useCompilerPlugins: ["typescript"]`；否则微信开发者工具会按 `.js` 查找页面并报 `app.json: 未找到 ["pages"][0] 对应的 pages/account/index.js 文件`。
+   - 已创建 `apps/miniprogram/`、小程序配置、TypeScript 页面骨架、基础样式、开发者工具打开方式和 `dev` 环境配置入口。
+   - `apps/miniprogram/project.config.json` 必须保留 `setting.useCompilerPlugins: ["typescript"]`；否则微信开发者工具会按 `.js` 查找页面并报 `app.json: 未找到 ["pages"][0] 对应的 pages/account/index.js 文件`。
    - 不继续扩展 Capacitor 壳层。
 
 3. **阶段 23：共享领域核心迁移**
    - 状态：已完成基础。
-   - 已新增 `shared/domain/` 作为领域规则真实实现位置，`src/domain/` 保留兼容 re-export。
-   - 已新增 `miniprogram/shared/domain/` 根内副本、`npm run miniprogram:sync-shared` 和 `npm run miniprogram:check-shared`；脚本动态扫描 `shared/domain/*.ts`，避免微信小程序跨根打包风险和副本陈旧。
-   - 小程序今日页已通过 `miniprogram/services/domain-summary.ts` 使用共享旧历日期和邮资摘要。
+   - 已新增 `packages/domain/src/` 作为领域规则真实实现位置，`apps/legacy-capacitor/src/domain/` 保留兼容 re-export。
+   - 已新增 `apps/miniprogram/shared/domain/` 根内副本、`npm run miniprogram:sync-shared` 和 `npm run miniprogram:check-shared`；脚本动态扫描 `packages/domain/src/*.ts`，避免微信小程序跨根打包风险和副本陈旧。
+   - 小程序今日页已通过 `apps/miniprogram/services/domain-summary.ts` 使用共享旧历日期和邮资摘要。
    - 领域层不得引入小程序、CloudBase、Vue、浏览器或 Capacitor 依赖。
 
 4. **阶段 24：小程序本地核心界面**
    - 状态：已完成基础。
-   - 已新增 `miniprogram/services/local-model.ts` 和测试，提供今日、先生、钱匣、信箱 / 档案的本地 mock view-model。
+   - 已新增 `apps/miniprogram/services/local-model.ts` 和测试，提供今日、先生、钱匣、信箱 / 档案的本地 mock view-model。
    - 今日、代笔先生、钱匣、信箱、档案页面已从占位内容改为读取本地模型。
-   - 已新增 `miniprogram/services/write-flow.ts` 和测试，提供本地五步写信流程、费用计算、挂号切换和投寄存根。
+   - 已新增 `apps/miniprogram/services/write-flow.ts` 和测试，提供本地五步写信流程、费用计算、挂号切换和投寄存根。
    - 写信页已支持口述、先生起稿、校改、投寄核算和本地投寄回执。
    - 写信 tab 切换不会重建本地 flow；口述变更会清空旧起稿 / 定稿，避免用旧正文投寄。
    - 本阶段仍不接 CloudBase、真实登录、真实同步或 AI 起稿。
@@ -254,7 +260,7 @@ Roadmap 日常查看方式：使用独立 Vue 工具 `roadmap-viewer/`，执行 
    - `pinganpi-ai` 复用既有 AI proxy handler；health 不依赖 MiMo env，非流式 `scribeDraft` 使用受控返回。
    - `pinganpi-sync` 复用既有 sync handler、redaction 和 CloudBase snapshot store；阶段 25 event runtime 使用 dev-only payload namespace，不读取旧 HTTP header token auth，同步侧微信可信身份推导顺延到阶段 27。
    - `pinganpi-account` / `pinganpi-pair` 复用 `account-pair-service`，新增账号关系 CloudBase store，集合名为 `pinganpi_accounts`、`pinganpi_households`、`pinganpi_members`、`pinganpi_invites`；创建邀请码响应不向客户端返回 `codeHash`。
-   - 已新增 `miniprogram/services/cloud-functions.ts` 封装 `wx.cloud.callFunction`；本阶段尚未接入页面。
+   - 已新增 `apps/miniprogram/services/cloud-functions.ts` 封装 `wx.cloud.callFunction`；本阶段尚未接入页面。
    - 已新增 `npm run cloudbase:build:miniprogram`、`npm run cloudbase:deploy:miniprogram`、`npm run cloudbase:smoke:miniprogram`。
    - `CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:miniprogram` 已通过，四个 event 云函数均部署成功。
    - `CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:smoke:miniprogram` 已通过，四个 event 云函数 health invoke 均通过；AI 起稿 smoke 默认跳过，未产生 provider 调用。
@@ -262,10 +268,10 @@ Roadmap 日常查看方式：使用独立 Vue 工具 `roadmap-viewer/`，执行 
 
 6. **阶段 26：小程序登录与双人关系真实闭环**
    - 状态：已完成工程闭环；真实微信手机号能力和短信验证码人工验证顺延到阶段 29。
-   - 新增 `server/miniprogram-functions/miniprogram-auth.ts`，从 CloudBase / 微信可信上下文读取 `openid` / `unionid` 并生成稳定 `authUid`。
+   - 新增 `services/miniprogram-functions/miniprogram-auth.ts`，从 CloudBase / 微信可信上下文读取 `openid` / `unionid` 并生成稳定 `authUid`。
    - `pinganpi-account` 新增 `loginByWechatPhone`、受控 `loginByDevPhone`、`getCurrentAccount` 和可信 `getActiveBinding`；手机号只来自服务端微信手机号 resolver 或显式 dev guard，不信任客户端伪造字段。
    - `pinganpi-pair` 的 `createHousehold`、`createInvite`、`joinByInvite` 和 `getActiveBinding` 均从当前可信账号推导，不再接收客户端 `accountId` 作为授权依据。
-   - 新增 `miniprogram/services/account-session.ts` 和 `account-cloud.ts`；小程序只缓存账号 / 绑定摘要，不保存验证码、token、secret 或邀请码 hash。
+   - 新增 `apps/miniprogram/services/account-session.ts` 和 `account-cloud.ts`；小程序只缓存账号 / 绑定摘要，不保存验证码、token、secret 或邀请码 hash。
    - 账号页接入微信手机号按钮、兜底入口、登录态恢复和登录后路由；关系页接入创建关系、生成邀请码、输入邀请码加入和本地会话刷新。
    - 微信小程序 AppID 关联、`open-type="getPhoneNumber"` 真机 code、手机号能力、短信真实发送和双手机号加入验证进入阶段 28 / 29。
 
@@ -292,7 +298,7 @@ Roadmap 日常查看方式：使用独立 Vue 工具 `roadmap-viewer/`，执行 
    - 本机优先使用 `.env.ai.local` 保存 MiMo env；该文件已被 Git 忽略，脚本会自动读取。真实 key 已在本机文件中配置，不要打印、发到聊天或提交到 Git。
    - Prompt 已补充约束：禁止 AI 编造日期、农历、干支或未给出的具体时间。
    - 本地代理已加入费用护栏：`PINGANPI_AI_MAX_ORAL_TEXT_CHARS` 默认 800，`MIMO_MAX_COMPLETION_TOKENS` 默认 900；这不能替代阶段 19 的云端预算和 MiMo 控制台费用告警。
-   - `server/ai-scribe-proxy/handler.ts` 是云端代理入口应复用的核心边界；不要在 CloudBase / 云函数入口复制一套校验、prompt 或错误处理。
+   - `services/ai-scribe-proxy/handler.ts` 是云端代理入口应复用的核心边界；不要在 CloudBase / 云函数入口复制一套校验、prompt 或错误处理。
    - 用户已购买腾讯云 CloudBase，云端落点确定为 CloudBase HTTP 云函数。
    - CloudBase 环境 ID 为 `pinganpi-d7gml1f6sbcc172ea`，区域为 `ap-shanghai`。
    - CloudBase 默认代理地址为 `https://pinganpi-d7gml1f6sbcc172ea-1258361524.ap-shanghai.app.tcloudbase.com/api`。客户端配置应使用完整 `/api` 前缀：`VITE_PINGANPI_AI_PROXY_URL=<该地址>`。
@@ -317,9 +323,9 @@ Roadmap 日常查看方式：使用独立 Vue 工具 `roadmap-viewer/`，执行 
 
 3. **阶段 15：云端与双人同步准备**
    - 阶段 15 已完成基础；设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-cloud-sync-design.md`，实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-cloud-sync-foundation.md`。
-   - 新同步模块位于 `src/app/sync/`：`remote-model.ts`、`remote-snapshot.ts`、`mock-remote-adapter.ts` 及对应测试。
+   - 新同步模块位于 `apps/legacy-capacitor/src/app/sync/`：`remote-model.ts`、`remote-snapshot.ts`、`mock-remote-adapter.ts` 及对应测试。
    - 定义远端数据模型，不把整个 `AppState` 当成唯一同步单位。
-   - 建立 sync adapter 边界，保持 `src/domain` 无云端依赖。
+   - 建立 sync adapter 边界，保持 `apps/legacy-capacitor/src/domain` 无云端依赖。
    - 设计 household / pair、members、wallets、ledger entries、draft papers、letters、postal records、sync cursors。
    - 远端模型显式包含 AI metadata，但不保存完整 prompt、原始 provider response 或敏感日志。
    - 预留邮政异常状态和记录类型，以及照片附件到达前不可访问的控制原则。
@@ -327,18 +333,18 @@ Roadmap 日常查看方式：使用独立 Vue 工具 `roadmap-viewer/`，执行 
    - 远端记录预留 `deviceId` / `createdByDeviceId` / `updatedByDeviceId`，避免双设备 id 冲突和同时间冲突决胜不稳定。
    - 远端实体实际按 `remoteId` 去重，`id` 仅保留原始本地 id；收件方 pull 未到达来信时拿不到正文、摘要、口述、起稿正文或 AI metadata。
    - 已使用本地 mock remote adapter 和测试验证双设备合并。
-   - 本阶段不接真实 CloudBase 数据库 SDK，不改 `src/domain`，不让远端同步绕过投寄、拆阅、钱匣和邮政状态机规则。
+   - 本阶段不接真实 CloudBase 数据库 SDK，不改 `apps/legacy-capacitor/src/domain`，不让远端同步绕过投寄、拆阅、钱匣和邮政状态机规则。
 
 4. **阶段 16：双人真实同步 MVP**
    - 阶段 16A 已完成；设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-dual-sync-mvp-design.md`，实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-dual-sync-mvp.md`。
    - 阶段 16B 工程实现已完成；设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-cloudbase-sync-design.md`，实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-cloudbase-sync-adapter.md`。
    - 已用本地 / 模拟远端完成 App 侧同步闭环，并已完成 CloudBase HTTP 同步代理真实云端 smoke。
    - 新增同步 runtime、本地同步元数据、浏览器本地 remote adapter、同步状态 UI 和本地双设备生命周期测试。
-   - 新增 `src/app/sync/http-remote-adapter.ts` 和 `src/app/sync/remote-adapter-factory.ts`；默认本地 adapter，配置 `VITE_PINGANPI_SYNC_PROXY_URL` 后才启用 HTTP 同步，配置 `VITE_PINGANPI_SYNC_MEMBER_TOKEN` 后由客户端发送 `X-Pinganpi-Sync-Token`。
-   - 新增 `server/sync-proxy/`：handler、CloudBase store、CloudBase event 入口、HTTP server 和 bootstrap；服务端用 `PINGANPI_SYNC_MEMBER_TOKENS` / `PINGANPI_SYNC_MEMBER_TOKENS_B64` 将 `householdId + memberId` 绑定到 token，缺失配置时同步请求 fail closed。
+   - 新增 `apps/legacy-capacitor/src/app/sync/http-remote-adapter.ts` 和 `apps/legacy-capacitor/src/app/sync/remote-adapter-factory.ts`；默认本地 adapter，配置 `VITE_PINGANPI_SYNC_PROXY_URL` 后才启用 HTTP 同步，配置 `VITE_PINGANPI_SYNC_MEMBER_TOKEN` 后由客户端发送 `X-Pinganpi-Sync-Token`。
+   - 新增 `services/sync-proxy/`：handler、CloudBase store、CloudBase event 入口、HTTP server 和 bootstrap；服务端用 `PINGANPI_SYNC_MEMBER_TOKENS` / `PINGANPI_SYNC_MEMBER_TOKENS_B64` 将 `householdId + memberId` 绑定到 token，缺失配置时同步请求 fail closed。
    - 服务端返回 snapshot 前必须过滤对方私有草稿，并 redaction 未到达来信正文 / 摘要 / 口述 / AI metadata，同时清空 `photoAttachments`，避免附件定位信息提前泄露。
    - CloudBase store 使用真实 SDK 写入形态 `doc.set(data)` / `transaction.set(docRef, data)`，写入数据不包含 `_id` 字段。
-   - 新增 `scripts/build-cloudbase-sync-proxy.ts`、`scripts/configure-cloudbase-sync-env.ts`、`scripts/smoke-cloudbase-sync-proxy.ts`、`npm run cloudbase:build:sync`、`CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:configure:sync-env`、`npm run cloudbase:smoke:sync`、`CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:deploy:sync`；生成目录 `cloudbase/functions/sync-proxy/` 被 Git 忽略。
+   - 新增 `tools/scripts/build-cloudbase-sync-proxy.ts`、`tools/scripts/configure-cloudbase-sync-env.ts`、`tools/scripts/smoke-cloudbase-sync-proxy.ts`、`npm run cloudbase:build:sync`、`CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:configure:sync-env`、`npm run cloudbase:smoke:sync`、`CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:deploy:sync`；生成目录 `cloudbase/functions/sync-proxy/` 被 Git 忽略。
    - CloudBase 集合 `pinganpi_sync_snapshots` 已创建；HTTP 路由使用显式 `/sync/health`、`/sync/pull`、`/sync/push`，不要使用 `/api/sync/*` 或 `/sync/*`。
    - CloudBase 同步集合默认名为 `pinganpi_sync_snapshots`，可用 `PINGANPI_SYNC_SNAPSHOT_COLLECTION` 覆盖。
    - 两台设备共享同一对通信关系的数据。
@@ -351,27 +357,27 @@ Roadmap 日常查看方式：使用独立 Vue 工具 `roadmap-viewer/`，执行 
 5. **阶段 17：手机号账号系统**
    - 阶段 17 是独立账号系统阶段；设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-phone-account-design.md`。
    - 阶段 17 工程闭环已完成；实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-account-pair-binding.md`。
-   - 新增 `src/app/account/account-model.ts` 和 `src/app/account/local-account-adapter.ts`：本地手机号 mock 登录、稳定 `PinganpiAccount`、登录态恢复、登出和完整手机号展示。
-   - 新增 `src/app/pages/AccountGatePage.vue`：未登录或未绑定时先进入账号簿，不进入写信主流程。
-   - 新增 `server/account-pair/account-pair-service.ts`：按受信任 `authUid` 确保同一平安批业务账号，并更新 `lastLoginAtIso`。
+   - 新增 `apps/legacy-capacitor/src/app/account/account-model.ts` 和 `apps/legacy-capacitor/src/app/account/local-account-adapter.ts`：本地手机号 mock 登录、稳定 `PinganpiAccount`、登录态恢复、登出和完整手机号展示。
+   - 新增 `apps/legacy-capacitor/src/app/pages/AccountGatePage.vue`：未登录或未绑定时先进入账号簿，不进入写信主流程。
+   - 新增 `services/account-pair/account-pair-service.ts`：按受信任 `authUid` 确保同一平安批业务账号，并更新 `lastLoginAtIso`。
    - 账号档案允许保存完整手机号，App 可展示当前登录手机号；不要把手机号复制到信件、邮政记录、AI metadata 或无关日志。
    - 真实 CloudBase 手机号验证码、token / refresh token 已在旧 App 阶段 19 收口到平台配置；小程序迁移后的账号恢复验证顺延到阶段 26 / 29。
 
 6. **阶段 18：双人绑定与同步授权**
    - 设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-pair-binding-design.md`。
    - 阶段 18 工程闭环已完成；实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-account-pair-binding.md`。
-   - 新增 `src/app/account/local-pair-binding-adapter.ts`：本地创建 household / pair、24 小时一次性邀请码、输入即加入、唯一 active household、自邀 / 过期 / 已用 / 满员拒绝。
-   - 新增 `src/app/account/account-sync-config.ts`：已有绑定时用绑定的 household / member 驱动现有浏览器同步命名空间；无绑定时保留阶段 16 URL 参数调试。
-   - `src/App.vue` 已接入账号 / 绑定入口；创建或加入关系后刷新一次，让同步 runtime 以正确 household / member 启动。
-   - `server/sync-proxy/handler.ts` 已支持账号成员授权配置：服务端可从可信 auth uid 映射出 `householdId/memberId`，并覆盖客户端传入值；手工 member token 仅保留为阶段 16B 开发 fallback。
-   - `server/sync-proxy/runtime-auth.ts` 支持 `PINGANPI_SYNC_ACCOUNT_BINDINGS` / `PINGANPI_SYNC_ACCOUNT_BINDINGS_B64` 和 `PINGANPI_SYNC_TRUSTED_AUTH_UID_HEADER`。
+   - 新增 `apps/legacy-capacitor/src/app/account/local-pair-binding-adapter.ts`：本地创建 household / pair、24 小时一次性邀请码、输入即加入、唯一 active household、自邀 / 过期 / 已用 / 满员拒绝。
+   - 新增 `apps/legacy-capacitor/src/app/account/account-sync-config.ts`：已有绑定时用绑定的 household / member 驱动现有浏览器同步命名空间；无绑定时保留阶段 16 URL 参数调试。
+   - `apps/legacy-capacitor/src/App.vue` 已接入账号 / 绑定入口；创建或加入关系后刷新一次，让同步 runtime 以正确 household / member 启动。
+   - `services/sync-proxy/handler.ts` 已支持账号成员授权配置：服务端可从可信 auth uid 映射出 `householdId/memberId`，并覆盖客户端传入值；手工 member token 仅保留为阶段 16B 开发 fallback。
+   - `services/sync-proxy/runtime-auth.ts` 支持 `PINGANPI_SYNC_ACCOUNT_BINDINGS` / `PINGANPI_SYNC_ACCOUNT_BINDINGS_B64` 和 `PINGANPI_SYNC_TRUSTED_AUTH_UID_HEADER`。
    - 不做独立设备授权、设备同步 token 签发、token 轮换或设备撤销；`deviceId` 只用于本地安装实例、同步 cursor、冲突标记和调试。
    - 不做多人关系、社交好友系统或现代在线状态。
 
 7. **阶段 19：外部平台人工配置收口**
    - 统一处理需要用户介入的控制台、验证码、真实环境和费用事项。
    - 状态：已收口；执行计划为 `docs/superpowers/plans/2026-05-24-pinganpi-external-platform-closure.md`。
-   - 已新增 `scripts/audit-cloudbase-stage19.ts` 和 `npm run cloudbase:audit:stage19`，用于脱敏审计 CloudBase 用量和函数状态；不要再直接把 `cloudbase fn detail` 原始输出发给用户，因为它会明文返回 env。
+   - 已新增 `tools/scripts/audit-cloudbase-stage19.ts` 和 `npm run cloudbase:audit:stage19`，用于脱敏审计 CloudBase 用量和函数状态；不要再直接把 `cloudbase fn detail` 原始输出发给用户，因为它会明文返回 env。
    - 当前审计基线：CloudBase 计费周期 `2026-05-23 ~ 2026-06-23`，用量 `1.67 / 3000 credits`；`ai-scribe-proxy` 与 `sync-proxy` 均为 `Active / Available`，运行时 `Nodejs20.19`，PublicNet `ENABLE`，触发器 `0`，VPC 未配置，角色均为 `TCB_QcsRole`。
    - 用户确认当前 CloudBase 套餐 / 版本为腾讯云开发免费体验版；官方价格文档显示免费体验环境提供 `3000 点/月`，单次可续费 6 个月，不支持自动续费；免费环境可购买 Token 点资源包，暂不支持加购扩展资源包、大促资源包和开启按量付费。
    - 用户确认当前策略是不启用 CloudBase 按量付费，仅使用套餐内资源点；若后续资源不够再升级套餐。因此阶段 19 不把预算管理作为阻塞项；后续只要升级套餐、转付费、开启按量付费或新增腾讯云资源，必须重新配置预算 / 费用提醒检查。
@@ -438,8 +444,8 @@ npm run typecheck
 
 ```bash
 npm run build
-npx cap sync
-npx cap doctor
+npm run cap:sync
+npm run cap:doctor
 ```
 
 涉及依赖时运行：
@@ -457,19 +463,19 @@ npm run miniprogram:check
 WECHAT_DEVTOOLS_PORT=<port> npm run miniprogram:devtools:smoke
 WECHAT_DEVTOOLS_PORT=<port> npm run miniprogram:devtools:flow
 npm run cloudbase:build:miniprogram
-npm test -- miniprogram/config/env.test.ts
-npm test -- miniprogram/services/domain-summary.test.ts
-npm test -- miniprogram/services/local-model.test.ts
-npm test -- miniprogram/services/write-flow.test.ts
-npm test -- miniprogram/services/cloud-functions.test.ts
-npm test -- server/miniprogram-functions/pinganpi-ai.test.ts
-npm test -- server/miniprogram-functions/pinganpi-sync.test.ts
-npm test -- server/miniprogram-functions/pinganpi-account.test.ts
-npm test -- server/miniprogram-functions/pinganpi-pair.test.ts
-npm test -- scripts/smoke-cloudbase-miniprogram-functions.test.ts
+npm test -- apps/miniprogram/config/env.test.ts
+npm test -- apps/miniprogram/services/domain-summary.test.ts
+npm test -- apps/miniprogram/services/local-model.test.ts
+npm test -- apps/miniprogram/services/write-flow.test.ts
+npm test -- apps/miniprogram/services/cloud-functions.test.ts
+npm test -- services/miniprogram-functions/pinganpi-ai.test.ts
+npm test -- services/miniprogram-functions/pinganpi-sync.test.ts
+npm test -- services/miniprogram-functions/pinganpi-account.test.ts
+npm test -- services/miniprogram-functions/pinganpi-pair.test.ts
+npm test -- tools/scripts/smoke-cloudbase-miniprogram-functions.test.ts
 ```
 
-修改 `shared/domain/` 后必须运行 `npm run miniprogram:sync-shared` 更新小程序根内副本，并用 `npm run miniprogram:check-shared` 确认副本未陈旧；该检查会动态发现新增 `.ts` 领域文件。
+修改 `packages/domain/src/` 后必须运行 `npm run miniprogram:sync-shared` 更新小程序根内副本，并用 `npm run miniprogram:check-shared` 确认副本未陈旧；该检查会动态发现新增 `.ts` 领域文件。
 
 微信开发者工具自动化依赖 `设置 -> 安全设置 -> 服务端口`。当前已验证端口为 `62046`；端口变化时改用新的 `WECHAT_DEVTOOLS_PORT`，不要硬编码到源码。
 
@@ -479,10 +485,10 @@ npm test -- scripts/smoke-cloudbase-miniprogram-functions.test.ts
 
 ## 小程序调试提示
 
-- 用微信开发者工具打开 `miniprogram/`。
+- 用微信开发者工具打开 `apps/miniprogram/`。
 - 小程序本地开发默认连接 CloudBase `dev` 环境。
 - 小程序端通过 `wx.cloud.callFunction` 调用云函数，不依赖本地 proxy 才能完成主流程。
-- 若开发者工具控制台报 `app.json: 未找到 ["pages"][0] 对应的 ...index.js 文件`，先检查 `miniprogram/project.config.json` 和本机 `miniprogram/project.private.config.json` 是否启用了 `setting.useCompilerPlugins: ["typescript"]`，然后关闭并重新打开项目。
+- 若开发者工具控制台报 `app.json: 未找到 ["pages"][0] 对应的 ...index.js 文件`，先检查 `apps/miniprogram/project.config.json` 和本机 `apps/miniprogram/project.private.config.json` 是否启用了 `setting.useCompilerPlugins: ["typescript"]`，然后关闭并重新打开项目。
 - `prd` 只用于审核、发布和线上 smoke；部署生产必须显式指定环境。
 - AppID、手机号能力、隐私保护指引、CloudBase 环境关联和审核发布需要用户在微信公众平台 / 微信开发者工具 / 腾讯云控制台确认。
 
@@ -490,8 +496,8 @@ npm test -- scripts/smoke-cloudbase-miniprogram-functions.test.ts
 
 - 浏览器优先：`npm run dev`。
 - 不使用 live reload 时，Web 改动进入原生壳前必须执行 `npm run cap:sync`。
-- iOS 调试入口：`npx cap open ios`。
-- Android 调试入口：`npx cap open android`。
+- iOS 调试入口：`npm run cap:open:ios`。
+- Android 调试入口：`npm run cap:open:android`。
 - iOS WebView console 用 Safari Web Inspector。
 - Android WebView console 用 Chrome `chrome://inspect/#devices`。
 

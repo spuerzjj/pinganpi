@@ -14,12 +14,13 @@
     "types": ["node", "vite/client"]
   },
   "include": [
-    "src/**/*.ts",
-    "src/**/*.vue",
-    "server/**/*.ts",
-    "shared/**/*.ts",
-    "vite.config.ts",
-    "vitest.config.ts",
-    "capacitor.config.ts"
+    "apps/legacy-capacitor/src/**/*.ts",
+    "apps/legacy-capacitor/src/**/*.vue",
+    "apps/legacy-capacitor/vite.config.ts",
+    "capacitor.config.ts",
+    "services/**/*.ts",
+    "packages/**/*.ts",
+    "tools/scripts/**/*.ts",
+    "vitest.config.ts"
   ]
 }

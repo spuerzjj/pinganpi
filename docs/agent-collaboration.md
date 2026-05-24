@@ -46,11 +46,11 @@ git worktree add .worktrees/<task-name> -b codex/<task-name>
 
 - `AGENTS.md`
 - `docs/pinganpi-roadmap.md`
-- `roadmap-viewer/src/roadmap-data.json`
+- `tools/roadmap-viewer/src/roadmap-data.json`
 - `package.json`
 - `package-lock.json`
-- `miniprogram/app.json`
-- `miniprogram/project.config.json`
+- `apps/miniprogram/app.json`
+- `apps/miniprogram/project.config.json`
 
 子 agent 如果必须修改这些文件，需要在交付说明中明确原因、影响和验证命令。
 
@@ -77,6 +77,7 @@ git worktree add .worktrees/<task-name> -b codex/<task-name>
 ```bash
 npm test
 npm run miniprogram:check
+npm run structure:audit
 git diff --check
 ```
 
@@ -92,7 +93,7 @@ npm run build
 ```bash
 npm run miniprogram:sync-shared
 npm run miniprogram:check-shared
-npm test -- src/domain
+npm test -- apps/legacy-capacitor/src/domain
 ```
 
 小程序页面或配置变化：
@@ -115,7 +116,7 @@ git diff --check
 Roadmap Viewer 变化：
 
 ```bash
-npm test -- roadmap-viewer/src/roadmap.test.ts
+npm test -- tools/roadmap-viewer/src/roadmap.test.ts
 npm run roadmap:build
 ```
 
@@ -166,5 +167,5 @@ worktree：
 
 - 一份 `docs/governance-reviews/YYYY-MM-DD-*.md` 记录。
 - 必要时更新 `AGENTS.md`。
-- 必要时更新 `docs/pinganpi-roadmap.md`、`roadmap-viewer/src/roadmap-data.json` 和 `AGENTS.md`。
+- 必要时更新 `docs/pinganpi-roadmap.md`、`tools/roadmap-viewer/src/roadmap-data.json` 和 `AGENTS.md`。
 - 明确下一阶段是否已有可执行计划；没有则补齐计划或标记阻塞。

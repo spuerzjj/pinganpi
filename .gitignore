@@ -2,7 +2,8 @@
 .worktrees/
 node_modules/
 dist/
-roadmap-viewer/dist/
+apps/legacy-capacitor/dist/
+tools/roadmap-viewer/dist/
 coverage/
 .superpowers/
 cloudbase/functions/
@@ -14,8 +15,9 @@ cloudbase/functions/
 
 # Native IDE and package-manager state
 android/.idea/
-ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
+apps/legacy-capacitor/android/.idea/
+apps/legacy-capacitor/ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
 
 # WeChat Mini Program local IDE state
-miniprogram/project.private.config.json
-miniprogram/miniprogram_npm/
+apps/miniprogram/project.private.config.json
+apps/miniprogram/miniprogram_npm/

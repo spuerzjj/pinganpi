@@ -3,11 +3,11 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     include: [
-      "src/**/*.test.ts",
-      "server/**/*.test.ts",
-      "scripts/**/*.test.ts",
-      "miniprogram/**/*.test.ts",
-      "roadmap-viewer/**/*.test.ts"
+      "apps/legacy-capacitor/src/**/*.test.ts",
+      "apps/miniprogram/**/*.test.ts",
+      "services/**/*.test.ts",
+      "tools/scripts/**/*.test.ts",
+      "tools/roadmap-viewer/**/*.test.ts"
     ],
     globals: false
   }

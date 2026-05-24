@@ -2,13 +2,15 @@
 
 > **供后续代理使用：** 本文件记录《平安批》从 Capacitor 移动 App 主线转向微信原生小程序主线后的当前状态。后续开始实现前，应先阅读本文件确认方向、边界和验收标准。
 
-**日常可视化入口：** `npm run roadmap:dev` 启动独立 Roadmap Viewer。数据源为 `roadmap-viewer/src/roadmap-data.json`。
+**日常可视化入口：** `npm run roadmap:dev` 启动独立 Roadmap Viewer。数据源为 `tools/roadmap-viewer/src/roadmap-data.json`。
 
 **旧静态看板：** `docs/pinganpi-roadmap-dashboard.html` 已删除，不再维护第二套静态看板。
 
 **当前分支：** `codex/wechat-miniprogram-pivot`
 
 **当前开发基线：** 阶段 1-19 的 Capacitor / Vue App 工程能力已形成完整业务参考：领域层、写信流程、AI 起稿、流式起稿、CloudBase AI 代理、同步模型、CloudBase 同步代理、手机号账号本地闭环、双人绑定本地 / 服务端边界和外部平台配置收口均已完成对应验证。2026-05-24 用户确认重大方向调整：目标运行环境从 iOS / Android App 改为微信小程序并需要上架；新主线采用微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境；手机号仍是《平安批》业务账号主键；微信一键获取手机号为默认登录入口，短信验证码保留兜底；本地开发和线上都优先走 CloudBase 云函数，本地 proxy 降级为诊断工具。阶段 21 已完成迁移设计与重基线；阶段 22 已完成小程序工程基座；阶段 23 已完成共享领域核心迁移；阶段 24 已完成小程序本地核心界面；阶段 25 已完成小程序 CloudBase dev 主链路；阶段 26 已完成小程序登录与双人关系工程闭环：账号页接入微信手机号 code 登录和受控兜底入口，关系页接入创建关系、生成邀请码、输入邀请码加入，小程序本地会话只缓存账号 / 绑定摘要，服务端账号和关系云函数改为从可信微信 / CloudBase 上下文推导账号身份，不再信任客户端传入的 `authUid`、`phoneNumber` 或 `accountId`。下一步进入阶段 27：小程序 AI 与同步体验补齐，实施计划为 `docs/superpowers/plans/2026-05-25-pinganpi-miniprogram-ai-sync-experience.md`。2026-05-25 已完成一次治理审查并固化 worktree / 多 agent 协作规则，记录为 `docs/governance-reviews/2026-05-25-project-governance-review.md` 和 `docs/agent-collaboration.md`。迁移设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`，阶段 22 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md`，阶段 23 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-shared-domain-core.md`，阶段 24 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-local-ui.md`，阶段 25 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-cloudbase-dev.md`，阶段 26 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-login-pair.md`。精确提交以 `git log --oneline --decorate -5` 为准。
+
+**工程结构基线：** 2026-05-25 已完成工程目录结构治理：小程序主线位于 `apps/miniprogram/`，旧 Capacitor / Vue App 归档到 `apps/legacy-capacitor/`，共享领域位于 `packages/domain/src/`，服务端模块位于 `services/`，脚本和 Roadmap Viewer 位于 `tools/`。结构边界说明见 `docs/project-structure.md`，治理记录见 `docs/governance-reviews/2026-05-25-project-structure-governance.md`，自动审计命令为 `npm run structure:audit`。
 
 **工作区策略：** 主目录 `/Users/zhujunjie/code/pinganpi` 只作为基线查看、集成和创建 worktree 的入口。所有开发、文档和配置改动都必须在独立 worktree 中完成。
 
@@ -20,7 +22,7 @@
 
 状态：已完成。
 
-实现位置：`shared/domain/`；`src/domain/` 保留兼容 re-export，旧 App 和旧测试入口仍可继续使用。
+实现位置：`packages/domain/src/`；`apps/legacy-capacitor/src/domain/` 保留兼容 re-export，旧 App 和旧测试入口仍可继续使用。
 
 已实现：
 
@@ -33,11 +35,11 @@
 
 现有测试覆盖：
 
-- `src/domain/time.test.ts`
-- `src/domain/money.test.ts`
-- `src/domain/scribes.test.ts`
-- `src/domain/wallet.test.ts`
-- `src/domain/postal.test.ts`
+- `apps/legacy-capacitor/src/domain/time.test.ts`
+- `apps/legacy-capacitor/src/domain/money.test.ts`
+- `apps/legacy-capacitor/src/domain/scribes.test.ts`
+- `apps/legacy-capacitor/src/domain/wallet.test.ts`
+- `apps/legacy-capacitor/src/domain/postal.test.ts`
 
 ### 阶段 2：Capacitor 移动壳层
 
@@ -45,7 +47,7 @@
 
 已实现：
 
-- `ios/` 和 `android/` 下的 Capacitor 原生壳。
+- `apps/legacy-capacitor/ios/` 和 `apps/legacy-capacitor/android/` 下的 Capacitor 原生壳。
 - Vue 3 + Vite App 入口。
 - Tailwind CSS 全局样式。
 - Varlet 组件注册。
@@ -61,16 +63,16 @@
 
 关键文件：
 
-- `src/App.vue`
-- `src/main.ts`
-- `src/styles.css`
-- `src/app/mock-data.ts`
-- `src/app/app-model.ts`
-- `src/app/app-model.test.ts`
-- `src/app/pages/`
-- `capacitor.config.ts`
+- `apps/legacy-capacitor/src/App.vue`
+- `apps/legacy-capacitor/src/main.ts`
+- `apps/legacy-capacitor/src/styles.css`
+- `apps/legacy-capacitor/src/app/mock-data.ts`
+- `apps/legacy-capacitor/src/app/app-model.ts`
+- `apps/legacy-capacitor/src/app/app-model.test.ts`
+- `apps/legacy-capacitor/src/app/pages/`
+- `capacitor.config.ts`（根目录薄路由配置，指向 `apps/legacy-capacitor/`）
 
-重要约束：UI 层没有重复实现时间、钱、代笔先生、钱匣、邮资、传递窗口或信件状态规则，而是调用 `src/domain`。
+重要约束：UI 层没有重复实现时间、钱、代笔先生、钱匣、邮资、传递窗口或信件状态规则，而是调用 `apps/legacy-capacitor/src/domain`。
 
 ### 阶段 3：原生调试环境
 
@@ -102,8 +104,8 @@
 
 当前测试覆盖：
 
-- `src/app/app-state.test.ts`
-- `src/app/app-model.test.ts`
+- `apps/legacy-capacitor/src/app/app-state.test.ts`
+- `apps/legacy-capacitor/src/app/app-model.test.ts`
 
 ### 阶段 5：写信主流程
 
@@ -111,7 +113,7 @@
 
 已实现：
 
-- 写信服务 `src/app/write-letter-service.ts`，以纯函数方式接收 `AppState` 并返回新状态。
+- 写信服务 `apps/legacy-capacitor/src/app/write-letter-service.ts`，以纯函数方式接收 `AppState` 并返回新状态。
 - 可选择当天在场代笔先生或亲笔。
 - 可输入口述、生成先生初稿、手工校改正文。
 - 可保存本地草稿到 `draftPapers`。
@@ -123,8 +125,8 @@
 
 当前测试覆盖：
 
-- `src/app/write-letter-service.test.ts`
-- `src/app/app-model.test.ts`
+- `apps/legacy-capacitor/src/app/write-letter-service.test.ts`
+- `apps/legacy-capacitor/src/app/app-model.test.ts`
 
 ### 阶段 6：模板代书引擎
 
@@ -132,7 +134,7 @@
 
 已实现：
 
-- 新增 `src/app/scribe-template-engine.ts` 作为可替换的 template engine 边界。
+- 新增 `apps/legacy-capacitor/src/app/scribe-template-engine.ts` 作为可替换的 template engine 边界。
 - `write-letter-service` 已改为调用模板引擎，不再内置代书模板 switch。
 - 模板引擎输入包含 oral text、scribe、sender / recipient、城市、letter type、reply context、emotion tags。
 - 模板引擎输出包含 scribe draft、read-aloud text、signature、draft source、generation metadata。
@@ -142,8 +144,8 @@
 
 当前测试覆盖：
 
-- `src/app/scribe-template-engine.test.ts`
-- `src/app/write-letter-service.test.ts`
+- `apps/legacy-capacitor/src/app/scribe-template-engine.test.ts`
+- `apps/legacy-capacitor/src/app/write-letter-service.test.ts`
 
 ### 阶段 7：写信分步流程
 
@@ -159,7 +161,7 @@
 
 当前测试覆盖：
 
-- `src/app/write-letter-wizard.test.ts`
+- `apps/legacy-capacitor/src/app/write-letter-wizard.test.ts`
 
 ### 阶段 8：草稿管理 / 信纸匣
 
@@ -167,7 +169,7 @@
 
 已实现：
 
-- 新增 `src/app/draft-paper-service.ts`，统一处理草稿新增、覆盖保存、删除和从草稿投寄。
+- 新增 `apps/legacy-capacitor/src/app/draft-paper-service.ts`，统一处理草稿新增、覆盖保存、删除和从草稿投寄。
 - 写信页右栏新增“信纸匣”，展示草稿列表、更新时间、收件人、写法和状态。
 - 支持从草稿续写，并恢复口述、先生初稿、校改正文和写法。
 - 支持保存新草稿，也支持覆盖当前草稿，不重复新增。
@@ -178,10 +180,10 @@
 
 当前测试覆盖：
 
-- `src/app/draft-paper-service.test.ts`
-- `src/app/write-letter-wizard.test.ts`
-- `src/app/write-letter-service.test.ts`
-- `src/app/app-model.test.ts`
+- `apps/legacy-capacitor/src/app/draft-paper-service.test.ts`
+- `apps/legacy-capacitor/src/app/write-letter-wizard.test.ts`
+- `apps/legacy-capacitor/src/app/write-letter-service.test.ts`
+- `apps/legacy-capacitor/src/app/app-model.test.ts`
 
 ### 阶段 9：信箱与真实时间送达推进
 
@@ -200,11 +202,11 @@
 
 当前测试覆盖：
 
-- `src/domain/postal.test.ts`
-- `src/app/postal-progress-service.test.ts`
-- `src/app/mailbox-service.test.ts`
-- `src/app/app-state.test.ts`
-- `src/app/app-model.test.ts`
+- `apps/legacy-capacitor/src/domain/postal.test.ts`
+- `apps/legacy-capacitor/src/app/postal-progress-service.test.ts`
+- `apps/legacy-capacitor/src/app/mailbox-service.test.ts`
+- `apps/legacy-capacitor/src/app/app-state.test.ts`
+- `apps/legacy-capacitor/src/app/app-model.test.ts`
 
 ## 路线图总览
 
@@ -237,8 +239,8 @@
 | 19 | 外部平台人工配置收口 | 已收口 | CloudBase Auth HTTP API、账号 / 关系集合命名、短信真实可达、短信资源包、免费体验版费用边界、预算暂缓、默认角色接受、MiMo 暂缓和 HTTP 路由 smoke 已确认。 |
 | 20 | 旧 App 完整人工验证引导 | 暂存 | 已新增原 iOS / Android App 完整人工验证计划；小程序迁移后不作为当前主线执行。 |
 | 21 | 微信小程序迁移设计与重基线 | 已完成 | 新增小程序迁移设计，更新 roadmap / dashboard / AGENTS，并提交阶段 22 实施计划。 |
-| 22 | 小程序工程基座 | 已完成基础 | 已新增 `miniprogram/`、TypeScript 检查、页面骨架、微信开发者工具配置和 `dev` CloudBase 环境入口。 |
-| 23 | 共享领域核心迁移 | 已完成基础 | 已新增 `shared/domain/` 作为领域规则真实实现，`src/domain/` 保留兼容 re-export，小程序根内副本和一致性检查已建立，今日页已使用共享领域摘要。 |
+| 22 | 小程序工程基座 | 已完成基础 | 已新增 `apps/miniprogram/`、TypeScript 检查、页面骨架、微信开发者工具配置和 `dev` CloudBase 环境入口。 |
+| 23 | 共享领域核心迁移 | 已完成基础 | 已新增 `packages/domain/src/` 作为领域规则真实实现，`apps/legacy-capacitor/src/domain/` 保留兼容 re-export，小程序根内副本和一致性检查已建立，今日页已使用共享领域摘要。 |
 | 24 | 小程序本地核心界面 | 已完成基础 | 今日、写信、先生、钱匣、信箱 / 档案已接入本地 mock view-model；写信页已有本地 5 步流程，tab 切换保留进度，口述变更会重新起稿。 |
 | 25 | 小程序 CloudBase dev 主链路 | 已完成 dev smoke | 已新增并部署账号、绑定、同步、AI event 云函数入口，小程序 cloud function adapter，构建 / 部署 / smoke 脚本；dev health smoke 已通过。 |
 | 26 | 小程序登录与双人关系真实闭环 | 已完成工程闭环 | 账号页接入微信手机号 code 登录和受控兜底入口；关系页接入创建关系、邀请码和加入；服务端可信推导账号，不信任客户端身份字段。 |
@@ -275,10 +277,22 @@
 
 ## 验证基线
 
+工程结构治理新增验证记录：
+
+- `npm run structure:audit`：通过；确认 `apps/`、`packages/`、`services/`、`tools/` 和 `docs/` 分区存在，旧顶层目录 / 入口不存在，Roadmap Viewer 数据源和 Capacitor 根路由配置正确。
+- `npm test`：通过，59 个测试文件，395 个测试通过。
+- `npm run miniprogram:check`：通过；包含共享副本一致性检查和小程序 typecheck。
+- `npm run typecheck`：通过。
+- `npm run cap:sync`：通过；`npm run build` 在该命令内重新执行并通过，保留 Varlet 首包超过 500 KB 的既有提示；Android / iOS Web assets 已同步到 `apps/legacy-capacitor/`。
+- `npm run cap:doctor`：通过；iOS 和 Android 均返回 success。
+- `npm run roadmap:build`：通过。
+- `npm run cloudbase:build:miniprogram`：通过。
+- `git diff --check`：通过。
+
 微信开发者工具自动化新增验证记录：
 
 - 控制台已确认历史阻断错误为 `app.json: 未找到 ["pages"][0] 对应的 pages/account/index.js 文件`；根因是微信开发者工具未启用 TypeScript 编译插件，导致页面 `.ts` 入口被按 `.js` 查找。
-- `miniprogram/project.config.json` 已显式配置 `setting.useCompilerPlugins: ["typescript"]`；本机 `miniprogram/project.private.config.json` 也需保持同项配置，避免私有配置覆盖后复现该错误。
+- `apps/miniprogram/project.config.json` 已显式配置 `setting.useCompilerPlugins: ["typescript"]`；本机 `apps/miniprogram/project.private.config.json` 也需保持同项配置，避免私有配置覆盖后复现该错误。
 - 重新打开并编译项目后，开发者工具 Console 不再出现 app.json 阻断错误；剩余为 WeChatLib、LazyCodeLoading 和 HarmonyOS `getSystemInfo` 兼容提示。
 - `WECHAT_DEVTOOLS_PORT=62046 npm run miniprogram:devtools:smoke`：通过；自动打开账号页，输入无效手机号 `123`，点击 `使用兜底入口`，断言错误文案为 `请填写 11 位中国大陆手机号。`。
 - `WECHAT_DEVTOOLS_PORT=62046 npm run miniprogram:devtools:flow`：通过；覆盖账号、关系、今日、写信、代笔先生、钱匣、信箱和档案；写信场景停在投寄核算页，不点击本地投寄。
@@ -286,26 +300,26 @@
 
 Roadmap Viewer 新增验证记录：
 
-- `npm test -- roadmap-viewer/src/roadmap.test.ts`：通过，1 个测试通过。
+- `npm test -- tools/roadmap-viewer/src/roadmap.test.ts`：通过，1 个测试通过。
 - `npm run roadmap:build`：通过，独立 Vue viewer 可完成类型检查和 Vite 构建。
-- `npm run roadmap:dev -- --port 5190`：通过，浏览器验证 `http://localhost:5190/` 能显示 `平安批 Roadmap`、阶段 27 和 `389 tests`；`/docs/pinganpi-roadmap.md` 文档链接返回 200。
-- 2026-05-25 已将结构化数据源移入 `roadmap-viewer/src/roadmap-data.json`，旧 `docs/pinganpi-roadmap-dashboard.html` 已删除。
+- `npm run roadmap:dev -- --port 5190`：通过，浏览器验证 `http://localhost:5190/` 能显示 `平安批 Roadmap`、阶段 27 和当时的测试基线；`/docs/pinganpi-roadmap.md` 文档链接返回 200。
+- 2026-05-25 已将结构化数据源移入 `tools/roadmap-viewer/src/roadmap-data.json`，旧 `docs/pinganpi-roadmap-dashboard.html` 已删除。
 
 最近阶段 26 小程序登录与双人关系工程闭环新增验证记录：
 
-- `npm test -- server/miniprogram-functions/miniprogram-auth.test.ts server/miniprogram-functions/pinganpi-account.test.ts server/miniprogram-functions/pinganpi-pair.test.ts miniprogram/services/account-session.test.ts miniprogram/services/account-cloud.test.ts`：通过，5 个测试文件，23 个测试通过。
+- `npm test -- services/miniprogram-functions/miniprogram-auth.test.ts services/miniprogram-functions/pinganpi-account.test.ts services/miniprogram-functions/pinganpi-pair.test.ts apps/miniprogram/services/account-session.test.ts apps/miniprogram/services/account-cloud.test.ts`：通过，5 个测试文件，23 个测试通过。
 - `npm run cloudbase:build:miniprogram`：通过，生成 `pinganpi-ai`、`pinganpi-sync`、`pinganpi-account`、`pinganpi-pair` 四个 event 云函数包；生成目录仍由 `.gitignore` 排除。
 - `CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:miniprogram`：阶段 26 账号 / 关系可信身份改造后通过，四个 event 云函数均部署成功。
 - `CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:smoke:miniprogram`：阶段 26 账号 / 关系可信身份改造后通过，四个 event 云函数 health invoke 均通过；AI 起稿 smoke 默认跳过，未产生 provider 调用。
 - `npm run miniprogram:check`：通过；包含共享副本一致性检查和小程序 typecheck。
-- `npm test`：通过，58 个测试文件，389 个测试通过。
+- `npm test`：阶段 26 当时通过，58 个测试文件，389 个测试通过；工程结构治理后最新全量基线为 59 个测试文件、395 个测试通过。
 - `npm run typecheck`：通过。
 - `git diff --check`：通过。
 
 阶段 24 小程序本地核心界面验证记录：
 
-- `npm test -- miniprogram/services/local-model.test.ts`：通过，4 个测试通过；覆盖今日、先生、钱匣、信箱 / 档案 view-model。
-- `npm test -- miniprogram/services/write-flow.test.ts`：通过，6 个测试通过；覆盖本地写信费用、起稿、校改、挂号、投寄存根和口述变更后旧稿失效。
+- `npm test -- apps/miniprogram/services/local-model.test.ts`：通过，4 个测试通过；覆盖今日、先生、钱匣、信箱 / 档案 view-model。
+- `npm test -- apps/miniprogram/services/write-flow.test.ts`：通过，6 个测试通过；覆盖本地写信费用、起稿、校改、挂号、投寄存根和口述变更后旧稿失效。
 - `npm run miniprogram:check`：通过；包含共享副本一致性检查和小程序 typecheck。
 - `npm test`：通过，46 个测试文件，343 个测试通过。
 - `npm run typecheck`：通过。
@@ -313,10 +327,10 @@ Roadmap Viewer 新增验证记录：
 
 阶段 23 共享领域核心迁移验证记录：
 
-- `npm test -- src/domain`：通过，5 个测试文件，85 个测试通过；旧领域测试通过 `src/domain` re-export 验证共享核心行为未变。
-- `npm run miniprogram:check-shared`：通过；动态扫描 `shared/domain/*.ts` 并确认 `miniprogram/shared/domain/` 与其一致，避免小程序跨根 import 和副本陈旧。
-- `npm test -- miniprogram/services/domain-summary.test.ts`：通过，1 个测试通过；确认小程序可通过根内副本使用共享规则。
-- `npm test -- scripts/sync-miniprogram-shared-domain.test.ts`：通过，4 个测试通过；覆盖同步、缺失 / 变更检测、多余文件检测和新增源文件检测。
+- `npm test -- apps/legacy-capacitor/src/domain`：通过，5 个测试文件，85 个测试通过；旧领域测试通过 `apps/legacy-capacitor/src/domain` re-export 验证共享核心行为未变。
+- `npm run miniprogram:check-shared`：通过；动态扫描 `packages/domain/src/*.ts` 并确认 `apps/miniprogram/shared/domain/` 与其一致，避免小程序跨根 import 和副本陈旧。
+- `npm test -- apps/miniprogram/services/domain-summary.test.ts`：通过，1 个测试通过；确认小程序可通过根内副本使用共享规则。
+- `npm test -- tools/scripts/sync-miniprogram-shared-domain.test.ts`：通过，4 个测试通过；覆盖同步、缺失 / 变更检测、多余文件检测和新增源文件检测。
 - `npm run miniprogram:check`：通过；包含共享副本一致性检查和小程序 typecheck。
 - `npm test`：通过，44 个测试文件，333 个测试通过。
 - `npm run typecheck`：通过。
@@ -324,8 +338,8 @@ Roadmap Viewer 新增验证记录：
 
 阶段 22 小程序工程基座验证记录：
 
-- `npm test -- miniprogram/config/env.test.ts`：通过，1 个测试文件，3 个测试通过；确认当前小程序默认使用 `dev` CloudBase 环境 `pinganpi-d7gml1f6sbcc172ea`，`prd` 仍为空等待用户创建。
-- `npm test -- miniprogram/project-config.test.ts`：覆盖微信开发者工具 TypeScript 编译插件配置，避免页面 `.ts` 入口被按 `.js` 查找。
+- `npm test -- apps/miniprogram/config/env.test.ts`：通过，1 个测试文件，3 个测试通过；确认当前小程序默认使用 `dev` CloudBase 环境 `pinganpi-d7gml1f6sbcc172ea`，`prd` 仍为空等待用户创建。
+- `npm test -- apps/miniprogram/project-config.test.ts`：覆盖微信开发者工具 TypeScript 编译插件配置，避免页面 `.ts` 入口被按 `.js` 查找。
 - `npm run miniprogram:typecheck`：通过，小程序 TypeScript 入口、环境配置和页面骨架可检查。
 - `npm test`：42 个测试文件，328 个测试通过。
 - `npm run typecheck`：通过。
@@ -333,12 +347,12 @@ Roadmap Viewer 新增验证记录：
 
 阶段 17 / 18 账号与双人绑定工程闭环验证记录：
 
-- 新增聚焦验证：`src/app/account/local-account-adapter.test.ts`、`src/app/account/local-pair-binding-adapter.test.ts`、`src/app/account/account-sync-config.test.ts`、`server/account-pair/account-pair-service.test.ts`、`server/sync-proxy/handler.test.ts`、`server/sync-proxy/cloudbase-entry.test.ts` 覆盖本地手机号登录、登录态恢复、创建关系、24 小时一次性邀请码、输入即加入、账号驱动同步配置、服务端账号 / 关系约束、sync-proxy 账号成员授权和 CloudBase runtime env。
+- 新增聚焦验证：`apps/legacy-capacitor/src/app/account/local-account-adapter.test.ts`、`apps/legacy-capacitor/src/app/account/local-pair-binding-adapter.test.ts`、`apps/legacy-capacitor/src/app/account/account-sync-config.test.ts`、`services/account-pair/account-pair-service.test.ts`、`services/sync-proxy/handler.test.ts`、`services/sync-proxy/cloudbase-entry.test.ts` 覆盖本地手机号登录、登录态恢复、创建关系、24 小时一次性邀请码、输入即加入、账号驱动同步配置、服务端账号 / 关系约束、sync-proxy 账号成员授权和 CloudBase runtime env。
 - `git diff --check`：通过。
 - `npm test`：40 个测试文件，320 个测试通过。
 - `/Users/zhujunjie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node node_modules/vue-tsc/bin/vue-tsc.js --noEmit`：通过。
 - `/Users/zhujunjie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node node_modules/vite/bin/vite.js build`：通过，保留 Varlet / 首包超过 500 KB 的既有提示。
-- `/Users/zhujunjie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node --import tsx scripts/build-cloudbase-sync-proxy.ts`：通过，生成的 `cloudbase/functions/sync-proxy/` 已被 Git 忽略。
+- `/Users/zhujunjie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node --import tsx tools/scripts/build-cloudbase-sync-proxy.ts`：通过，生成的 `cloudbase/functions/sync-proxy/` 已被 Git 忽略。
 - `/Users/zhujunjie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node node_modules/@capacitor/cli/bin/capacitor sync`：通过，已同步 iOS / Android Web assets。
 - `/Users/zhujunjie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node node_modules/@capacitor/cli/bin/capacitor doctor`：通过，iOS / Android Capacitor 依赖正常。
 - `npm audit --omit=dev`：通过，0 vulnerabilities。为避免 `@cloudbase/node-sdk` 传递引入存在原型污染公告的 `lodash.set` / `lodash.unset` 小包，已通过 `vendor/lodash-set` 和 `vendor/lodash-unset` 提供兼容 shim，内部调用已修复的主 `lodash` 子模块。
@@ -381,8 +395,8 @@ npm test
 npm run typecheck
 npm audit --omit=dev
 npm run build
-npx cap sync
-npx cap doctor
+npm run cap:sync
+npm run cap:doctor
 ```
 
 已知构建提示：
@@ -440,7 +454,7 @@ npx cap doctor
 - 设计说明如何保存 `draftSource: "ai"`、provider、model、prompt version 和耗时等 metadata。
 - 不需要真实 AI key 也能用 fake adapter 写测试。
 - 设计明确 AI key 不进客户端包，客户端只调用自有云函数或服务端代理。
-- `src/domain` 不引入 AI、浏览器、Capacitor 或云服务依赖。
+- `apps/legacy-capacitor/src/domain` 不引入 AI、浏览器、Capacitor 或云服务依赖。
 
 非目标：
 
@@ -455,7 +469,7 @@ npx cap doctor
 
 已完成：
 
-- 新增 `server/ai-scribe-proxy/`。
+- 新增 `services/ai-scribe-proxy/`。
 - 新增服务端配置读取和密钥防线，拒绝 `VITE_` MiMo key。
 - 新增 MiMo OpenAI-compatible `/v1/chat/completions` client，默认 30 秒超时，错误不读取 provider body。
 - 新增本地 HTTP 代理：
@@ -493,7 +507,7 @@ npx cap doctor
 - 不在本阶段把 AI 生成接入写信页面。
 - 不在本阶段正式初始化同步数据库、文件存储、身份认证或推送资源。
 - 不购买高规格云服务器或长期包年资源。
-- 不把云 SDK 或 AI SDK 引入 `src/domain`。
+- 不把云 SDK 或 AI SDK 引入 `apps/legacy-capacitor/src/domain`。
 - 不把真实密钥提交到 Git。
 
 ### 阶段 12：AI 生成信件正文落地
@@ -506,7 +520,7 @@ npx cap doctor
 
 已实现：
 
-- 新增 `src/app/ai-scribe-adapter.ts`，客户端只调用代理 URL，不读取 provider key。
+- 新增 `apps/legacy-capacitor/src/app/ai-scribe-adapter.ts`，客户端只调用代理 URL，不读取 provider key。
 - `ScribeGenerationMeta` 支持 `ai-scribe-v1`，保存 provider、model、prompt version、scribe id、scene tags、letter type、城市和 latency。
 - `AppState` 序列化 / 解析支持 AI 起稿 metadata。
 - `write-letter-service` 可接收页面生成的 `scribeDraft`、`readAloudText`、`draftSource` 和 `generationMeta`，并保存到草稿和投寄信件。
@@ -516,14 +530,14 @@ npx cap doctor
   - 选择代笔先生时调用 HTTP AI adapter。
   - 起稿中禁用关键操作。
   - 失败时不生成模板正文，保留口述并提示稍后再请先生起稿。
-- 新增 `src/app/runtime-config.ts`，读取 `VITE_PINGANPI_AI_PROXY_URL`，默认开发代理为 `http://127.0.0.1:8787`。
+- 新增 `apps/legacy-capacitor/src/app/runtime-config.ts`，读取 `VITE_PINGANPI_AI_PROXY_URL`，默认开发代理为 `http://127.0.0.1:8787`。
 
 当前测试覆盖：
 
-- `src/app/ai-scribe-adapter.test.ts`
-- `src/app/app-state.test.ts`
-- `src/app/write-letter-service.test.ts`
-- `src/app/write-letter-wizard.test.ts`
+- `apps/legacy-capacitor/src/app/ai-scribe-adapter.test.ts`
+- `apps/legacy-capacitor/src/app/app-state.test.ts`
+- `apps/legacy-capacitor/src/app/write-letter-service.test.ts`
+- `apps/legacy-capacitor/src/app/write-letter-wizard.test.ts`
 
 目标：让代笔先生能够基于用户口述调用 AI 生成信件初稿，并继续保留旧时代代笔、手工校改和口述草稿降级路径。
 
@@ -575,7 +589,7 @@ npx cap doctor
 - 本地代理已加入费用护栏配置：
   - `PINGANPI_AI_MAX_ORAL_TEXT_CHARS` 控制单次口述最大字符数，默认 800，超限会在调用 MiMo 前返回受控错误。
   - `MIMO_MAX_COMPLETION_TOKENS` 控制单次最大输出 token，默认 900，避免输出长度失控。
-- 本地代理核心逻辑已抽为 `server/ai-scribe-proxy/handler.ts`，本地 dev server 只负责 Node HTTP 桥接；后续 CloudBase / 云函数入口可复用同一套校验、CORS、prompt、MiMo client 和错误归一逻辑。
+- 本地代理核心逻辑已抽为 `services/ai-scribe-proxy/handler.ts`，本地 dev server 只负责 Node HTTP 桥接；后续 CloudBase / 云函数入口可复用同一套校验、CORS、prompt、MiMo client 和错误归一逻辑。
 - 用户已购买腾讯云 CloudBase，阶段 13 云端落点确定为 CloudBase HTTP 云函数。
 - 已安装 `@cloudbase/cli@3.4.0`，并新增：
   - `npm run cloudbase:login`
@@ -583,8 +597,8 @@ npx cap doctor
   - `CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:configure:ai-env`
   - `CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:disable:ai-env`
   - `CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:deploy:ai`
-- 已新增 `server/ai-scribe-proxy/cloudbase-entry.ts`，将 CloudBase HTTP event 适配到共享 `handleAiProxyRequest`。
-- 已新增 `server/ai-scribe-proxy/cloudbase-http-server.ts` 和 `server/ai-scribe-proxy/cloudbase-bootstrap.ts`，以 CloudBase Web Server 模式监听 `0.0.0.0:9000`。
+- 已新增 `services/ai-scribe-proxy/cloudbase-entry.ts`，将 CloudBase HTTP event 适配到共享 `handleAiProxyRequest`。
+- 已新增 `services/ai-scribe-proxy/cloudbase-http-server.ts` 和 `services/ai-scribe-proxy/cloudbase-bootstrap.ts`，以 CloudBase Web Server 模式监听 `0.0.0.0:9000`。
 - CloudBase 构建会生成 `scf_bootstrap`，避免 HTTP 函数进程启动后退出。
 - 云端 handler 支持 CloudBase 实际路由前缀 `/api`：`/api/health` 与 `/api/ai/scribe-draft` 会归一到共享代理路径。
 - 云端 env 缺失时 `POST /api/ai/scribe-draft` 会返回受控 `502 proxy_unavailable`，不会泄露 provider body 或导致进程异常退出。
@@ -645,7 +659,7 @@ npx cap doctor
 - 不在本阶段实现完整双设备同步业务。
 - 不正式初始化同步数据库、文件存储、身份认证或推送资源。
 - 不购买高规格云服务器或长期包年资源。
-- 不把云 SDK 或 AI SDK 引入 `src/domain`。
+- 不把云 SDK 或 AI SDK 引入 `apps/legacy-capacitor/src/domain`。
 - 不把真实密钥提交到 Git。
 
 ### 阶段 14：AI 起稿流式体验优化
@@ -700,7 +714,7 @@ npx cap doctor
 
 ### 阶段 15：云端与双人同步准备
 
-状态：已完成基础。阶段设计与实施计划已建立，`src/app/sync/` 纯 TypeScript 同步边界和本地 mock remote adapter 已完成；真实 CloudBase HTTP 同步代理已在阶段 16B 完成工程实现。
+状态：已完成基础。阶段设计与实施计划已建立，`apps/legacy-capacitor/src/app/sync/` 纯 TypeScript 同步边界和本地 mock remote adapter 已完成；真实 CloudBase HTTP 同步代理已在阶段 16B 完成工程实现。
 
 设计文档：
 
@@ -712,10 +726,10 @@ npx cap doctor
 
 已实现：
 
-- 新增 `src/app/sync/remote-model.ts`，定义 `RemoteHousehold`、`RemoteMember`、`RemoteWallet`、`RemoteLedgerEntry`、`RemoteDraftPaper`、`RemoteLetter`、`RemotePostalRecord`、`RemoteSyncCursor`、`RemotePhotoAttachment`、`RemoteSnapshot` 和 `SyncAdapter`。
-- 新增 `src/app/sync/remote-snapshot.ts`，支持从 `AppState` 导出远端拆分实体，并把远端快照合并回本地状态。
+- 新增 `apps/legacy-capacitor/src/app/sync/remote-model.ts`，定义 `RemoteHousehold`、`RemoteMember`、`RemoteWallet`、`RemoteLedgerEntry`、`RemoteDraftPaper`、`RemoteLetter`、`RemotePostalRecord`、`RemoteSyncCursor`、`RemotePhotoAttachment`、`RemoteSnapshot` 和 `SyncAdapter`。
+- 新增 `apps/legacy-capacitor/src/app/sync/remote-snapshot.ts`，支持从 `AppState` 导出远端拆分实体，并把远端快照合并回本地状态。
 - 新增 `mergeRemoteSnapshots`，供 mock remote adapter 合并远端实体，不把远端存储降级成单一 `AppState` blob。
-- 新增 `src/app/sync/mock-remote-adapter.ts`，用本地内存模拟 household 远端快照、revision 和 device cursor。
+- 新增 `apps/legacy-capacitor/src/app/sync/mock-remote-adapter.ts`，用本地内存模拟 household 远端快照、revision 和 device cursor。
 - 新增测试覆盖：AI metadata 安全字段、白名单转换、append-only 去重、跨设备同 id 不丢数据、未到达来信正文 redaction、信件状态单向推进、草稿冲突、草稿 tombstone、对方私有草稿过滤、双设备 push / pull / opened 合并和深拷贝隔离。
 
 目标：本地流程和生产级 AI 调用边界稳定后，为真实两人使用做云端同步准备。
@@ -728,7 +742,7 @@ npx cap doctor
 - 为后续邮政异常预留状态和记录类型：`delayed`、`misrouted`、`lost`、`found`、`returned`。
 - 为后续照片附件预留访问控制原则：到达前收件方不能获得缩略图、remote key、可访问 URL 或可猜测路径。
 - 增加只面向两个人的账户 / 成员绑定概念，先不接真实登录也要把边界留清楚。
-- 设计本地与远端的 adapter 接口，App 层依赖同步边界，不让云端 SDK 进入 `src/domain`。
+- 设计本地与远端的 adapter 接口，App 层依赖同步边界，不让云端 SDK 进入 `apps/legacy-capacitor/src/domain`。
 - 设计冲突策略：
   - ledger entries 和 postal records 采用 append-only，按稳定 id 去重。
   - letters 状态采用受状态机约束的单向推进，不能被旧状态覆盖。
@@ -741,7 +755,7 @@ npx cap doctor
 验收标准：
 
 - 本地 schema 可以映射到云端记录，不需要重写领域规则。
-- 云端边界不渗入 `src/domain`。
+- 云端边界不渗入 `apps/legacy-capacitor/src/domain`。
 - 有可测试的 sync model / adapter 类型和纯函数合并策略。
 - 本地 mock remote adapter 可以在测试里模拟双设备拉取、合并和去重。
 - 推送事件保持克制，并符合旧时代通信体验。
@@ -782,20 +796,20 @@ npx cap doctor
 
 已实现：
 
-- 新增 `src/app/sync/sync-state.ts` 和 `src/app/sync/sync-state-storage.ts`，保存 household、device、member、revision、同步状态和短错误。
-- 新增 `src/app/sync/sync-runtime.ts`，实现 pull、push、syncNow、prepareOnlineMutation；失败不透出原始异常，push 后会按当前成员 redaction 并把可见远端快照合回本地。
-- 新增 `src/app/sync/local-remote-adapter.ts`，用 localStorage 模拟 household 远端快照，拒绝 stale push，污染快照会回退为空快照，push / pull 都返回深拷贝。
-- 新增 `src/app/sync/browser-sync-config.ts`，支持 `household` / `device` / `member` URL 参数，按 household + member + device 隔离本地 AppState / SyncState，remote snapshot 仅按 household 共享。
-- `src/App.vue` 已接入同步状态 UI、启动同步、进入前台 refresh、信箱 refresh、保存 / 删除草稿后后台 push、投寄 / 拆阅前联网校验和成功后 push。
+- 新增 `apps/legacy-capacitor/src/app/sync/sync-state.ts` 和 `apps/legacy-capacitor/src/app/sync/sync-state-storage.ts`，保存 household、device、member、revision、同步状态和短错误。
+- 新增 `apps/legacy-capacitor/src/app/sync/sync-runtime.ts`，实现 pull、push、syncNow、prepareOnlineMutation；失败不透出原始异常，push 后会按当前成员 redaction 并把可见远端快照合回本地。
+- 新增 `apps/legacy-capacitor/src/app/sync/local-remote-adapter.ts`，用 localStorage 模拟 household 远端快照，拒绝 stale push，污染快照会回退为空快照，push / pull 都返回深拷贝。
+- 新增 `apps/legacy-capacitor/src/app/sync/browser-sync-config.ts`，支持 `household` / `device` / `member` URL 参数，按 household + member + device 隔离本地 AppState / SyncState，remote snapshot 仅按 household 共享。
+- `apps/legacy-capacitor/src/App.vue` 已接入同步状态 UI、启动同步、进入前台 refresh、信箱 refresh、保存 / 删除草稿后后台 push、投寄 / 拆阅前联网校验和成功后 push。
 - 后台同步结果有串行队列和本地 state revision 检查，避免旧同步结果覆盖较新的本地草稿、tombstone、投寄扣款或拆阅记录。
-- 新增 `src/app/sync/dual-device-sync.test.ts`，验证 A 投寄、B 到达前拿不到正文、到达后拆阅并补回正文、A 同步看到 opened、账本 / 邮政记录不重复、B 私有草稿不导入 A。
-- 新增 `src/app/sync/http-remote-adapter.ts`，通过 `POST /sync/pull` 和 `POST /sync/push` 实现 HTTP 版 `SyncAdapter`，会把 409 `stale_remote_revision` 映射为 runtime 可识别的冲突错误，并拒绝 malformed revision response。
-- 新增 `src/app/sync/remote-adapter-factory.ts`、`VITE_PINGANPI_SYNC_PROXY_URL` 和 `VITE_PINGANPI_SYNC_MEMBER_TOKEN` 配置。未配置同步代理地址时继续使用本地 localStorage adapter；配置后才启用 HTTP 同步代理，配置成员 token 时由客户端发送 `X-Pinganpi-Sync-Token`。
-- 新增 `server/sync-proxy/handler.ts`，实现 `GET /health`、`POST /sync/pull`、`POST /sync/push`，复用 `mergeRemoteSnapshots` 和 redaction；服务端用 `PINGANPI_SYNC_MEMBER_TOKENS` 将 `householdId + memberId` 绑定到 token，缺失配置时同步请求 fail closed。
+- 新增 `apps/legacy-capacitor/src/app/sync/dual-device-sync.test.ts`，验证 A 投寄、B 到达前拿不到正文、到达后拆阅并补回正文、A 同步看到 opened、账本 / 邮政记录不重复、B 私有草稿不导入 A。
+- 新增 `apps/legacy-capacitor/src/app/sync/http-remote-adapter.ts`，通过 `POST /sync/pull` 和 `POST /sync/push` 实现 HTTP 版 `SyncAdapter`，会把 409 `stale_remote_revision` 映射为 runtime 可识别的冲突错误，并拒绝 malformed revision response。
+- 新增 `apps/legacy-capacitor/src/app/sync/remote-adapter-factory.ts`、`VITE_PINGANPI_SYNC_PROXY_URL` 和 `VITE_PINGANPI_SYNC_MEMBER_TOKEN` 配置。未配置同步代理地址时继续使用本地 localStorage adapter；配置后才启用 HTTP 同步代理，配置成员 token 时由客户端发送 `X-Pinganpi-Sync-Token`。
+- 新增 `services/sync-proxy/handler.ts`，实现 `GET /health`、`POST /sync/pull`、`POST /sync/push`，复用 `mergeRemoteSnapshots` 和 redaction；服务端用 `PINGANPI_SYNC_MEMBER_TOKENS` 将 `householdId + memberId` 绑定到 token，缺失配置时同步请求 fail closed。
 - `sync-proxy` 同时支持 `/sync/health` 用于 CloudBase 显式路由健康检查。
 - `sync-proxy` 返回给客户端的 snapshot 会过滤对方私有草稿，未到达来信不含正文、摘要、口述、代笔稿或 AI metadata，并清空 `photoAttachments`，避免阶段 23 前后附件定位信息提前泄露。
-- 新增 `server/sync-proxy/cloudbase-store.ts`，使用 `@cloudbase/node-sdk` 数据库写入 household snapshot，保存集合默认为 `pinganpi_sync_snapshots`，写入前按 expected revision 做 CAS / 事务边界校验；真实 SDK 写入形态为 `doc.set(data)` / `transaction.collection(name).doc(id).set(data)`，写入数据不包含 `_id` 字段。
-- 新增 `server/sync-proxy/cloudbase-entry.ts`、`cloudbase-http-server.ts`、`cloudbase-bootstrap.ts` 和 `scripts/build-cloudbase-sync-proxy.ts`；`cloudbaserc.json` 已增加 HTTP 函数 `sync-proxy`，`package.json` 已增加 `cloudbase:build:sync` / `cloudbase:configure:sync-env` / `cloudbase:smoke:sync` / `cloudbase:deploy:sync`。
+- 新增 `services/sync-proxy/cloudbase-store.ts`，使用 `@cloudbase/node-sdk` 数据库写入 household snapshot，保存集合默认为 `pinganpi_sync_snapshots`，写入前按 expected revision 做 CAS / 事务边界校验；真实 SDK 写入形态为 `doc.set(data)` / `transaction.collection(name).doc(id).set(data)`，写入数据不包含 `_id` 字段。
+- 新增 `services/sync-proxy/cloudbase-entry.ts`、`cloudbase-http-server.ts`、`cloudbase-bootstrap.ts` 和 `tools/scripts/build-cloudbase-sync-proxy.ts`；`cloudbaserc.json` 已增加 HTTP 函数 `sync-proxy`，`package.json` 已增加 `cloudbase:build:sync` / `cloudbase:configure:sync-env` / `cloudbase:smoke:sync` / `cloudbase:deploy:sync`。
 - 云端 env 使用 `PINGANPI_SYNC_MEMBER_TOKENS_B64` 保存 member token map，运行时仍兼容本地开发用的明文 JSON `PINGANPI_SYNC_MEMBER_TOKENS`。
 - CloudBase 部署使用显式路由 `/sync/health`、`/sync/pull`、`/sync/push`；客户端 HTTP adapter 的云端 base URL 应配置为 `https://pinganpi-d7gml1f6sbcc172ea-1258361524.ap-shanghai.app.tcloudbase.com`，不要配置到 `/api`。
 
@@ -806,7 +820,7 @@ npx cap doctor
 - 一端投寄后，另一端只能在到达后拆阅。
 - 离线写草稿恢复联网后可以同步，不破坏对方数据。
 - 如后续支持离线投寄 / 拆阅请求，必须作为 command 入队，联网后重新校验钱包、状态机、收件人和到达时间，失败时转为待处理或回滚。
-- 真实 CloudBase 同步代理工程实现不改变 `src/domain` 或投寄 / 拆阅规则；费用告警、默认角色收敛已在阶段 19 收口，小程序迁移后的双真机人工验证顺延到阶段 29。
+- 真实 CloudBase 同步代理工程实现不改变 `apps/legacy-capacitor/src/domain` 或投寄 / 拆阅规则；费用告警、默认角色收敛已在阶段 19 收口，小程序迁移后的双真机人工验证顺延到阶段 29。
 
 非目标：
 
@@ -826,10 +840,10 @@ npx cap doctor
 
 推荐范围：
 
-- 已新增 `src/app/account/account-model.ts`，定义 `PinganpiAccount`、`PinganpiSession`、household、member、invite 和 adapter 边界。
-- 已新增 `src/app/account/local-account-adapter.ts`，提供本地手机号 mock 登录、验证码调试码、稳定 accountId、登录态恢复和登出。
-- 已新增 `src/app/pages/AccountGatePage.vue`，未登录时先进入账号簿，手机号只在账号入口 / 账号摘要展示。
-- 已新增 `server/account-pair/account-pair-service.ts`，服务端按受信任 `authUid` 确保同一 `PinganpiAccount`，后续 CloudBase Auth 接入时复用此边界。
+- 已新增 `apps/legacy-capacitor/src/app/account/account-model.ts`，定义 `PinganpiAccount`、`PinganpiSession`、household、member、invite 和 adapter 边界。
+- 已新增 `apps/legacy-capacitor/src/app/account/local-account-adapter.ts`，提供本地手机号 mock 登录、验证码调试码、稳定 accountId、登录态恢复和登出。
+- 已新增 `apps/legacy-capacitor/src/app/pages/AccountGatePage.vue`，未登录时先进入账号簿，手机号只在账号入口 / 账号摘要展示。
+- 已新增 `services/account-pair/account-pair-service.ts`，服务端按受信任 `authUid` 确保同一 `PinganpiAccount`，后续 CloudBase Auth 接入时复用此边界。
 - 真实 CloudBase 手机号验证码登录、token / refresh token 已在旧 App 阶段 19 收口到平台配置；小程序迁移后的账号恢复验证顺延到阶段 26 / 29。
 
 验收标准：
@@ -859,12 +873,12 @@ npx cap doctor
 
 推荐范围：
 
-- 已新增 `src/app/account/local-pair-binding-adapter.ts`，支持本地创建 household、生成 24 小时一次性邀请码、输入即加入、唯一 active household、自邀 / 过期 / 已用 / 满员拒绝。
-- 已新增 `src/app/account/account-sync-config.ts`，已有账号绑定时用绑定的 household / member 驱动现有浏览器同步命名空间；无绑定时保留阶段 16 URL 参数调试。
-- `src/App.vue` 已接入账号 / 绑定入口。已有绑定后进入主 App；创建或加入关系后刷新一次，让同步 runtime 以正确 household / member 启动。
-- `server/account-pair/account-pair-service.ts` 已实现服务端关系约束纯逻辑。
-- `server/sync-proxy/handler.ts` 已支持账号成员授权配置：服务端可从可信 auth uid 映射出 `householdId/memberId`，并覆盖客户端传入值；手工 member token 仅保留为阶段 16B 开发 fallback。
-- `server/sync-proxy/runtime-auth.ts` 已支持 `PINGANPI_SYNC_ACCOUNT_BINDINGS` / `PINGANPI_SYNC_ACCOUNT_BINDINGS_B64` 和 `PINGANPI_SYNC_TRUSTED_AUTH_UID_HEADER`。
+- 已新增 `apps/legacy-capacitor/src/app/account/local-pair-binding-adapter.ts`，支持本地创建 household、生成 24 小时一次性邀请码、输入即加入、唯一 active household、自邀 / 过期 / 已用 / 满员拒绝。
+- 已新增 `apps/legacy-capacitor/src/app/account/account-sync-config.ts`，已有账号绑定时用绑定的 household / member 驱动现有浏览器同步命名空间；无绑定时保留阶段 16 URL 参数调试。
+- `apps/legacy-capacitor/src/App.vue` 已接入账号 / 绑定入口。已有绑定后进入主 App；创建或加入关系后刷新一次，让同步 runtime 以正确 household / member 启动。
+- `services/account-pair/account-pair-service.ts` 已实现服务端关系约束纯逻辑。
+- `services/sync-proxy/handler.ts` 已支持账号成员授权配置：服务端可从可信 auth uid 映射出 `householdId/memberId`，并覆盖客户端传入值；手工 member token 仅保留为阶段 16B 开发 fallback。
+- `services/sync-proxy/runtime-auth.ts` 已支持 `PINGANPI_SYNC_ACCOUNT_BINDINGS` / `PINGANPI_SYNC_ACCOUNT_BINDINGS_B64` 和 `PINGANPI_SYNC_TRUSTED_AUTH_UID_HEADER`。
 
 验收标准：
 
@@ -896,7 +910,7 @@ npx cap doctor
 
 已完成自动项：
 
-- 新增 `scripts/audit-cloudbase-stage19.ts` 和 `npm run cloudbase:audit:stage19`，用于脱敏审计 CloudBase 用量和函数状态。
+- 新增 `tools/scripts/audit-cloudbase-stage19.ts` 和 `npm run cloudbase:audit:stage19`，用于脱敏审计 CloudBase 用量和函数状态。
 - 当前计费周期 `2026-05-23 ~ 2026-06-23`，CloudBase 用量为 `1.67 / 3000 credits`。
 - 用户确认当前 CloudBase 套餐 / 版本为腾讯云开发免费体验版；官方价格文档显示免费体验环境提供 `3000 点/月`，单次可续费 6 个月，不支持自动续费；这不替代预算 / 余额提醒，仍需确认是否可配置费用告警。
 - 官方价格文档还说明免费环境可购买 Token 点资源包，暂不支持加购扩展资源包、大促资源包和开启按量付费；当前阶段不升级付费套餐、不购买 CVM、不启用自动续费。
@@ -986,12 +1000,12 @@ npx cap doctor
 
 推荐范围：
 
-- 新增 `miniprogram/` 目录、`app.json`、`app.ts`、`app.wxss`、`project.config.json` 模板。
+- 新增 `apps/miniprogram/` 目录、`app.json`、`app.ts`、`app.wxss`、`project.config.json` 模板。
 - 建立 TypeScript 编译 / 类型检查方式。
 - 建立小程序页面骨架和底部导航。
 - 建立 `dev` CloudBase 环境配置入口，但不提交 secret。
 - 明确微信开发者工具打开路径和本地调试步骤。
-- 微信开发者工具必须启用 TypeScript 编译插件：`miniprogram/project.config.json` 的 `setting.useCompilerPlugins` 包含 `typescript`。本机 `miniprogram/project.private.config.json` 被 Git 忽略，但若其中有 `setting` 覆盖项，也要保持同样配置。
+- 微信开发者工具必须启用 TypeScript 编译插件：`apps/miniprogram/project.config.json` 的 `setting.useCompilerPlugins` 包含 `typescript`。本机 `apps/miniprogram/project.private.config.json` 被 Git 忽略，但若其中有 `setting` 覆盖项，也要保持同样配置。
 
 ### 阶段 23：共享领域核心迁移
 
@@ -1001,12 +1015,12 @@ npx cap doctor
 
 已完成：
 
-- 新增 `shared/domain/`，承载时间、旧币制、代笔先生、钱匣、邮政和信件状态机规则真实实现。
-- `src/domain/` 改为兼容 re-export，旧 App 和旧测试入口保持可用。
-- 新增 `miniprogram/shared/domain/` 根内副本，避免微信小程序预览 / 上传跨出 `miniprogramRoot`。
-- 新增 `npm run miniprogram:sync-shared` 和 `npm run miniprogram:check-shared`，动态扫描 `shared/domain/*.ts`，保证小程序副本与 `shared/domain/` 一致。
+- 新增 `packages/domain/src/`，承载时间、旧币制、代笔先生、钱匣、邮政和信件状态机规则真实实现。
+- `apps/legacy-capacitor/src/domain/` 改为兼容 re-export，旧 App 和旧测试入口保持可用。
+- 新增 `apps/miniprogram/shared/domain/` 根内副本，避免微信小程序预览 / 上传跨出 `miniprogramRoot`。
+- 新增 `npm run miniprogram:sync-shared` 和 `npm run miniprogram:check-shared`，动态扫描 `packages/domain/src/*.ts`，保证小程序副本与 `packages/domain/src/` 一致。
 - `tsconfig.json` 已纳入 `shared/**/*.ts`；`tsconfig.miniprogram.json` 只检查小程序根内源码。
-- 新增 `miniprogram/services/domain-summary.ts` 和测试，今日页已通过根内副本使用共享旧历日期和邮资摘要。
+- 新增 `apps/miniprogram/services/domain-summary.ts` 和测试，今日页已通过根内副本使用共享旧历日期和邮资摘要。
 
 ### 阶段 24：小程序本地核心界面
 
@@ -1018,9 +1032,9 @@ npx cap doctor
 
 已完成：
 
-- 新增 `miniprogram/services/local-model.ts` 和测试，提供今日、先生、钱匣、信箱、档案的本地 mock view-model。
+- 新增 `apps/miniprogram/services/local-model.ts` 和测试，提供今日、先生、钱匣、信箱、档案的本地 mock view-model。
 - 今日、代笔先生、钱匣、信箱、档案页面已从占位内容改为读取本地模型。
-- 新增 `miniprogram/services/write-flow.ts` 和测试，提供本地 5 步写信流程、费用计算、挂号切换和投寄存根。
+- 新增 `apps/miniprogram/services/write-flow.ts` 和测试，提供本地 5 步写信流程、费用计算、挂号切换和投寄存根。
 - 写信页已支持口述、先生起稿、校改、投寄核算和本地投寄回执。
 - 写信 tab 切换不会重建本地 flow；口述变更会清空旧起稿 / 定稿，避免用旧正文投寄。
 - 本阶段仍不接 CloudBase、真实登录、真实同步或 AI 起稿。
@@ -1035,7 +1049,7 @@ npx cap doctor
 - `pinganpi-ai` 复用既有 AI proxy handler；health 不依赖 MiMo env，非流式 `scribeDraft` 使用受控返回。
 - `pinganpi-sync` 复用既有 sync handler、redaction 和 CloudBase snapshot store；阶段 25 event runtime 使用 dev-only payload namespace，不读取旧 HTTP header token auth，同步侧微信可信身份推导顺延到阶段 27。
 - `pinganpi-account` / `pinganpi-pair` 复用 `account-pair-service`，新增账号关系 CloudBase store，集合名为 `pinganpi_accounts`、`pinganpi_households`、`pinganpi_members`、`pinganpi_invites`；创建邀请码响应不向客户端返回 `codeHash`。
-- 已新增小程序端 `miniprogram/services/cloud-functions.ts`，封装 `wx.cloud.callFunction`；本阶段尚未接入页面。
+- 已新增小程序端 `apps/miniprogram/services/cloud-functions.ts`，封装 `wx.cloud.callFunction`；本阶段尚未接入页面。
 - 已新增 `npm run cloudbase:build:miniprogram`、`npm run cloudbase:deploy:miniprogram`、`npm run cloudbase:smoke:miniprogram`。
 - HTTP 入口保留为诊断工具，不作为小程序主链路。
 - `prd` 环境仍未创建 / 配置 / 部署。
@@ -1049,10 +1063,10 @@ npx cap doctor
 已完成：
 
 - 新增阶段 26 实施计划：`docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-login-pair.md`。
-- 新增 `server/miniprogram-functions/miniprogram-auth.ts`，从 CloudBase / 微信可信上下文读取 `openid` / `unionid` 并生成稳定 `authUid`。
+- 新增 `services/miniprogram-functions/miniprogram-auth.ts`，从 CloudBase / 微信可信上下文读取 `openid` / `unionid` 并生成稳定 `authUid`。
 - `pinganpi-account` 新增 `loginByWechatPhone`、受控 `loginByDevPhone`、`getCurrentAccount` 和可信 `getActiveBinding`；手机号只来自服务端微信手机号 resolver 或显式 dev guard，不信任客户端伪造字段。
 - `pinganpi-pair` 的 `createHousehold`、`createInvite`、`joinByInvite` 和 `getActiveBinding` 均从当前可信账号推导，不再接收客户端 `accountId` 作为授权依据。
-- 新增 `miniprogram/services/account-session.ts` 和 `account-cloud.ts`，小程序只缓存账号 / 绑定摘要，不保存验证码、token、secret 或邀请码 hash。
+- 新增 `apps/miniprogram/services/account-session.ts` 和 `account-cloud.ts`，小程序只缓存账号 / 绑定摘要，不保存验证码、token、secret 或邀请码 hash。
 - 账号页接入微信手机号按钮、兜底入口、登录态恢复和登录后路由；关系页接入创建关系、生成邀请码、输入邀请码加入和本地会话刷新。
 
 仍需人工验证：
@@ -1138,14 +1152,14 @@ npx cap doctor
 
 ## 操作备注
 
-- 新主线优先使用微信开发者工具调试 `miniprogram/`，并连接 CloudBase `dev` 环境。
+- 新主线优先使用微信开发者工具调试 `apps/miniprogram/`，并连接 CloudBase `dev` 环境。
 - 微信开发者工具自动化命令为 `WECHAT_DEVTOOLS_PORT=<port> npm run miniprogram:devtools:smoke` 和 `WECHAT_DEVTOOLS_PORT=<port> npm run miniprogram:devtools:flow`；服务端口需先在 `设置 -> 安全设置` 开启。当前本机验证端口为 `62046`。
 - 若控制台报 `app.json: 未找到 ["pages"][0] 对应的 ...index.js 文件`，先检查 `project.config.json` / 本机 `project.private.config.json` 是否启用 `setting.useCompilerPlugins: ["typescript"]`，然后关闭并重新打开项目。
-- 旧浏览器调试 `npm run dev`、`cap:sync`、`cap doctor` 只用于历史 Capacitor / Vue 实现诊断，不再作为新功能主链路。
+- 旧浏览器调试 `npm run dev`、`cap:sync`、`cap:doctor` 只用于历史 Capacitor / Vue 实现诊断，不再作为新功能主链路。
 - 不要提交生成的 `dist/`、`cloudbase/functions/`、微信开发者工具私有配置或任何真实 secret。
 - 小程序 UI 保持移动端优先，同时保证微信开发者工具和 PC 预览可用。
 - 保持克制的档案 / 账簿视觉方向。
 - AI 接入不得绕过写信服务、费用校验、手工校改和真实送达规则。
 - CloudBase `prd` 部署必须显式传入环境参数，不允许脚本默认部署生产。
-- 关键节点必须更新本文件、`roadmap-viewer/src/roadmap-data.json` 和相关设计 / 计划 / AGENTS 文档。关键节点是会影响后续代理判断、用户查看进度、实现边界、验证方式、部署方式或安全隐私边界的变化。
+- 关键节点必须更新本文件、`tools/roadmap-viewer/src/roadmap-data.json` 和相关设计 / 计划 / AGENTS 文档。关键节点是会影响后续代理判断、用户查看进度、实现边界、验证方式、部署方式或安全隐私边界的变化。
 - 关键节点包括阶段状态变化、产品决策变化、技术架构变化、安全与隐私变化、开发流程变化、验证基线变化、用户确认的问题或风险。纯格式化、无行为变化的小重命名、局部测试内部重构通常不算关键节点。

@@ -1,5 +1,7 @@
 # 平安批微信小程序迁移与 CloudBase 多环境设计
 
+> **2026-05-25 工程结构更新：** 本设计中的迁移目标仍有效，但物理路径已按 `docs/project-structure.md` 治理为 `apps/miniprogram/`、`apps/legacy-capacitor/`、`packages/domain/src/`、`services/` 和 `tools/`。后续实施以新路径为准。
+
 ## 背景
 
 《平安批》原主线是 iOS / Android Capacitor App：Vue 3、Vite、Tailwind CSS、Varlet、Capacitor 原生壳，加 CloudBase HTTP 云函数承载 AI 起稿和双人同步代理。
@@ -88,7 +90,7 @@ Vue / Vite / Tailwind / Varlet / Capacitor
 - 不再把 Tailwind CSS 和 Varlet 作为小程序 UI 主线。
 - 领域层保持纯 TypeScript，不能引入小程序、CloudBase、Vue、浏览器或 Capacitor 依赖。
 - 小程序端只调用平安批云函数，不直接写核心业务集合，不直连 AI provider。
-- 云函数服务层复用现有 `server/` 中已验证的 AI、同步、账号 / 关系边界，必要时新增小程序 event wrapper。
+- 云函数服务层复用 `services/` 中已验证的 AI、同步、账号 / 关系边界，必要时新增小程序 event wrapper。
 
 ## 目录结构
 
@@ -118,11 +120,15 @@ shared/
   domain/
   app-core/
 
-server/
+services/
   ai-scribe-proxy/
   sync-proxy/
   account-pair/
   miniprogram-functions/
+
+tools/
+  scripts/
+  roadmap-viewer/
 
 cloudbase/
   functions/
@@ -130,9 +136,8 @@ cloudbase/
 
 迁移策略：
 
-- 第一阶段可以先保留 `src/domain`，让小程序构建通过相对路径或复制构建产物复用规则。
-- 一旦小程序工程可运行，应把真正跨端复用的纯逻辑抽到 `shared/` 或等价目录，避免小程序直接依赖 Vue App 层。
-- `src/app/` 里的 Vue view-model、页面状态、Varlet 交互不作为小程序复用对象，只作为行为参考。
+- 当前真实领域实现位于 `packages/domain/src/`；小程序使用 `apps/miniprogram/shared/domain/` 生成副本，避免微信小程序跨根打包。
+- `apps/legacy-capacitor/src/app/` 里的 Vue view-model、页面状态、Varlet 交互不作为小程序复用对象，只作为行为参考。
 - `cloudbase/functions/` 继续作为构建产物目录并保持 Git 忽略。
 
 ## 小程序页面结构
@@ -263,9 +268,9 @@ interface PinganpiWechatIdentity {
 
 现有 HTTP 代理处理器继续复用核心逻辑：
 
-- `server/ai-scribe-proxy/handler.ts`
-- `server/sync-proxy/handler.ts`
-- `server/account-pair/account-pair-service.ts`
+- `services/ai-scribe-proxy/handler.ts`
+- `services/sync-proxy/handler.ts`
+- `services/account-pair/account-pair-service.ts`
 
 迁移时新增小程序 event wrapper，而不是复制一套业务校验。HTTP 入口可保留用于命令行 smoke、诊断和历史浏览器调试，但不再是小程序日常开发主链路。
 
@@ -385,7 +390,7 @@ AI 起稿仍只属于“代笔先生起稿”：
 设计阶段验收：
 
 - 本设计文档落盘并通过自审。
-- `docs/pinganpi-roadmap.md`、`roadmap-viewer/src/roadmap-data.json`、`AGENTS.md` 同步反映小程序主线。
+- `docs/pinganpi-roadmap.md`、`tools/roadmap-viewer/src/roadmap-data.json`、`AGENTS.md` 同步反映小程序主线。
 - 写出实施计划后才能开始实现。
 
 工程迁移验收：
