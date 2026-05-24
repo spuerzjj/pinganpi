@@ -212,31 +212,61 @@ h1 {
 }
 
 .phase-group h3 {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--subtle);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 16px;
+  margin: 20px 0 12px;
+  padding-left: 36px;
 }
 
 .phase-list {
-  display: grid;
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
 }
 
 .phase {
-  display: grid;
-  grid-template-columns: auto 1fr;
+  display: flex;
   gap: 16px;
   align-items: center;
-  padding: 16px 20px;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  position: relative;
 }
 
 .phase-node {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  background: var(--line);
+  background: var(--subtle);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.phase::before {
+  content: "";
+  position: absolute;
+  left: 20px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.phase:first-child::before {
+  top: 50%;
+}
+.phase:last-child::before {
+  bottom: 50%;
+}
+
+.phase-content {
+  flex: 1;
+  padding: 12px 16px;
+  background: var(--surface-muted);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.02);
 }
 
 .phase-title {
@@ -261,19 +291,30 @@ h1 {
 /* Phase Statuses */
 .phase-done .phase-node {
   background: var(--accent);
+  box-shadow: 0 0 0 4px rgba(52, 199, 89, 0.15);
 }
+
 .phase-next .phase-node {
   background: var(--active);
-  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.15);
+  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.2);
 }
+
+.phase-next .phase-content {
+  background: #fff;
+  border-color: var(--active);
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.08);
+}
+
 .phase-next .phase-title {
   font-weight: 700;
   color: var(--active);
 }
+
 .phase-next .badge-mini {
   background: var(--active);
   color: white;
 }
+
 .phase-paused .phase-node {
   background: var(--warn);
 }
