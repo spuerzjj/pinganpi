@@ -115,10 +115,10 @@ h3 {
 
 .summary {
   max-width: 780px;
-  margin-top: 14px;
-  color: #4e5a4b;
-  font-size: 16px;
-  line-height: 1.7;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 .hero-meta {
@@ -126,10 +126,23 @@ h3 {
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 8px;
-  max-width: 360px;
 }
 
-.hero-meta span,
+.hero-meta span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: 0 8px;
+  color: var(--muted);
+  background: transparent;
+  font-family: monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: normal;
+}
+
 .phase-title em {
   display: inline-flex;
   align-items: center;
@@ -162,47 +175,54 @@ h3 {
 }
 
 .metric {
-  min-height: 152px;
-  padding: 18px;
+  min-height: auto;
+  padding: 16px;
+  background: var(--surface-muted);
 }
 
 .metric p {
-  color: #667163;
-  font-size: 13px;
-  font-weight: 700;
+  color: var(--muted);
+  font-family: monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
 }
 
 .metric strong {
   display: block;
-  margin-top: 18px;
-  font-size: 30px;
-  line-height: 1.05;
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+  color: var(--accent);
 }
 
 .metric span,
 .panel p,
-.phase p,
 .risk-list {
-  color: #566154;
-  font-size: 14px;
-  line-height: 1.65;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
 }
 
 .metric span {
   display: block;
-  margin-top: 12px;
+  margin-top: 0;
 }
 
 .panel {
-  padding: 22px;
+  padding: 16px;
 }
 
 .panel-accent {
-  border-color: #9f3b2f;
+  border-color: var(--active);
 }
 
 .panel h2 + p {
   margin-top: 12px;
+  color: var(--ink);
 }
 
 .section-head {
