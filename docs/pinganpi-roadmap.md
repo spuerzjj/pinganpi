@@ -905,6 +905,10 @@ npx cap doctor
 
 - `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`
 
+实施计划：
+
+- `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md`
+
 已确认决策：
 
 - 采用微信原生小程序 + TypeScript + CloudBase 云函数多环境。

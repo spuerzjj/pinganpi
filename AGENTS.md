@@ -163,6 +163,7 @@ npx cap doctor
 - `docs/pinganpi-roadmap.md`
 - `docs/pinganpi-roadmap-dashboard.html`
 - `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`
+- `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md`
 - `docs/superpowers/specs/2026-05-24-pinganpi-dual-sync-mvp-design.md`
 - `docs/superpowers/plans/2026-05-24-pinganpi-dual-sync-mvp.md`
 - `docs/superpowers/specs/2026-05-24-pinganpi-cloudbase-sync-design.md`
