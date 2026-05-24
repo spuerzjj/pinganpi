@@ -17,6 +17,7 @@
     "src/**/*.ts",
     "src/**/*.vue",
     "server/**/*.ts",
+    "shared/**/*.ts",
     "vite.config.ts",
     "vitest.config.ts",
     "capacitor.config.ts"
