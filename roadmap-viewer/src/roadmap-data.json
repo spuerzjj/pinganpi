@@ -51,8 +51,16 @@
       "href": "../docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-login-pair.md"
     },
     {
-      "label": "阶段 27 前置计划待建",
-      "href": "../docs/pinganpi-roadmap.md#阶段-27小程序-ai-与同步体验补齐"
+      "label": "阶段 27 AI 与同步计划",
+      "href": "../docs/superpowers/plans/2026-05-25-pinganpi-miniprogram-ai-sync-experience.md"
+    },
+    {
+      "label": "多 Agent 协作规则",
+      "href": "../docs/agent-collaboration.md"
+    },
+    {
+      "label": "2026-05-25 治理审查",
+      "href": "../docs/governance-reviews/2026-05-25-project-governance-review.md"
     }
   ],
   "phases": [

@@ -385,7 +385,7 @@ AI 起稿仍只属于“代笔先生起稿”：
 设计阶段验收：
 
 - 本设计文档落盘并通过自审。
-- `docs/pinganpi-roadmap.md`、`docs/pinganpi-roadmap-dashboard.html`、`AGENTS.md` 同步反映小程序主线。
+- `docs/pinganpi-roadmap.md`、`roadmap-viewer/src/roadmap-data.json`、`AGENTS.md` 同步反映小程序主线。
 - 写出实施计划后才能开始实现。
 
 工程迁移验收：

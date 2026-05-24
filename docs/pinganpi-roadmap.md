@@ -2,15 +2,15 @@
 
 > **供后续代理使用：** 本文件记录《平安批》从 Capacitor 移动 App 主线转向微信原生小程序主线后的当前状态。后续开始实现前，应先阅读本文件确认方向、边界和验收标准。
 
-**日常可视化入口：** `npm run roadmap:dev` 启动独立 Roadmap Viewer。数据源为 `docs/roadmap-data.json`。
+**日常可视化入口：** `npm run roadmap:dev` 启动独立 Roadmap Viewer。数据源为 `roadmap-viewer/src/roadmap-data.json`。
 
-**旧静态看板：** `docs/pinganpi-roadmap-dashboard.html` 仍保留为静态快照，不再作为日常主入口。
+**旧静态看板：** `docs/pinganpi-roadmap-dashboard.html` 已删除，不再维护第二套静态看板。
 
 **当前分支：** `codex/wechat-miniprogram-pivot`
 
-**当前开发基线：** 阶段 1-19 的 Capacitor / Vue App 工程能力已形成完整业务参考：领域层、写信流程、AI 起稿、流式起稿、CloudBase AI 代理、同步模型、CloudBase 同步代理、手机号账号本地闭环、双人绑定本地 / 服务端边界和外部平台配置收口均已完成对应验证。2026-05-24 用户确认重大方向调整：目标运行环境从 iOS / Android App 改为微信小程序并需要上架；新主线采用微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境；手机号仍是《平安批》业务账号主键；微信一键获取手机号为默认登录入口，短信验证码保留兜底；本地开发和线上都优先走 CloudBase 云函数，本地 proxy 降级为诊断工具。阶段 21 已完成迁移设计与重基线；阶段 22 已完成小程序工程基座；阶段 23 已完成共享领域核心迁移；阶段 24 已完成小程序本地核心界面；阶段 25 已完成小程序 CloudBase dev 主链路；阶段 26 已完成小程序登录与双人关系工程闭环：账号页接入微信手机号 code 登录和受控兜底入口，关系页接入创建关系、生成邀请码、输入邀请码加入，小程序本地会话只缓存账号 / 绑定摘要，服务端账号和关系云函数改为从可信微信 / CloudBase 上下文推导账号身份，不再信任客户端传入的 `authUid`、`phoneNumber` 或 `accountId`。下一步进入阶段 27：小程序 AI 与同步体验补齐。迁移设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`，阶段 22 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md`，阶段 23 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-shared-domain-core.md`，阶段 24 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-local-ui.md`，阶段 25 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-cloudbase-dev.md`，阶段 26 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-login-pair.md`。精确提交以 `git log --oneline --decorate -5` 为准。
+**当前开发基线：** 阶段 1-19 的 Capacitor / Vue App 工程能力已形成完整业务参考：领域层、写信流程、AI 起稿、流式起稿、CloudBase AI 代理、同步模型、CloudBase 同步代理、手机号账号本地闭环、双人绑定本地 / 服务端边界和外部平台配置收口均已完成对应验证。2026-05-24 用户确认重大方向调整：目标运行环境从 iOS / Android App 改为微信小程序并需要上架；新主线采用微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境；手机号仍是《平安批》业务账号主键；微信一键获取手机号为默认登录入口，短信验证码保留兜底；本地开发和线上都优先走 CloudBase 云函数，本地 proxy 降级为诊断工具。阶段 21 已完成迁移设计与重基线；阶段 22 已完成小程序工程基座；阶段 23 已完成共享领域核心迁移；阶段 24 已完成小程序本地核心界面；阶段 25 已完成小程序 CloudBase dev 主链路；阶段 26 已完成小程序登录与双人关系工程闭环：账号页接入微信手机号 code 登录和受控兜底入口，关系页接入创建关系、生成邀请码、输入邀请码加入，小程序本地会话只缓存账号 / 绑定摘要，服务端账号和关系云函数改为从可信微信 / CloudBase 上下文推导账号身份，不再信任客户端传入的 `authUid`、`phoneNumber` 或 `accountId`。下一步进入阶段 27：小程序 AI 与同步体验补齐，实施计划为 `docs/superpowers/plans/2026-05-25-pinganpi-miniprogram-ai-sync-experience.md`。2026-05-25 已完成一次治理审查并固化 worktree / 多 agent 协作规则，记录为 `docs/governance-reviews/2026-05-25-project-governance-review.md` 和 `docs/agent-collaboration.md`。迁移设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`，阶段 22 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md`，阶段 23 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-shared-domain-core.md`，阶段 24 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-local-ui.md`，阶段 25 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-cloudbase-dev.md`，阶段 26 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-login-pair.md`。精确提交以 `git log --oneline --decorate -5` 为准。
 
-**工作区策略：** 日常开发直接在 `/Users/zhujunjie/code/pinganpi` 进行。除非用户明确要求隔离开发，否则不要创建或使用 `.worktrees/`。
+**工作区策略：** 主目录 `/Users/zhujunjie/code/pinganpi` 只作为基线查看、集成和创建 worktree 的入口。所有开发、文档和配置改动都必须在独立 worktree 中完成。
 
 ---
 
@@ -268,6 +268,7 @@
 - 阶段 25 依赖阶段 24，并把账号、绑定、同步、AI 接到 CloudBase `dev` 云函数 event wrapper。
 - 阶段 26 依赖阶段 25，已完成小程序账号 / 关系工程闭环；微信手机号能力真机弹窗、短信真实验证码、AppID 关联和 prd 验证顺延到阶段 28 / 29。
 - 阶段 27 依赖阶段 25 / 26，补齐小程序 AI 起稿、失败关闭、同步状态和必要的流式专项验证。
+- 阶段 27 已补齐可执行实施计划：`docs/superpowers/plans/2026-05-25-pinganpi-miniprogram-ai-sync-experience.md`。
 - 阶段 28 依赖阶段 22-27 的可演示小程序，统一处理 AppID、隐私、手机号能力、`prd` 环境和审核发布人工清单。
 - 阶段 29 依赖阶段 28，由 Codex 引导用户做小程序完整人工验证。
 - 阶段 30-33 是原阶段 21-24 顺延，分别处理邮政异常、推送 / 订阅消息、照片附件和发布准备。
@@ -288,6 +289,7 @@ Roadmap Viewer 新增验证记录：
 - `npm test -- roadmap-viewer/src/roadmap.test.ts`：通过，1 个测试通过。
 - `npm run roadmap:build`：通过，独立 Vue viewer 可完成类型检查和 Vite 构建。
 - `npm run roadmap:dev -- --port 5190`：通过，浏览器验证 `http://localhost:5190/` 能显示 `平安批 Roadmap`、阶段 27 和 `389 tests`；`/docs/pinganpi-roadmap.md` 文档链接返回 200。
+- 2026-05-25 已将结构化数据源移入 `roadmap-viewer/src/roadmap-data.json`，旧 `docs/pinganpi-roadmap-dashboard.html` 已删除。
 
 最近阶段 26 小程序登录与双人关系工程闭环新增验证记录：
 
@@ -1145,5 +1147,5 @@ npx cap doctor
 - 保持克制的档案 / 账簿视觉方向。
 - AI 接入不得绕过写信服务、费用校验、手工校改和真实送达规则。
 - CloudBase `prd` 部署必须显式传入环境参数，不允许脚本默认部署生产。
-- 关键节点必须更新本文件、`docs/pinganpi-roadmap-dashboard.html` 和相关设计 / 计划 / AGENTS 文档。关键节点是会影响后续代理判断、用户查看进度、实现边界、验证方式、部署方式或安全隐私边界的变化。
+- 关键节点必须更新本文件、`roadmap-viewer/src/roadmap-data.json` 和相关设计 / 计划 / AGENTS 文档。关键节点是会影响后续代理判断、用户查看进度、实现边界、验证方式、部署方式或安全隐私边界的变化。
 - 关键节点包括阶段状态变化、产品决策变化、技术架构变化、安全与隐私变化、开发流程变化、验证基线变化、用户确认的问题或风险。纯格式化、无行为变化的小重命名、局部测试内部重构通常不算关键节点。

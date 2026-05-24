@@ -1,5 +1,7 @@
 # 路线图看板 UI 优化设计 (Tesla-style Bento Box)
 
+> **状态：已废弃。** 旧 `docs/pinganpi-roadmap-dashboard.html` 静态页面已删除，不再维护。后续 roadmap 可视化只使用 `roadmap-viewer/`。
+
 ## 设计意图 (Intent)
 将 `docs/pinganpi-roadmap-dashboard.html` 从传统静态文档流页面升级为具有前沿现代感的交互式 Dashboard。因为这是独立于主工程的内部开发者看板，因此不需要遵循主项目的“复古账簿”风格。
 

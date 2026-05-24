@@ -101,7 +101,7 @@ npm run dev
 Expected:
 
 - 终端显示 Local、Network 和 RoadMap 地址。
-- RoadMap 地址可打开 `docs/pinganpi-roadmap-dashboard.html`。
+- RoadMap 可通过 `npm run roadmap:dev` 打开独立 Roadmap Viewer。
 
 ## Task 2: CloudBase 与 MiMo 外部服务确认
 
@@ -361,7 +361,7 @@ Expected:
 **Files:**
 - Modify: `docs/superpowers/reports/2026-05-24-pinganpi-full-manual-verification.md`
 - Modify: `docs/pinganpi-roadmap.md`
-- Modify: `docs/pinganpi-roadmap-dashboard.html`
+- Modify: `roadmap-viewer/src/roadmap-data.json`
 - Modify: `AGENTS.md`
 
 - [ ] **Step 1: 汇总问题**
@@ -389,7 +389,7 @@ Run:
 ```bash
 git status --short --branch
 git diff --check
-git add docs/superpowers/reports/2026-05-24-pinganpi-full-manual-verification.md docs/pinganpi-roadmap.md docs/pinganpi-roadmap-dashboard.html AGENTS.md
+git add docs/superpowers/reports/2026-05-24-pinganpi-full-manual-verification.md docs/pinganpi-roadmap.md roadmap-viewer/src/roadmap-data.json AGENTS.md
 git commit -m "docs(stage20): 记录完整人工验证结果"
 ```
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import roadmapData from "../../docs/roadmap-data.json";
+import roadmapData from "./roadmap-data.json";
 import {
   createRoadmapViewModel,
   getPhaseStatusLabel,

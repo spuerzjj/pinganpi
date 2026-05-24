@@ -1,5 +1,7 @@
 # Roadmap Viewer Apple-style UI Implementation Plan
 
+> **状态：已完成。** 当前实现以 `roadmap-viewer/src/App.vue`、`roadmap-viewer/src/styles.css` 和 `roadmap-viewer/src/roadmap-data.json` 为准。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Transform the roadmap-viewer into a modern Apple-style (macOS/iOS) dashboard using a Bento Grid layout.

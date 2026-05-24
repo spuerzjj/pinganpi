@@ -1,5 +1,7 @@
 # Roadmap Dashboard UI 优化实施计划
 
+> **状态：已废弃。** 旧 `docs/pinganpi-roadmap-dashboard.html` 静态页面已删除，不再维护。后续 roadmap 可视化只使用 `roadmap-viewer/`。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 将现有的静态路线图看板升级为具有 Tesla-style 暗黑极客工业风和 Bento Box 网格布局的现代 Dashboard。

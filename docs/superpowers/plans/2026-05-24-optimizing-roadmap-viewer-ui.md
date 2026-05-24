@@ -1,5 +1,7 @@
 # Roadmap Viewer UI 优化实施计划 (Vue)
 
+> **状态：已废弃。** 本 Tesla-style 暗黑方案已被后续 Apple-style Roadmap Viewer 实现替代。不要继续执行本计划；当前可视化入口以 `roadmap-viewer/` 和 `roadmap-viewer/src/roadmap-data.json` 为准。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 将现有的 Roadmap Viewer (Vue 3) 升级为具有 Tesla-style 暗黑极客工业风和 Bento Box 网格布局的现代 Dashboard。

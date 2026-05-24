@@ -10,7 +10,7 @@ describe("roadmap viewer model", () => {
       title: "平安批 Roadmap",
       summary: "小程序主线",
       metrics: [
-        { label: "验证", value: "388 tests", note: "全量通过" }
+        { label: "验证", value: "389 tests", note: "全量通过" }
       ],
       risks: ["AppID 未配置", "prd 未配置"],
       links: [],

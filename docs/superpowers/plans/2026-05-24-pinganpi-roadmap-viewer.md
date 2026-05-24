@@ -4,7 +4,9 @@
 
 **Goal:** 新增一个独立于旧 Vue App 和微信小程序的 Vue Roadmap Viewer，用于日常查看《平安批》开发进度。
 
-**Architecture:** Viewer 放在 `roadmap-viewer/`，使用独立 Vite 配置和独立入口；数据源放在 `docs/roadmap-data.json`，由 Viewer 读取并渲染。根项目只提供 `npm run roadmap:dev`、`npm run roadmap:build` 和 `npm run roadmap:preview` 快捷脚本，不启动旧 `src/App.vue`，不进入 `miniprogram/`。
+**Architecture:** Viewer 放在 `roadmap-viewer/`，使用独立 Vite 配置和独立入口；数据源现位于 `roadmap-viewer/src/roadmap-data.json`，由 Viewer 读取并渲染。根项目只提供 `npm run roadmap:dev`、`npm run roadmap:build` 和 `npm run roadmap:preview` 快捷脚本，不启动旧 `src/App.vue`，不进入 `miniprogram/`。
+
+> 2026-05-25 更新：旧 `docs/pinganpi-roadmap-dashboard.html` 静态页面已删除，Roadmap Viewer 成为唯一可视化看板。
 
 **Tech Stack:** Vue 3、Vite、TypeScript、Vitest、plain CSS。
 
@@ -16,7 +18,7 @@
 
 **Files:**
 
-- Create: `docs/roadmap-data.json`
+- Create: `roadmap-viewer/src/roadmap-data.json`
 - Create: `roadmap-viewer/src/roadmap.ts`
 - Test: `roadmap-viewer/src/roadmap.test.ts`
 
@@ -44,12 +46,12 @@
 - Modify: `package.json`
 - Modify: `.gitignore`
 - Modify: `docs/pinganpi-roadmap.md`
-- Modify: `docs/pinganpi-roadmap-dashboard.html`
+- Delete: `docs/pinganpi-roadmap-dashboard.html`
 - Modify: `AGENTS.md`
 
 - [x] 新增 `roadmap:dev`、`roadmap:build`、`roadmap:preview`。
 - [x] 忽略 `roadmap-viewer/dist/`。
-- [x] 文档说明新 Viewer 是日常入口，旧静态 dashboard 暂存。
+- [x] 文档说明新 Viewer 是日常入口，旧静态 dashboard 已删除。
 
 ### Task 4: 验证
 
