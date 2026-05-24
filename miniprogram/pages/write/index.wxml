@@ -1,7 +1,154 @@
 <view class="page-shell">
-  <view class="archive-panel">
-    <view class="kicker">{{kicker}}</view>
-    <view class="title">{{title}}</view>
-    <view class="body-copy">{{body}}</view>
-  </view>
+  <block wx:if="{{flow}}">
+    <view class="panel-stack">
+      <view class="archive-panel">
+        <view class="kicker">{{flow.kicker}}</view>
+        <view class="title">{{flow.title}}</view>
+        <view class="body-copy">{{flow.methodText}}</view>
+      </view>
+
+      <view class="section-panel">
+        <view class="step-ledger">
+          <view class="step-cell step-{{item.status}}" wx:for="{{flow.steps}}" wx:key="id">
+            <text>{{item.label}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="section-panel" wx:if="{{isMethodStep}}">
+        <view class="section-title">代书登记</view>
+        <view class="record-list">
+          <view class="record-row">
+            <view class="meta-row">
+              <text class="meta-label">今日执笔</text>
+              <text class="meta-value">{{flow.selectedScribeName}}</text>
+            </view>
+          </view>
+          <view class="record-row">
+            <view class="meta-row">
+              <text class="meta-label">费用</text>
+              <text class="meta-value">{{flow.selectedScribeFeeText}}</text>
+            </view>
+          </view>
+          <view class="record-row">
+            <view class="record-copy">寄信人：{{flow.fromText}}</view>
+            <view class="record-copy">收信人：{{flow.toText}}</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="section-panel" wx:if="{{isOralStep}}">
+        <view class="section-title">口述原意</view>
+        <textarea
+          class="paper-input oral-input"
+          value="{{flow.oralText}}"
+          maxlength="800"
+          placeholder="把要告诉她的话先记在这里。"
+          bindinput="onOralInput"
+        />
+        <view class="record-copy">口述会留在本地页面内，用来生成一版先生起稿。</view>
+      </view>
+
+      <view class="section-panel" wx:if="{{isDraftStep}}">
+        <view class="section-title">先生起稿</view>
+        <view class="record-copy" wx:if="{{flow.oralText}}">口述：{{flow.oralText}}</view>
+        <button class="ledger-button primary" disabled="{{!flow.canGenerate}}" bindtap="onGenerateDraft">
+          请先生起稿
+        </button>
+        <view class="letter-paper" wx:if="{{flow.draftText}}">{{flow.draftText}}</view>
+        <view class="empty-note" wx:else>先生尚未落笔。</view>
+      </view>
+
+      <view class="section-panel" wx:if="{{isReviseStep}}">
+        <view class="section-title">校改定稿</view>
+        <view class="letter-paper" wx:if="{{flow.draftText}}">{{flow.draftText}}</view>
+        <textarea
+          class="paper-input final-input"
+          value="{{flow.finalText}}"
+          maxlength="1200"
+          placeholder="在此校改定稿。"
+          bindinput="onFinalInput"
+        />
+      </view>
+
+      <view class="section-panel" wx:if="{{isPostStep}}">
+        <view class="section-title">投寄核算</view>
+        <view class="record-list">
+          <view class="record-row">
+            <view class="meta-row">
+              <text class="meta-label">邮路</text>
+              <text class="meta-value">{{flow.routeText}}</text>
+            </view>
+          </view>
+          <view class="record-row">
+            <view class="meta-row">
+              <text class="meta-label">里程</text>
+              <text class="meta-value">{{flow.distanceText}}</text>
+            </view>
+          </view>
+          <view class="record-row">
+            <view class="meta-row">
+              <text class="meta-label">预计到达</text>
+              <text class="meta-value">{{flow.dueText}}</text>
+            </view>
+          </view>
+          <view class="record-row">
+            <view class="meta-row">
+              <text class="meta-label">挂号</text>
+              <switch checked="{{flow.registered}}" bindchange="onToggleRegistered" />
+            </view>
+          </view>
+          <view class="record-row">
+            <view class="meta-row">
+              <text class="meta-label">邮资</text>
+              <text class="meta-value">{{flow.postageText}}</text>
+            </view>
+          </view>
+          <view class="record-row">
+            <view class="meta-row">
+              <text class="meta-label">合计</text>
+              <text class="meta-value strong-number">{{flow.totalCostText}}</text>
+            </view>
+          </view>
+          <view class="record-row">
+            <view class="meta-row">
+              <text class="meta-label">钱匣余</text>
+              <text class="meta-value">{{flow.walletBalanceText}}</text>
+            </view>
+          </view>
+        </view>
+        <button class="ledger-button primary" disabled="{{!flow.canPost}}" bindtap="onPostLocal">本地投寄</button>
+        <view class="empty-note" wx:if="{{!flow.canPost}}">{{flow.postBlockReason}}</view>
+      </view>
+
+      <view class="section-panel" wx:if="{{receipt}}">
+        <view class="section-title">{{receipt.title}}</view>
+        <view class="record-list">
+          <view class="record-row">
+            <view class="meta-row">
+              <text class="meta-label">邮路</text>
+              <text class="meta-value">{{receipt.routeText}}</text>
+            </view>
+          </view>
+          <view class="record-row">
+            <view class="meta-row">
+              <text class="meta-label">到达</text>
+              <text class="meta-value">{{receipt.dueText}}</text>
+            </view>
+          </view>
+          <view class="record-row">
+            <view class="meta-row">
+              <text class="meta-label">收讫</text>
+              <text class="meta-value">{{receipt.costText}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="nav-row">
+        <button class="ledger-button" disabled="{{!canGoBack}}" bindtap="goBack">上一步</button>
+        <button class="ledger-button" disabled="{{!canGoNext || nextDisabled}}" bindtap="goNext">下一步</button>
+      </view>
+    </view>
+  </block>
 </view>
