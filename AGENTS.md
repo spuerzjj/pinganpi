@@ -15,7 +15,7 @@
 
 ## 产品上下文
 
-《平安批》是只给两个人使用的 iOS/Android 慢通信 App，不是网页聊天产品。核心体验是模拟 1960 年左右中国旧时代纸质信件通信：
+《平安批》是只给两个人使用的慢通信产品。当前主线已从 iOS / Android Capacitor App 改为微信原生小程序，并以可上架为目标；它不是网页聊天产品。核心体验是模拟 1960 年左右中国旧时代纸质信件通信：
 
 - App 内时间 = 现实时间减 66 年。
 - 现实 `2026 年 5 月 23 日` 对应 App 内 `一九六〇年五月二十三日`。
@@ -30,26 +30,25 @@
 完整产品文档：
 
 - `docs/superpowers/specs/2026-05-23-pinganpi-design.md`
+- `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`
 
 ## 当前技术栈
 
 - TypeScript
-- Vue 3
-- Vite
-- Tailwind CSS
-- Varlet
-- Capacitor
+- 微信原生小程序（新主线，待阶段 22 创建 `miniprogram/`）
+- CloudBase 云函数，多环境目标为 `dev` / `prd`
 - Vitest
-- iOS 原生工程：`ios/`
-- Android 原生工程：`android/`
+- Vue 3 / Vite / Tailwind CSS / Varlet / Capacitor（旧 App 历史实现，暂存为业务和体验参考）
+- iOS 原生工程：`ios/`（旧 App）
+- Android 原生工程：`android/`（旧 App）
 
 本地开发命令：
 
 ```bash
 npm ci
-npm run dev
 npm test
 npm run typecheck
+npm run dev
 npm run build
 npm run cap:sync
 npm run ai-proxy:check
@@ -66,9 +65,13 @@ CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:deploy:sync
 npx cap doctor
 ```
 
+新主线的日常开发方式将改为：用微信开发者工具打开 `miniprogram/`，连接 CloudBase `dev` 环境，通过 `wx.cloud.callFunction` 调用云函数。阶段 22 创建小程序工程前，`npm run dev`、`cap:sync`、`cap doctor` 只代表旧 Capacitor / Vue 历史基线。
+
 ## 当前代码状态
 
-当前主线开发基于 `main`，最新路线图基线为：**阶段 17 / 18 已完成工程闭环：阶段 17 新增手机号账号本地 adapter、稳定 `PinganpiAccount`、登录态恢复和账号入口页；阶段 18 新增创建一对关系、24 小时一次性邀请码、输入即加入、唯一 active household、本地绑定驱动同步命名空间、服务端账号 / 关系约束和 `sync-proxy` 账号成员授权边界。阶段 16 双人真实同步 MVP 已完成云端 smoke 收口：阶段 16A 的同步 runtime、本地同步状态、localStorage remote adapter、浏览器 device / household 配置、联网投寄 / 拆阅护栏和双设备生命周期测试已完成；阶段 16B 的 HTTP SyncAdapter、`VITE_PINGANPI_SYNC_PROXY_URL` / `VITE_PINGANPI_SYNC_MEMBER_TOKEN` 配置开关、CloudBase `sync-proxy` HTTP 函数、CloudBase 数据库 snapshot store、服务端 redaction / 私有草稿 / 照片附件过滤、member token fail closed、stale revision CAS、构建 / 部署 / env / smoke 脚本已完成；CloudBase 集合 `pinganpi_sync_snapshots` 已创建，显式路由 `/sync/health`、`/sync/pull`、`/sync/push` 已配置，云端 smoke 已通过 health、未带 token 401、合法 pull、push、再 pull。阶段 19 外部平台配置已收口：CloudBase 手机号短信登录已开启且两个真实手机号验证码均已收到；App 登录确定采用 CloudBase Auth v2 HTTP API；账号 / 关系集合命名、集合权限、HTTP 路由 smoke 和 CLI 路由查询已确认；当前免费体验版不启用按量付费，预算暂缓；当前单环境接受默认 `TCB_QcsRole`；MiMo key 管理暂缓到正式发布、扩大使用范围、疑似泄露、新模型或异常费用前复查。阶段 20 完整人工验证计划已准备，下一步可执行。阶段 15 已完成云端与双人同步准备基础，远端实体使用 `remoteId` 避免跨设备同本地 id 数据丢失，pull 会按成员 redaction 未到达来信正文，本地删除草稿会生成 tombstone。阶段 16 设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-dual-sync-mvp-design.md` 和 `docs/superpowers/specs/2026-05-24-pinganpi-cloudbase-sync-design.md`，阶段 17 设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-phone-account-design.md`，阶段 18 设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-pair-binding-design.md`，阶段 17 / 18 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-account-pair-binding.md`。阶段 13 已跑通本机 Xiaomi MiMo、本地代理、App 写信页、CloudBase HTTP 云函数部署、云端 secret 配置、云端 AI 起稿接口、浏览器写信页云端 AI 烟测、CloudBase 用量基线、禁用 key 安全失败验证、恢复验证和 `/*` 路由清理。阶段 14 已完成本地 / 云端受控 SSE、App streaming adapter、写信页 partial 预览和完成前不可投寄保护，并已部署 CloudBase 后通过 `/api/ai/scribe-draft/stream` 非敏感烟测；GUI 浏览器点击验证因 Computer Use 权限未授予待补**。继续开发前以 `git log --oneline --decorate -5` 为准。
+当前迁移工作在 `codex/wechat-miniprogram-pivot` 分支推进。最新路线图基线为：**阶段 1-19 的旧 Capacitor / Vue App 工程能力已形成完整业务参考；2026-05-24 用户确认项目主线切换为微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境。手机号仍是《平安批》业务账号主键，微信一键获取手机号为默认登录入口，短信验证码登录保留兜底。本地开发和上线都优先走 CloudBase 云函数，本地 proxy 降级为诊断工具。阶段 20 原“完整人工验证引导”计划暂存为旧 App 验证资料；当前进入阶段 21“微信小程序迁移设计与重基线”。迁移设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`。**
+
+旧 App 能力基线仍然重要：阶段 16 双人真实同步 MVP 已完成云端 smoke；阶段 17 手机号账号本地工程闭环已完成；阶段 18 双人绑定与同步授权工程闭环已完成；阶段 19 外部平台配置已收口。阶段 13 / 14 的 CloudBase AI 代理、非流式 / 流式起稿、禁用 key 安全失败验证和恢复验证已跑通。继续开发前以 `git log --oneline --decorate -5` 为准。
 
 最新关键提交以 `git log --oneline --decorate -8` 为准；阶段 13 相关提交包括：
 
@@ -159,6 +162,7 @@ npx cap doctor
 
 - `docs/pinganpi-roadmap.md`
 - `docs/pinganpi-roadmap-dashboard.html`
+- `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`
 - `docs/superpowers/specs/2026-05-24-pinganpi-dual-sync-mvp-design.md`
 - `docs/superpowers/plans/2026-05-24-pinganpi-dual-sync-mvp.md`
 - `docs/superpowers/specs/2026-05-24-pinganpi-cloudbase-sync-design.md`
@@ -189,6 +193,49 @@ npx cap doctor
 - 非关键节点通常不需要更新 roadmap：纯格式化、无行为变化的小重命名、局部测试内部重构、未改变命令和边界的实现细节。
 
 推荐开发顺序：
+
+当前新主线顺序如下，旧 App 阶段 13-20 仅作为历史基线和迁移参考：
+
+1. **阶段 21：微信小程序迁移设计与重基线**
+   - 状态：进行中。
+   - 设计文档：`docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`。
+   - 目标：同步迁移设计、roadmap、dashboard、AGENTS，并写出实施计划。
+   - 用户已确认：采用微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境；手机号仍是业务账号主键；微信一键获取手机号为默认入口，短信验证码兜底。
+
+2. **阶段 22：小程序工程基座**
+   - 创建 `miniprogram/`、小程序配置、TypeScript 页面骨架、基础样式、开发者工具打开方式和 `dev` 环境配置入口。
+   - 不继续扩展 Capacitor 壳层。
+
+3. **阶段 23：共享领域核心迁移**
+   - 抽取或适配 `src/domain` 等纯 TypeScript 规则，让小程序复用时间、钱匣、代笔先生、邮资、送达和状态机。
+   - 领域层不得引入小程序、CloudBase、Vue、浏览器或 Capacitor 依赖。
+
+4. **阶段 24：小程序本地核心界面**
+   - 用 WXML / WXSS / TypeScript 重建今日、写信、先生、钱匣、信箱 / 档案。
+   - 第一版先支持本地 mock，不做营销页，不做聊天气泡。
+
+5. **阶段 25：小程序 CloudBase dev 主链路**
+   - 小程序通过 `wx.cloud.callFunction` 调用 `dev` 云函数。
+   - 新增账号、绑定、同步、AI 的 event wrapper，复用现有 `server/` handler，不复制业务校验。
+
+6. **阶段 26：小程序登录与双人关系真实闭环**
+   - 微信一键手机号登录为默认入口，短信验证码登录兜底。
+   - 服务端可信推导 `accountId -> householdId -> memberId`，客户端传入 id 不作为授权依据。
+
+7. **阶段 27：小程序 AI 与同步体验补齐**
+   - 先保证非流式 AI 起稿和失败关闭；小程序流式输出单独验证，不阻塞 MVP。
+   - 补齐同步状态、投寄 / 拆阅联网校验和 redaction。
+
+8. **阶段 28：微信小程序上架配置**
+   - AppID、主体认证、服务类目、隐私保护指引、手机号能力、CloudBase `prd` 环境、审核发布需要用户人工介入。
+
+9. **阶段 29：小程序完整人工验证**
+   - 双手机号、双端、AI 起稿、写信、真实等待、拆阅归档、断网恢复、`prd` smoke。
+
+10. **阶段 30-33：异常、订阅消息、照片附件、发布打磨**
+   - 原邮政异常、推送、照片附件和发布准备阶段顺延到小程序闭环后。
+
+旧 App 历史阶段参考：
 
 1. **阶段 13：云端 AI 代理与费用配置**
    - 阶段 13 工程链路已完成；真实 MiMo env、云函数 / CloudBase 落点、密钥 secret、禁用 / 恢复、资源删除 / 回滚步骤已建立。
@@ -250,7 +297,7 @@ npx cap doctor
    - 启动 pull、关键操作 push、回到前台 refresh。
    - 第一版只保证离线草稿；投寄和拆阅必须联网校验后才正式生效。
    - 本地调试使用 device namespace：同一浏览器可用不同 `device` 参数模拟两台设备，本地 AppState 分开，remote snapshot 共享。
-   - 真实 CloudBase 部署 smoke 已通过；费用告警、默认角色收敛和双真机人工验证统一进入阶段 19 / 20 收口。
+   - 真实 CloudBase 部署 smoke 已通过；费用告警和默认角色收敛已在阶段 19 收口，小程序迁移后的双真机人工验证顺延到阶段 29。
    - 后续若支持离线投寄 / 拆阅请求，必须作为 command 入队，联网后重新校验钱包、状态机、收件人和到达时间。
 
 5. **阶段 17：手机号账号系统**
@@ -260,7 +307,7 @@ npx cap doctor
    - 新增 `src/app/pages/AccountGatePage.vue`：未登录或未绑定时先进入账号簿，不进入写信主流程。
    - 新增 `server/account-pair/account-pair-service.ts`：按受信任 `authUid` 确保同一平安批业务账号，并更新 `lastLoginAtIso`。
    - 账号档案允许保存完整手机号，App 可展示当前登录手机号；不要把手机号复制到信件、邮政记录、AI metadata 或无关日志。
-   - 真实 CloudBase 手机号验证码、token / refresh token、卸载重装后的服务端账号恢复验证进入阶段 19 / 20。
+   - 真实 CloudBase 手机号验证码、token / refresh token 已在旧 App 阶段 19 收口到平台配置；小程序迁移后的账号恢复验证顺延到阶段 26 / 29。
 
 6. **阶段 18：双人绑定与同步授权**
    - 设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-pair-binding-design.md`。
@@ -294,41 +341,41 @@ npx cap doctor
    - 包括 CloudBase Auth 手机号验证码、短信签名 / 模板、账号 / 关系 CloudBase 持久化、数据库集合权限、HTTP 路由、费用告警、默认角色收敛、MiMo key 撤销 / 轮换入口和真实手机号验证码。
    - 不在本阶段新增业务功能，不把控制台 secret、验证码或真实 key 写入仓库。
 
-8. **阶段 20：完整人工验证引导**
-   - 状态：计划已准备，执行计划为 `docs/superpowers/plans/2026-05-24-pinganpi-full-manual-verification.md`。
-   - 下一步可执行。
-   - 由 Codex 引导用户对系统做端到端人工验证。
+8. **阶段 20：旧 App 完整人工验证引导**
+   - 状态：计划已准备但暂存，执行计划为 `docs/superpowers/plans/2026-05-24-pinganpi-full-manual-verification.md`。
+   - 小程序迁移后不作为当前主线执行，可作为业务验收 checklist 参考。
+   - 原计划由 Codex 引导用户对旧 App 做端到端人工验证。
    - 覆盖账号登录、创建关系、邀请码加入、双设备同步、AI 起稿、写信投寄、真实等待送达、拆阅、断网恢复、iOS / Android 真机和 WebView console。
    - 验证记录建议写入 `docs/superpowers/reports/2026-05-24-pinganpi-full-manual-verification.md`。
    - 验证记录只写通过 / 失败 / 阻塞 / 待修复项，不记录手机号验证码、完整手机号、真实 key、SecretId、SecretKey、CloudBase token、MiMo key 或敏感正文。
 
-9. **阶段 21：邮政异常规则**
+9. **阶段 30：邮政异常规则**
    - 延误、错分、迷失、找回、退回采用确定性种子推进。
    - 所有异常必须产生邮政记录。
 
-10. **阶段 22：系统推送**
+10. **阶段 31：系统推送 / 订阅消息**
    - 只推重要信、挂号信、迷失信找回、退回等少量事件。
    - 普通信默认不主动推送。
 
-11. **阶段 23：照片附件**
+11. **阶段 32：照片附件**
    - 夹寄照片、费用、附件状态、到达前不泄露。
    - 云端文件存储依赖阶段 15 的规划；具体云存储购买 / 配置在阶段 23 实施，必要的控制台动作归入阶段 19。
 
-12. **阶段 24：发布准备与体验打磨**
-   - toast / snackbar、App 图标、启动页、真机验证、bundle 优化、隐私与备份检查。
+12. **阶段 33：发布准备与体验打磨**
+   - toast / snackbar、小程序图标、启动配置、真机验证、隐私与备份检查。
 
 ## 开发原则
 
-- 移动端优先，同时保证 PC 浏览器预览可用。
-- UI 使用 Tailwind CSS。
-- 组件库使用 Varlet。
+- 新主线移动端优先，目标运行环境是微信小程序，同时保证微信开发者工具和 PC 预览可用。
+- 小程序 UI 使用 WXML / WXSS / TypeScript 和本地组件。
+- 旧 App 的 Tailwind CSS / Varlet / Vue 页面只作为历史实现参考，不作为小程序 UI 主线。
 - 页面风格保持旧账簿、档案、信件、邮政登记感。
-- 不要把 App 做成网页营销页或现代聊天页。
+- 不要把小程序做成网页营销页或现代聊天页。
 - 不要显示现代实时地图。
-- AI 起稿已完成 App 侧与本地 / 云端流式代理链路；后续继续保留既有写信流程边界、手工校改、费用校验和真实等待规则。
-- 不要在领域层引入浏览器、Capacitor、云服务或 UI 依赖。
+- AI 起稿已完成旧 App 侧与本地 / 云端流式代理链路；小程序迁移后先保证非流式起稿和失败关闭，流式输出单独验证。
+- 不要在领域层引入小程序、浏览器、Capacitor、CloudBase、云服务或 UI 依赖。
 - 对新增业务规则写测试，优先使用 Vitest。
-- 前端页面可以先浏览器验证，再进行 Capacitor 原生验证。
+- 小程序前端页面优先用微信开发者工具验证，再做真机预览 / 体验版验证。
 
 ## 验证要求
 
@@ -339,7 +386,7 @@ npm test
 npm run typecheck
 ```
 
-涉及构建、Capacitor、依赖或前端入口时运行：
+涉及旧 App 构建、Capacitor、依赖或旧前端入口时运行：
 
 ```bash
 npm run build
@@ -353,11 +400,21 @@ npx cap doctor
 npm audit --omit=dev
 ```
 
+小程序工程创建后，应补充微信小程序构建 / 类型检查 / 云函数构建 / dev 环境 smoke 命令，并把它们作为新主线默认验证。
+
 已知现象：
 
-- `npm run build` 目前会提示 Varlet 相关首包超过 500 KB。这个是优化项，不是当前阻塞项。
+- `npm run build` 目前会提示 Varlet 相关首包超过 500 KB。这个是旧 App 优化项，不是小程序迁移阻塞项。
 
-## Capacitor 调试提示
+## 小程序调试提示
+
+- 阶段 22 后，用微信开发者工具打开 `miniprogram/`。
+- 小程序本地开发默认连接 CloudBase `dev` 环境。
+- 小程序端通过 `wx.cloud.callFunction` 调用云函数，不依赖本地 proxy 才能完成主流程。
+- `prd` 只用于审核、发布和线上 smoke；部署生产必须显式指定环境。
+- AppID、手机号能力、隐私保护指引、CloudBase 环境关联和审核发布需要用户在微信公众平台 / 微信开发者工具 / 腾讯云控制台确认。
+
+## Capacitor 调试提示（旧 App）
 
 - 浏览器优先：`npm run dev`。
 - 不使用 live reload 时，Web 改动进入原生壳前必须执行 `npm run cap:sync`。
@@ -378,7 +435,7 @@ npm audit --omit=dev
 
 ## Git 与发布状态
 
-- 当前工作应基于 `main`。
+- 当前迁移工作基于 `codex/wechat-miniprogram-pivot`。如需回到 `main` 或创建新分支，先确认用户意图。
 - 当前本地 `main` 可能尚未 push 到远端，继续开发或发布前先确认：
 
 ```bash

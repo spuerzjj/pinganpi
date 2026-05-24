@@ -479,9 +479,10 @@
           </p>
         </div>
         <div class="meta">
-          <span class="badge done">工程：阶段 18 闭环</span>
+          <span class="badge done">旧 App：阶段 19 收口</span>
+          <span class="badge info">新主线：微信小程序</span>
           <span class="badge done">阶段 19 已收口</span>
-          <span class="badge done">main</span>
+          <span class="badge done">codex/wechat-miniprogram-pivot</span>
           <span class="badge">更新：2026-05-24</span>
         </div>
       </header>
@@ -489,23 +490,23 @@
       <section class="grid-4" aria-label="关键状态">
         <article class="metric">
           <p class="metric-label">当前基线</p>
-          <p class="metric-value">阶段 18 完成</p>
-          <p class="metric-note">账号入口、本地绑定、邀请码、同步命名空间和服务端账号授权边界已完成。</p>
+          <p class="metric-value">阶段 21</p>
+          <p class="metric-note">项目主线转向微信原生小程序，旧 Capacitor / Vue 实现暂存为历史参考。</p>
         </article>
         <article class="metric">
           <p class="metric-label">验证状态</p>
           <p class="metric-value">320 tests</p>
-          <p class="metric-note">新增账号、绑定、服务端关系约束、sync-proxy 账号授权和 runtime env 测试。</p>
+          <p class="metric-note">旧 App 账号、绑定、同步、AI 和领域层验证基线保留，供小程序迁移复用。</p>
         </article>
         <article class="metric">
           <p class="metric-label">下一推荐</p>
-          <p class="metric-value">人工收口</p>
-          <p class="metric-note">进入阶段 19：CloudBase Auth、短信验证码、账号 / 关系持久化和控制台配置。</p>
+          <p class="metric-value">工程基座</p>
+          <p class="metric-note">进入阶段 22：创建 miniprogram、TypeScript 页面骨架和 dev 环境配置。</p>
         </article>
         <article class="metric">
           <p class="metric-label">主要风险</p>
-          <p class="metric-value">9 项</p>
-          <p class="metric-note">人工配置、完整验证、GUI 补测、真实双设备、异常、推送、附件、发布质量。</p>
+          <p class="metric-value">8 项</p>
+          <p class="metric-note">AppID、prd 环境、手机号能力、隐私审核、共享核心、流式 AI、真实双端、发布。</p>
         </article>
       </section>
 
@@ -513,13 +514,13 @@
         <div class="card-header">
           <div>
             <h2>阶段进度</h2>
-            <p class="muted">阶段 17 / 18 已完成工程闭环；CloudBase Auth、短信、账号 / 关系持久化、费用和真机人工项放入阶段 19 / 20。</p>
+            <p class="muted">阶段 1-19 的旧 App 工程能力保留为业务参考；当前主线从阶段 21 开始迁移到微信原生小程序。</p>
           </div>
-          <span class="badge done">75%</span>
+          <span class="badge info">重基线中</span>
         </div>
         <div class="card-body progress">
           <div class="progress-track" aria-hidden="true">
-            <div class="progress-fill" style="width: 75%"></div>
+            <div class="progress-fill" style="width: 60%"></div>
           </div>
           <div class="phase-grid">
             <div class="phase done">
@@ -594,29 +595,65 @@
               <span class="phase-number">18</span>
               <span class="phase-title">绑定授权</span>
             </div>
-            <div class="phase next">
+            <div class="phase done">
               <span class="phase-number">19</span>
-              <span class="phase-title">人工配置中</span>
+              <span class="phase-title">人工配置</span>
             </div>
             <div class="phase">
               <span class="phase-number">20</span>
-              <span class="phase-title">完整验证</span>
+              <span class="phase-title">旧 App 验证</span>
             </div>
-            <div class="phase">
+            <div class="phase next">
               <span class="phase-number">21</span>
-              <span class="phase-title">邮政异常</span>
+              <span class="phase-title">小程序重基线</span>
             </div>
             <div class="phase">
               <span class="phase-number">22</span>
-              <span class="phase-title">系统推送</span>
+              <span class="phase-title">小程序基座</span>
             </div>
             <div class="phase">
               <span class="phase-number">23</span>
-              <span class="phase-title">照片附件</span>
+              <span class="phase-title">共享核心</span>
             </div>
             <div class="phase">
               <span class="phase-number">24</span>
-              <span class="phase-title">发布准备</span>
+              <span class="phase-title">小程序界面</span>
+            </div>
+            <div class="phase">
+              <span class="phase-number">25</span>
+              <span class="phase-title">dev 云链路</span>
+            </div>
+            <div class="phase">
+              <span class="phase-number">26</span>
+              <span class="phase-title">登录绑定</span>
+            </div>
+            <div class="phase">
+              <span class="phase-number">27</span>
+              <span class="phase-title">AI 同步</span>
+            </div>
+            <div class="phase">
+              <span class="phase-number">28</span>
+              <span class="phase-title">上架配置</span>
+            </div>
+            <div class="phase">
+              <span class="phase-number">29</span>
+              <span class="phase-title">小程序验证</span>
+            </div>
+            <div class="phase">
+              <span class="phase-number">30</span>
+              <span class="phase-title">邮政异常</span>
+            </div>
+            <div class="phase">
+              <span class="phase-number">31</span>
+              <span class="phase-title">订阅消息</span>
+            </div>
+            <div class="phase">
+              <span class="phase-number">32</span>
+              <span class="phase-title">照片附件</span>
+            </div>
+            <div class="phase">
+              <span class="phase-number">33</span>
+              <span class="phase-title">发布打磨</span>
             </div>
           </div>
         </div>
@@ -636,9 +673,9 @@
                 <span class="badge done">完成</span>
               </li>
               <li class="list-item">
-                <strong>移动工程</strong>
-                <span>Vue 3 + Vite + Tailwind + Varlet + Capacitor，iOS / Android 壳层可用。</span>
-                <span class="badge done">完成</span>
+                <strong>旧移动工程</strong>
+                <span>Vue 3 + Vite + Tailwind + Varlet + Capacitor，iOS / Android 壳层可用；迁移后作为历史实现和体验参考暂存。</span>
+                <span class="badge done">历史基线</span>
               </li>
               <li class="list-item">
                 <strong>本地状态</strong>
@@ -710,6 +747,11 @@
                 <span>本地创建关系、24 小时一次性邀请码、输入即加入、唯一 active household、同步命名空间和 sync-proxy 账号授权边界已接入。</span>
                 <span class="badge done">阶段 18</span>
               </li>
+              <li class="list-item">
+                <strong>小程序迁移设计</strong>
+                <span>已确认微信原生小程序 + TypeScript + CloudBase dev/prd 多环境；手机号仍是业务账号主键，微信一键登录为默认入口，短信兜底。</span>
+                <span class="badge info">阶段 21</span>
+              </li>
             </ul>
           </div>
         </article>
@@ -728,18 +770,19 @@
             </div>
             <ul class="plain-list" style="margin-top: 12px">
               <li>全量 40 个测试文件，320 个测试通过。</li>
+              <li>阶段 21 当前为文档与路线重基线；小程序工程尚未创建，下一步进入阶段 22。</li>
               <li>阶段 16 云端 smoke 已通过：`/sync/health`、未带 token 401、合法 pull、push、再 pull。</li>
               <li>新增测试覆盖账号登录、双人绑定、账号驱动同步配置、服务端账号 / 关系约束、sync-proxy 账号授权和 CloudBase runtime env。</li>
               <li>测试继续覆盖草稿、写信、模板代书、邮政推进、拆阅服务、AI 代理、同步模型、mock remote、AppModel 和持久化结算。</li>
-              <li>`npx cap sync` 与 `npx cap doctor` 已通过，iOS / Android Capacitor 依赖正常。</li>
+              <li>`npx cap sync` 与 `npx cap doctor` 已通过，iOS / Android Capacitor 依赖正常；这些命令现在只代表旧 App 历史基线。</li>
               <li>`npm audit --omit=dev` 通过，0 vulnerabilities；CloudBase SDK 的 lodash.set / unset 风险已用本仓库 shim 替换。</li>
               <li>CloudBase `/api/health` 返回 ok，云端 `/api/ai/scribe-draft` 非敏感烟测返回 AI 初稿。</li>
               <li>云端 `/api/ai/scribe-draft/stream` 非敏感烟测返回多段 `delta` 和最终 `done`，未暴露 provider 原始 `choices` chunk。</li>
               <li>禁用云端 `MIMO_API_KEY` 后返回 `502 proxy_unavailable`，恢复后云端起稿重新返回 200。</li>
               <li>CloudBase AI 路由保留 `/api`；同步代理使用显式 `/sync/health`、`/sync/pull`、`/sync/push`。</li>
-              <li>CloudBase 当前计费周期 `2026-05-23 ~ 2026-06-23`，已用 credits 为 0.56。</li>
+              <li>CloudBase 当前计费周期 `2026-05-23 ~ 2026-06-23`，阶段 19 审计基线已用 credits 为 1.67 / 3000。</li>
               <li>Chrome GUI 点击验证因 Computer Use 权限未授予，需用户授权后补测。</li>
-              <li>Varlet 首包超过 500 KB 是优化项，当前不阻塞。</li>
+              <li>Varlet 首包超过 500 KB 是旧 App 优化项；小程序主线不再以 Varlet / Tailwind 为 UI 方案。</li>
             </ul>
           </div>
         </aside>
@@ -749,92 +792,78 @@
         <article class="card">
           <div class="card-header">
             <h2>后续主线</h2>
-            <span class="badge info">下一工程：阶段 20</span>
+            <span class="badge info">下一工程：阶段 22</span>
           </div>
           <div class="card-body priority-grid">
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge done">阶段 10 完成</span>
+                <span class="badge info">阶段 21 进行中</span>
               </div>
-              <h3>AI 代笔接入设计</h3>
-              <p>AI adapter、提示词素材、隐私、失败处理和测试策略已明确，模板只作为风格样例。</p>
+              <h3>微信小程序迁移设计与重基线</h3>
+              <p>迁移设计已确认：微信原生小程序、TypeScript、CloudBase dev/prd、多环境隔离、手机号业务账号、微信一键登录和短信兜底。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge done">阶段 11 完成</span>
+                <span class="badge info">阶段 22 下一步</span>
               </div>
-              <h3>最小 AI 服务端代理</h3>
-              <p>本地代理已建；真实 MiMo env、CloudBase CLI 构建入口和云端部署准备拆到阶段 13。</p>
+              <h3>小程序工程基座</h3>
+              <p>创建 `miniprogram/`、页面骨架、TypeScript 配置、微信开发者工具配置和 dev 环境入口。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge done">阶段 12 完成</span>
+                <span class="badge">阶段 23</span>
               </div>
-              <h3>AI 生成正文落地</h3>
-              <p>写信起稿已调用 AI adapter 生成初稿；失败保留口述，用户仍要手工校改后才能投寄。</p>
+              <h3>共享领域核心迁移</h3>
+              <p>抽取或适配纯 TypeScript 规则，让小程序复用时间、钱匣、代笔先生、邮资、送达和状态机。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge warn">人工收口</span>
+                <span class="badge">阶段 24</span>
               </div>
-              <h3>云端 AI 配置</h3>
-              <p>CloudBase HTTP 函数、云端 secret、`/api` 代理地址、云端起稿、禁用 key 失败关闭、恢复验证和路由收敛已通过；控制台费用和角色检查统一移入阶段 19。</p>
+              <h3>小程序本地核心界面</h3>
+              <p>重建今日、写信、代笔先生、钱匣、信箱 / 档案，先跑通本地 mock 慢通信闭环。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge done">阶段 14 完成</span>
+                <span class="badge">阶段 25</span>
               </div>
-              <h3>AI 起稿流式体验</h3>
-              <p>先生起稿可边生成边显字，保留非流式兜底和手工校改边界；GUI 点击验证待权限补测。</p>
+              <h3>CloudBase dev 主链路</h3>
+              <p>新增小程序云函数 event wrapper，接账号、绑定、同步和 AI，到 dev 环境完成 smoke。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge done">阶段 15 完成基础</span>
+                <span class="badge">阶段 26</span>
               </div>
-              <h3>云端与双人同步准备</h3>
-              <p>远端模型、同步 adapter、本地 mock remote、append-only 去重、跨设备 id 防冲突、未到达正文 redaction、信件状态单向推进和草稿冲突策略已完成；CloudBase HTTP 同步代理已在阶段 16B 完成工程实现。</p>
+              <h3>登录与双人关系真实闭环</h3>
+              <p>微信一键手机号为默认入口，短信验证码兜底；服务端可信推导账号、household 和 member。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge done">阶段 16A 完成</span>
+                <span class="badge">阶段 27</span>
               </div>
-              <h3>双人同步本地闭环</h3>
-              <p>同步 runtime、同步状态、localStorage remote adapter、浏览器 device 配置、联网投寄 / 拆阅护栏和本地双设备生命周期测试已完成。</p>
+              <h3>小程序 AI 与同步体验</h3>
+              <p>先保证非流式 AI 起稿和失败关闭；流式输出作为小程序专项验证，不阻塞核心闭环。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge done">阶段 16B 实现</span>
+                <span class="badge warn">阶段 28</span>
               </div>
-              <h3>CloudBase 同步代理</h3>
-              <p>App 可通过 HTTP SyncAdapter 调用 `sync-proxy`；服务端使用 CloudBase 数据库保存 household snapshot，返回前过滤未到达正文、对方私有草稿和照片附件。`/sync` 云端 smoke 已通过。</p>
+              <h3>微信小程序上架配置</h3>
+              <p>AppID、主体、服务类目、隐私保护指引、手机号能力、prd 环境和审核发布需要用户人工参与。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge done">阶段 17 完成</span>
+                <span class="badge">阶段 29</span>
               </div>
-              <h3>手机号账号系统</h3>
-              <p>已完成本地手机号 mock 登录、稳定账号、登录态恢复和账号入口页；真实 CloudBase 手机号验证码和恢复验证放入阶段 19 / 20。</p>
+              <h3>小程序完整人工验证</h3>
+              <p>双手机号、双端、AI 起稿、写信投寄、真实等待、拆阅归档、断网恢复和 prd smoke。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge done">阶段 18 完成</span>
+                <span class="badge">阶段 30-33</span>
               </div>
-              <h3>双人绑定与同步授权</h3>
-              <p>已完成创建一对关系、24 小时一次性邀请码、输入即加入、唯一 active household、App 同步命名空间和 sync-proxy 账号授权边界。</p>
-            </div>
-            <div class="priority">
-              <div class="meta" style="justify-content: flex-start">
-                <span class="badge done">阶段 19 已收口</span>
-              </div>
-              <h3>外部平台人工配置收口</h3>
-              <p>统一处理 CloudBase Auth、短信配置、账号 / 关系 CloudBase 持久化、费用告警、数据库权限、HTTP 路由、MiMo key 轮换入口和真实手机号验证码等需用户介入事项。</p>
-            </div>
-            <div class="priority">
-              <div class="meta" style="justify-content: flex-start">
-                <span class="badge info">阶段 20 下一步</span>
-              </div>
-              <h3>完整人工验证引导</h3>
-              <p>完整人工验证计划已准备，覆盖账号、绑定、同步、AI、写信、送达、拆阅、断网、清空本地数据和原生真机流程；现在可开始执行。</p>
+              <h3>异常、订阅消息、附件、发布打磨</h3>
+              <p>原邮政异常、推送、照片附件和发布质量阶段顺延到小程序闭环后。</p>
             </div>
           </div>
         </article>
@@ -846,16 +875,15 @@
           </div>
           <div class="card-body">
             <ul class="plain-list">
-              <li>阶段 19 已收口：已新增脱敏 CloudBase 审计脚本，当前用量为 1.67 / 3000 credits；当前为腾讯云开发免费体验版，官方价格文档显示免费体验环境提供 3000 点/月且不支持自动续费；用户确认不启用 CloudBase 按量付费，仅使用套餐内资源点；短信资源包已购买，两个真实手机号验证码均已收到。</li>
-              <li>阶段 19 权限和费用边界已明确：当前单环境接受默认 TCB_QcsRole；MiMo key 撤销 / 轮换入口暂缓到正式发布、扩大使用范围、疑似泄露、新模型或异常费用前复查；预算管理暂缓到升级套餐、转付费、开启按量或新增腾讯云资源时处理。</li>
-              <li>Chrome GUI 点击验证需要先授予 Codex Computer Use 的 Accessibility / Screen Recording 权限。</li>
-              <li>阶段 16 云端 smoke 已完成；真实双设备人工验证进入阶段 20。</li>
-              <li>阶段 17 / 18 目前完成的是本地 / 服务端工程边界，真实 CloudBase Auth 与数据库持久化仍待阶段 19。</li>
-              <li>阶段 20 下一步执行完整人工验证，真实手机号、真实两端同步和原生真机仍需用户参与。</li>
-              <li>延误、迷失、找回、退回尚未接入自动确定性推进规则。</li>
-              <li>系统推送和照片附件尚未开始。</li>
-              <li>iOS Safari Web Inspector 和真机验证还需手工确认。</li>
-              <li>生产级 App 图标、启动页和 bundle 拆分仍是后续优化项。</li>
+              <li>微信小程序 AppID、主体认证、服务类目、隐私保护指引和提交审核需要用户在微信公众平台操作。</li>
+              <li>CloudBase `dev` / `prd` 双环境需要确认环境 ID、绑定小程序 AppID、套餐和费用策略；当前免费体验版不能直接视为线上环境。</li>
+              <li>微信一键手机号能力可能需要开通和审核；短信验证码兜底必须保留。</li>
+              <li>小程序端流式 AI 不能默认复用浏览器 SSE；阶段 27 单独验证，MVP 允许先非流式。</li>
+              <li>旧 App 的 Vue / Varlet / Tailwind 页面不能直接复用，小程序页面需要 WXML / WXSS 重建。</li>
+              <li>共享领域核心需要保持纯 TypeScript，不得引入小程序、CloudBase 或 Vue 依赖。</li>
+              <li>真实双端验证从旧 App 阶段 20 顺延到小程序阶段 29。</li>
+              <li>延误、迷失、找回、退回、订阅消息和照片附件仍未开始。</li>
+              <li>阶段 19 权限和费用边界已明确：当前单环境接受默认 TCB_QcsRole；MiMo key 撤销 / 轮换入口暂缓到正式发布、扩大使用范围、疑似泄露、新模型或异常费用前复查。</li>
             </ul>
           </div>
         </aside>
@@ -870,6 +898,7 @@
           <div class="link-row">
             <a class="button primary" href="./pinganpi-roadmap.md">详细路线图</a>
             <a class="button" href="./superpowers/specs/2026-05-23-pinganpi-design.md">产品设计文档</a>
+            <a class="button primary" href="./superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md">阶段 21 小程序迁移设计</a>
             <a class="button" href="./superpowers/plans/2026-05-23-pinganpi-cloud-ai-proxy.md">阶段 13 实施计划</a>
             <a class="button" href="./superpowers/specs/2026-05-24-pinganpi-cloud-sync-design.md">阶段 15 同步设计</a>
             <a class="button" href="./superpowers/plans/2026-05-24-pinganpi-cloud-sync-foundation.md">阶段 15 实施计划</a>
