@@ -2,16 +2,6 @@ import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-const domainFiles = [
-  "china-calendar.ts",
-  "time.ts",
-  "money.ts",
-  "scribes.ts",
-  "wallet.ts",
-  "postal.ts",
-  "index.ts",
-] as const;
-
 export interface SyncMiniprogramSharedDomainOptions {
   sourceDir?: string;
   targetDir?: string;
@@ -33,12 +23,29 @@ export async function syncMiniprogramSharedDomain(
   const checkOnly = options.checkOnly ?? false;
   const errors: string[] = [];
   const copied: string[] = [];
+  const sourceFiles = await listTypeScriptFiles(sourceDir);
+
+  if (sourceFiles === undefined) {
+    return {
+      ok: false,
+      errors: [`源目录缺失：${formatDirPath(sourceDir, "shared")}`],
+      copied,
+    };
+  }
+
+  if (sourceFiles.length === 0) {
+    return {
+      ok: false,
+      errors: [`源目录没有 TypeScript 文件：${formatDirPath(sourceDir, "shared")}`],
+      copied,
+    };
+  }
 
   if (!checkOnly) {
     await mkdir(targetDir, { recursive: true });
   }
 
-  for (const file of domainFiles) {
+  for (const file of sourceFiles) {
     const sourcePath = join(sourceDir, file);
     const targetPath = join(targetDir, file);
     const sourceContent = await readText(sourcePath);
@@ -64,7 +71,7 @@ export async function syncMiniprogramSharedDomain(
     copied.push(formatTargetPath(targetDir, file));
   }
 
-  const extras = await findExtraTargetFiles(targetDir);
+  const extras = await findExtraTargetFiles(targetDir, sourceFiles);
   for (const file of extras) {
     errors.push(`多余文件：${formatTargetPath(targetDir, file)}`);
   }
@@ -88,22 +95,30 @@ async function readText(path: string): Promise<string | undefined> {
   }
 }
 
-async function findExtraTargetFiles(targetDir: string): Promise<string[]> {
+async function listTypeScriptFiles(dir: string): Promise<string[] | undefined> {
   try {
-    const entries = await readdir(targetDir, { withFileTypes: true });
-    const expected = new Set<string>(domainFiles);
-
+    const entries = await readdir(dir, { withFileTypes: true });
     return entries
-      .filter((entry) => entry.isFile() && entry.name.endsWith(".ts") && !expected.has(entry.name))
+      .filter((entry) => entry.isFile() && entry.name.endsWith(".ts"))
       .map((entry) => entry.name)
       .sort((a, b) => a.localeCompare(b));
   } catch (error) {
     if (isNodeError(error) && error.code === "ENOENT") {
-      return [];
+      return undefined;
     }
 
     throw error;
   }
+}
+
+async function findExtraTargetFiles(targetDir: string, sourceFiles: readonly string[]): Promise<string[]> {
+  const targetFiles = await listTypeScriptFiles(targetDir);
+  if (targetFiles === undefined) {
+    return [];
+  }
+
+  const expected = new Set<string>(sourceFiles);
+  return targetFiles.filter((file) => !expected.has(file));
 }
 
 function formatSourcePath(sourceDir: string, file: string): string {
@@ -112,6 +127,10 @@ function formatSourcePath(sourceDir: string, file: string): string {
 
 function formatTargetPath(targetDir: string, file: string): string {
   return formatRepoLikePath(targetDir, file, "miniprogram");
+}
+
+function formatDirPath(dir: string, anchor: string): string {
+  return formatRepoLikePath(dir, "", anchor).replace(/\/$/, "");
 }
 
 function formatRepoLikePath(dir: string, file: string, anchor: string): string {

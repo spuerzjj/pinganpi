@@ -159,7 +159,7 @@ npx cap doctor
 - `docs/superpowers/specs/2026-05-23-pinganpi-ai-scribe-design.md`
 - `docs/superpowers/plans/2026-05-23-pinganpi-minimal-ai-proxy.md`
 
-最近验证基线：阶段 23 已通过 `npm test -- src/domain`（5 个测试文件，85 个测试通过）、`npm run miniprogram:check-shared`、`npm test -- miniprogram/services/domain-summary.test.ts`（1 个测试通过）、`npm test -- scripts/sync-miniprogram-shared-domain.test.ts`（3 个测试通过）、`npm run miniprogram:check`、`npm test`（44 个测试文件，332 个测试通过）、`npm run typecheck` 和 `git diff --check`。阶段 22 基线为 `npm test -- miniprogram/config/env.test.ts`（1 个测试文件，3 个测试通过）。阶段 17 / 18 旧 App 基线保留：`npm test` 曾为 40 个测试文件、320 个测试通过，`vue-tsc --noEmit`、`vite build`、`cap sync`、`cap doctor`、`npm audit --omit=dev` 均通过；Varlet 首包超过 500 KB 是旧 App 优化项。阶段 16B 云端基线保留：`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:sync` 通过，`npm run cloudbase:smoke:sync` 已通过真实云端 smoke。为避免 `@cloudbase/node-sdk` 传递引入存在原型污染公告的 `lodash.set` / `lodash.unset` 小包，已通过 `vendor/lodash-set` 和 `vendor/lodash-unset` 提供兼容 shim，内部调用已修复的主 `lodash` 子模块。
+最近验证基线：阶段 23 已通过 `npm test -- src/domain`（5 个测试文件，85 个测试通过）、`npm run miniprogram:check-shared`、`npm test -- miniprogram/services/domain-summary.test.ts`（1 个测试通过）、`npm test -- scripts/sync-miniprogram-shared-domain.test.ts`（4 个测试通过）、`npm run miniprogram:check`、`npm test`（44 个测试文件，333 个测试通过）、`npm run typecheck` 和 `git diff --check`。阶段 22 基线为 `npm test -- miniprogram/config/env.test.ts`（1 个测试文件，3 个测试通过）。阶段 17 / 18 旧 App 基线保留：`npm test` 曾为 40 个测试文件、320 个测试通过，`vue-tsc --noEmit`、`vite build`、`cap sync`、`cap doctor`、`npm audit --omit=dev` 均通过；Varlet 首包超过 500 KB 是旧 App 优化项。阶段 16B 云端基线保留：`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:sync` 通过，`npm run cloudbase:smoke:sync` 已通过真实云端 smoke。为避免 `@cloudbase/node-sdk` 传递引入存在原型污染公告的 `lodash.set` / `lodash.unset` 小包，已通过 `vendor/lodash-set` 和 `vendor/lodash-unset` 提供兼容 shim，内部调用已修复的主 `lodash` 子模块。
 
 ## 后续路线
 
@@ -217,7 +217,7 @@ npx cap doctor
 3. **阶段 23：共享领域核心迁移**
    - 状态：已完成基础。
    - 已新增 `shared/domain/` 作为领域规则真实实现位置，`src/domain/` 保留兼容 re-export。
-   - 已新增 `miniprogram/shared/domain/` 根内副本、`npm run miniprogram:sync-shared` 和 `npm run miniprogram:check-shared`，避免微信小程序跨根打包风险。
+   - 已新增 `miniprogram/shared/domain/` 根内副本、`npm run miniprogram:sync-shared` 和 `npm run miniprogram:check-shared`；脚本动态扫描 `shared/domain/*.ts`，避免微信小程序跨根打包风险和副本陈旧。
    - 小程序今日页已通过 `miniprogram/services/domain-summary.ts` 使用共享旧历日期和邮资摘要。
    - 领域层不得引入小程序、CloudBase、Vue、浏览器或 Capacitor 依赖。
 
@@ -422,7 +422,7 @@ npm test -- miniprogram/config/env.test.ts
 npm test -- miniprogram/services/domain-summary.test.ts
 ```
 
-修改 `shared/domain/` 后必须运行 `npm run miniprogram:sync-shared` 更新小程序根内副本，并用 `npm run miniprogram:check-shared` 确认副本未陈旧。
+修改 `shared/domain/` 后必须运行 `npm run miniprogram:sync-shared` 更新小程序根内副本，并用 `npm run miniprogram:check-shared` 确认副本未陈旧；该检查会动态发现新增 `.ts` 领域文件。
 
 后续接入云函数后，应补充微信开发者工具构建、云函数构建、`dev` 环境 smoke 命令，并把它们作为新主线默认验证。
 

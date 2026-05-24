@@ -4,7 +4,7 @@
 
 **Goal:** 将现有纯领域规则迁移到 `shared/domain/`，让微信小程序和旧 App 都能复用同一套时间、钱匣、代笔先生、邮资、送达和状态机规则。
 
-**Architecture:** `shared/domain/` 成为领域规则真实实现位置；`src/domain/` 保留为兼容 re-export，避免旧 App 一次性改动大量 import。小程序不能跨出 `miniprogramRoot` 引用仓库根目录源码，因此 `miniprogram/shared/domain/` 是由脚本从 `shared/domain/` 同步出的根内副本；小程序 service 只从根内副本读取格式化日期、钱额和邮资示例，用测试和同步检查证明小程序侧复用同一套共享规则。
+**Architecture:** `shared/domain/` 成为领域规则真实实现位置；`src/domain/` 保留为兼容 re-export，避免旧 App 一次性改动大量 import。小程序不能跨出 `miniprogramRoot` 引用仓库根目录源码，因此 `miniprogram/shared/domain/` 是由脚本从 `shared/domain/` 同步出的根内副本；同步脚本动态扫描 `shared/domain/*.ts`，避免新增领域文件时副本检查误报一致；小程序 service 只从根内副本读取格式化日期、钱额和邮资示例，用测试和同步检查证明小程序侧复用同一套共享规则。
 
 **Tech Stack:** TypeScript、Vitest、微信原生小程序 TypeScript、现有 NodeNext 模块解析。
 
@@ -12,14 +12,14 @@
 
 ## Scope
 
-本计划对应路线图阶段 23：共享领域核心迁移。
+本计划对应路线图阶段 23：共享领域核心迁移。当前状态：已执行完成；下方 checkbox 是实施记录，不是待执行事项。
 
 本阶段包含：
 
 - 新增 `shared/domain/` 并迁入领域规则实现。
 - 保留 `src/domain/` 作为兼容 re-export 和旧测试入口。
 - 让仓库根 TypeScript 配置包含 `shared/**/*.ts`，小程序 TypeScript 配置只包含 `miniprogram/` 根内源码。
-- 新增 `miniprogram/shared/domain/` 根内副本，并用脚本校验它与 `shared/domain/` 一致。
+- 新增 `miniprogram/shared/domain/` 根内副本，并用动态扫描脚本校验它与 `shared/domain/` 一致。
 - 新增小程序 service 通过 `miniprogram/shared/domain/` 根内副本使用共享领域核心。
 - 更新小程序今日页展示共享规则产物。
 - 更新 roadmap / dashboard / AGENTS 的阶段 23 状态和验证基线。
@@ -74,7 +74,7 @@ Modify:
 - Modify: `tsconfig.json`
 - Modify: `tsconfig.miniprogram.json`
 
-- [ ] **Step 1: 复制现有领域实现到 `shared/domain/`**
+- [x] **Step 1: 复制现有领域实现到 `shared/domain/`**
 
 Run:
 
@@ -91,7 +91,7 @@ cp src/domain/index.ts shared/domain/index.ts
 
 Expected: `shared/domain/` contains the same implementation files as `src/domain/`.
 
-- [ ] **Step 2: 将 `src/domain` 改为兼容 re-export**
+- [x] **Step 2: 将 `src/domain` 改为兼容 re-export**
 
 Replace `src/domain/china-calendar.ts` with:
 
@@ -135,7 +135,7 @@ Replace `src/domain/index.ts` with:
 export * from "../../shared/domain/index.js";
 ```
 
-- [ ] **Step 3: 更新 TypeScript include**
+- [x] **Step 3: 更新 TypeScript include**
 
 Modify `tsconfig.json` include list to add:
 
@@ -163,7 +163,7 @@ Modify `tsconfig.miniprogram.json` include list to keep小程序根内源码：
 ["miniprogram/**/*.ts", "miniprogram/**/*.d.ts"]
 ```
 
-- [ ] **Step 4: 运行旧领域测试和类型检查**
+- [x] **Step 4: 运行旧领域测试和类型检查**
 
 Run:
 
@@ -179,7 +179,7 @@ Expected:
 - Vue / server typecheck still passes.
 - Miniprogram typecheck passes using `miniprogram/shared/domain/` root-included copies.
 
-- [ ] **Step 5: 提交任务 1**
+- [x] **Step 5: 提交任务 1**
 
 ```bash
 git add shared/domain src/domain tsconfig.json tsconfig.miniprogram.json
@@ -193,7 +193,7 @@ git commit -m "refactor(domain): 迁移领域规则到共享核心"
 - Create: `miniprogram/services/domain-summary.test.ts`
 - Modify: `miniprogram/pages/today/index.ts`
 
-- [ ] **Step 1: 写小程序共享领域 service 测试**
+- [x] **Step 1: 写小程序共享领域 service 测试**
 
 Create `miniprogram/services/domain-summary.test.ts`:
 
@@ -213,7 +213,7 @@ describe("miniprogram domain summary", () => {
 });
 ```
 
-- [ ] **Step 2: 运行测试确认失败**
+- [x] **Step 2: 运行测试确认失败**
 
 Run:
 
@@ -223,7 +223,7 @@ npm test -- miniprogram/services/domain-summary.test.ts
 
 Expected: FAIL because `miniprogram/services/domain-summary.ts` does not exist.
 
-- [ ] **Step 3: 实现小程序共享领域 service**
+- [x] **Step 3: 实现小程序共享领域 service**
 
 Create `miniprogram/services/domain-summary.ts`:
 
@@ -259,7 +259,7 @@ export function createTodayDomainSummary(now: Date): TodayDomainSummary {
 }
 ```
 
-- [ ] **Step 4: 更新今日页面使用共享 service**
+- [x] **Step 4: 更新今日页面使用共享 service**
 
 Replace `miniprogram/pages/today/index.ts` with:
 
@@ -277,7 +277,7 @@ Page({
 });
 ```
 
-- [ ] **Step 5: 运行测试和小程序类型检查**
+- [x] **Step 5: 运行测试和小程序类型检查**
 
 Run:
 
@@ -291,7 +291,7 @@ Expected:
 - `miniprogram/services/domain-summary.test.ts` PASS.
 - `npm run miniprogram:typecheck` PASS.
 
-- [ ] **Step 6: 提交任务 2**
+- [x] **Step 6: 提交任务 2**
 
 ```bash
 git add miniprogram/services/domain-summary.ts miniprogram/services/domain-summary.test.ts miniprogram/pages/today/index.ts
@@ -305,7 +305,7 @@ git commit -m "feat(miniprogram): 接入共享领域摘要"
 - Modify: `docs/pinganpi-roadmap-dashboard.html`
 - Modify: `AGENTS.md`
 
-- [ ] **Step 1: 更新 `docs/pinganpi-roadmap.md`**
+- [x] **Step 1: 更新 `docs/pinganpi-roadmap.md`**
 
 Change stage 23 row to:
 
@@ -328,7 +328,7 @@ Add verification lines:
 - `npm run miniprogram:check`：通过，包含共享副本一致性检查和小程序 typecheck。
 ```
 
-- [ ] **Step 2: 更新 `docs/pinganpi-roadmap-dashboard.html`**
+- [x] **Step 2: 更新 `docs/pinganpi-roadmap-dashboard.html`**
 
 Update top metric:
 
@@ -357,7 +357,7 @@ Add verification snapshot:
 <li><code>npm test -- miniprogram/services/domain-summary.test.ts</code> 已通过，小程序可通过根内副本使用共享规则。</li>
 ```
 
-- [ ] **Step 3: 更新 `AGENTS.md`**
+- [x] **Step 3: 更新 `AGENTS.md`**
 
 Add current state:
 
@@ -367,7 +367,7 @@ Add current state:
 
 Update recommended next step to stage 24.
 
-- [ ] **Step 4: 运行文档检查**
+- [x] **Step 4: 运行文档检查**
 
 Run:
 
@@ -381,7 +381,7 @@ Expected:
 - `git diff --check` has no output.
 - `rg` confirms all three docs mention stage 23 shared domain completion and stage 24 next.
 
-- [ ] **Step 5: 提交任务 3**
+- [x] **Step 5: 提交任务 3**
 
 ```bash
 git add docs/pinganpi-roadmap.md docs/pinganpi-roadmap-dashboard.html AGENTS.md
@@ -393,7 +393,7 @@ git commit -m "docs(miniprogram): 收口共享领域核心迁移"
 **Files:**
 - No new files.
 
-- [ ] **Step 1: Run focused verification**
+- [x] **Step 1: Run focused verification**
 
 ```bash
 npm test -- src/domain
@@ -409,7 +409,7 @@ Expected:
 - Miniprogram typecheck passes.
 - `git diff --check` has no output.
 
-- [ ] **Step 2: Run broad verification**
+- [x] **Step 2: Run broad verification**
 
 ```bash
 npm test
@@ -421,7 +421,7 @@ Expected:
 - Existing Vitest suite passes.
 - Existing Vue / server TypeScript check passes.
 
-- [ ] **Step 3: Inspect git status**
+- [x] **Step 3: Inspect git status**
 
 ```bash
 git status --short --branch

@@ -495,7 +495,7 @@
         </article>
         <article class="metric">
           <p class="metric-label">验证状态</p>
-          <p class="metric-value">332 tests</p>
+          <p class="metric-value">333 tests</p>
           <p class="metric-note">全量测试、旧 Vue typecheck、小程序检查和共享副本一致性检查已通过。</p>
         </article>
         <article class="metric">
@@ -772,11 +772,11 @@
               <li>阶段 23 已完成基础：`shared/domain/` 是领域规则真实实现位置，`src/domain/` 保留兼容 re-export。</li>
               <li>`miniprogram/shared/domain/` 是由 `npm run miniprogram:sync-shared` 同步的根内副本，避免微信小程序预览 / 上传跨出 `miniprogramRoot`。</li>
               <li>`npm test -- src/domain` 已通过，5 个测试文件，85 个测试通过；旧领域入口验证共享核心行为未变。</li>
-              <li>`npm run miniprogram:check-shared` 已通过，小程序根内副本与 `shared/domain` 一致。</li>
+              <li>`npm run miniprogram:check-shared` 已通过，动态扫描 `shared/domain/*.ts` 并确认小程序根内副本一致。</li>
               <li>`npm test -- miniprogram/services/domain-summary.test.ts` 已通过，小程序可通过根内副本使用共享规则。</li>
-              <li>`npm test -- scripts/sync-miniprogram-shared-domain.test.ts` 已通过，覆盖副本同步和陈旧检测。</li>
+              <li>`npm test -- scripts/sync-miniprogram-shared-domain.test.ts` 已通过，4 个测试覆盖副本同步、陈旧检测和新增源文件检测。</li>
               <li>`npm run miniprogram:check` 已通过，包含共享副本一致性检查和小程序 typecheck。</li>
-              <li>全量 44 个测试文件，332 个测试通过。</li>
+              <li>全量 44 个测试文件，333 个测试通过。</li>
               <li>阶段 22 已完成基础：`miniprogram/`、页面骨架、TypeScript 检查、微信开发者工具配置和 CloudBase dev 环境入口已创建。</li>
               <li>`npm test -- miniprogram/config/env.test.ts` 已通过，确认小程序默认使用 `dev` 环境 `pinganpi-d7gml1f6sbcc172ea`，`prd` 仍为空等待用户创建。</li>
               <li>`npm run miniprogram:typecheck` 已通过，小程序页面骨架和 CloudBase dev 配置入口可检查。</li>

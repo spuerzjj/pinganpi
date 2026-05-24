@@ -275,11 +275,11 @@
 最近阶段 23 共享领域核心迁移新增验证记录：
 
 - `npm test -- src/domain`：通过，5 个测试文件，85 个测试通过；旧领域测试通过 `src/domain` re-export 验证共享核心行为未变。
-- `npm run miniprogram:check-shared`：通过；确认 `miniprogram/shared/domain/` 与 `shared/domain/` 一致，避免小程序跨根 import。
+- `npm run miniprogram:check-shared`：通过；动态扫描 `shared/domain/*.ts` 并确认 `miniprogram/shared/domain/` 与其一致，避免小程序跨根 import 和副本陈旧。
 - `npm test -- miniprogram/services/domain-summary.test.ts`：通过，1 个测试通过；确认小程序可通过根内副本使用共享规则。
-- `npm test -- scripts/sync-miniprogram-shared-domain.test.ts`：通过，3 个测试通过；覆盖同步、缺失 / 变更检测和多余文件检测。
+- `npm test -- scripts/sync-miniprogram-shared-domain.test.ts`：通过，4 个测试通过；覆盖同步、缺失 / 变更检测、多余文件检测和新增源文件检测。
 - `npm run miniprogram:check`：通过；包含共享副本一致性检查和小程序 typecheck。
-- `npm test`：通过，44 个测试文件，332 个测试通过。
+- `npm test`：通过，44 个测试文件，333 个测试通过。
 - `npm run typecheck`：通过。
 - `git diff --check`：通过。
 
@@ -963,7 +963,7 @@ npx cap doctor
 - 新增 `shared/domain/`，承载时间、旧币制、代笔先生、钱匣、邮政和信件状态机规则真实实现。
 - `src/domain/` 改为兼容 re-export，旧 App 和旧测试入口保持可用。
 - 新增 `miniprogram/shared/domain/` 根内副本，避免微信小程序预览 / 上传跨出 `miniprogramRoot`。
-- 新增 `npm run miniprogram:sync-shared` 和 `npm run miniprogram:check-shared`，保证小程序副本与 `shared/domain/` 一致。
+- 新增 `npm run miniprogram:sync-shared` 和 `npm run miniprogram:check-shared`，动态扫描 `shared/domain/*.ts`，保证小程序副本与 `shared/domain/` 一致。
 - `tsconfig.json` 已纳入 `shared/**/*.ts`；`tsconfig.miniprogram.json` 只检查小程序根内源码。
 - 新增 `miniprogram/services/domain-summary.ts` 和测试，今日页已通过根内副本使用共享旧历日期和邮资摘要。
 

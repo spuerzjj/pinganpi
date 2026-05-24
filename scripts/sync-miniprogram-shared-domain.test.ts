@@ -59,8 +59,8 @@ describe("sync miniprogram shared domain", () => {
 
     expect(result.ok).toBe(false);
     expect(result.errors).toEqual([
-      "内容不一致：miniprogram/shared/domain/time.ts",
       "缺少副本：miniprogram/shared/domain/money.ts",
+      "内容不一致：miniprogram/shared/domain/time.ts",
     ]);
     await expect(readFile(join(targetDir, "time.ts"), "utf8")).resolves.toBe("changed\n");
   });
@@ -74,5 +74,16 @@ describe("sync miniprogram shared domain", () => {
 
     expect(result.ok).toBe(false);
     expect(result.errors).toEqual(["多余文件：miniprogram/shared/domain/extra.ts"]);
+  });
+
+  it("discovers new source TypeScript files and reports missing target copies", async () => {
+    const { sourceDir, targetDir } = await createFixture();
+    await syncMiniprogramSharedDomain({ sourceDir, targetDir, checkOnly: false });
+    await writeFile(join(sourceDir, "new-helper.ts"), "export const newHelper = true;\n", "utf8");
+
+    const result = await syncMiniprogramSharedDomain({ sourceDir, targetDir, checkOnly: true });
+
+    expect(result.ok).toBe(false);
+    expect(result.errors).toEqual(["缺少副本：miniprogram/shared/domain/new-helper.ts"]);
   });
 });
