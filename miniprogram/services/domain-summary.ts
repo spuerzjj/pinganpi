@@ -3,7 +3,7 @@ import {
   formatEraDate,
   formatFen,
   formatPresentCorrespondence,
-} from "../../shared/domain/index.js";
+} from "../shared/domain/index.js";
 
 export interface TodayDomainSummary {
   eraDateText: string;

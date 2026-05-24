@@ -7,5 +7,5 @@
     "types": ["node"],
     "noEmit": true
   },
-  "include": ["miniprogram/**/*.ts", "miniprogram/**/*.d.ts", "shared/**/*.ts"]
+  "include": ["miniprogram/**/*.ts", "miniprogram/**/*.d.ts"]
 }
