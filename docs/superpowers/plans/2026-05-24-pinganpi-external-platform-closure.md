@@ -47,6 +47,13 @@ CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:audit:stage19
   - Role：`TCB_QcsRole`
   - Env：`PINGANPI_SYNC_MEMBER_TOKENS_B64`、`PINGANPI_SYNC_SNAPSHOT_COLLECTION`
 
+当前只读 CLI 补充检查：
+
+- `cloudbase routes list --json` 返回 4 条启用路由：`/api -> ai-scribe-proxy`，`/sync/health -> sync-proxy`，`/sync/pull -> sync-proxy`，`/sync/push -> sync-proxy`；均为 `WEB_SCF`，`enableAuth=false`，`enablePathTransmission=true`。
+- `cloudbase permission get collection:... --json` 返回 `pinganpi_sync_snapshots`、`pinganpi_accounts`、`pinganpi_households`、`pinganpi_members`、`pinganpi_invites` 的权限均为 `PRIVATE`。
+- `cloudbase permission get function --json` 返回函数 invoke 规则为 `auth != null && auth.loginType != 'ANONYMOUS'`；HTTP 访问服务路由仍是公开入口，实际访问控制必须继续由代理 handler 做 fail closed。
+- `cloudbase role list --json` 返回系统角色 5 个、自定义角色 0 个。
+
 安全规则：
 
 - 不再直接运行会打印完整 env 的 `cloudbase fn detail` 给用户看；统一使用 `npm run cloudbase:audit:stage19`。
@@ -57,7 +64,9 @@ CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:audit:stage19
 
 - CloudBase 登录方式管理：`https://docs.cloudbase.net/en/authentication-v2/auth/manage-login`
 - CloudBase 发送短信 / 邮箱验证码 HTTP API：`https://docs.cloudbase.net/http-api/auth/auth-send-verification`
+- CloudBase 验证短信 / 邮箱验证码 HTTP API：`https://docs.cloudbase.net/http-api/auth/auth-verify-verification`
 - CloudBase 用户登录 HTTP API：`https://docs.cloudbase.net/http-api/auth/auth-sign-in`
+- CloudBase token 获取 / 刷新 HTTP API：`https://docs.cloudbase.net/http-api/auth/auth-grant-token`
 - CloudBase 短信验证码登录旧版说明与费用 / 频率限制：`https://docs.cloudbase.net/authentication/method/sms-login`
 - 腾讯云费用中心预算管理：`https://cloud.tencent.com/document/product/555/65784`
 
@@ -85,13 +94,21 @@ CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:audit:stage19
 
 ### 2. 账号 / 关系 CloudBase 持久化准备
 
-- [ ] 确认是否使用 CloudBase Auth v2 HTTP API 还是 JS SDK 接入 App
-- [ ] 确认 `PinganpiAccount` 集合名：建议 `pinganpi_accounts`
-- [ ] 确认 household 集合名：建议 `pinganpi_households`
-- [ ] 确认 member 集合名：建议 `pinganpi_members`
-- [ ] 确认 invite 集合名：建议 `pinganpi_invites`
-- [ ] 确认各集合权限：客户端不得直接写入授权结果；账号 / 关系写入应通过服务端可信身份完成
-- [ ] 确认邀请码服务端只保存 hash，不保存明文
+- [x] 确认是否使用 CloudBase Auth v2 HTTP API 还是 JS SDK 接入 App：第一版采用 HTTP API
+- [x] 确认 `PinganpiAccount` 集合名：`pinganpi_accounts`
+- [x] 确认 household 集合名：`pinganpi_households`
+- [x] 确认 member 集合名：`pinganpi_members`
+- [x] 确认 invite 集合名：`pinganpi_invites`
+- [x] 确认各集合权限：`pinganpi_sync_snapshots`、`pinganpi_accounts`、`pinganpi_households`、`pinganpi_members`、`pinganpi_invites` 均为 `PRIVATE`
+- [x] 确认邀请码服务端只保存 hash，不保存明文
+
+账号接入决策：
+
+- App 第一版采用 CloudBase Auth v2 HTTP API：发送验证码 `/auth/v1/verification`，验证验证码 `/auth/v1/verification/verify`，登录 `/auth/v1/signin`，刷新 `/auth/v1/token`。
+- 采用 HTTP API 的原因：当前 App 是 Capacitor WebView + Vite/Vue，已有 fetch adapter 形态；第一版只需要手机号验证码和 token 刷新，不引入额外 CloudBase JS SDK 依赖。
+- CloudBase `access_token` / `refresh_token` 只保存在本机登录态存储中；验证码、管理密钥、provider 原始响应和 SecretId / SecretKey 不进入 AppState、RemoteSnapshot、日志或 Git。
+- 账号 / 关系写入仍必须走服务端可信边界：服务端验证 CloudBase 登录身份后推导 `authUid`，客户端不得直接提交可信 `authUid`、`householdId` 或 `memberId`。
+- 现有 `server/account-pair/account-pair-service.ts` 已按 `codeHash` 存储邀请码，返回明文邀请码只用于创建当次展示。
 
 ### 3. CloudBase HTTP 路由与函数
 
@@ -102,11 +119,22 @@ CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:audit:stage19
 - [x] 两个函数触发器数量为 `0`
 - [x] 两个函数 VPC 未配置
 - [x] 两个函数 PublicNet 为 `ENABLE`
-- [ ] 控制台确认 `/api` 指向 `ai-scribe-proxy`
-- [ ] 控制台确认 `/sync/health` 指向 `sync-proxy`
-- [ ] 控制台确认 `/sync/pull` 指向 `sync-proxy`
-- [ ] 控制台确认 `/sync/push` 指向 `sync-proxy`
+- [x] HTTP smoke：`/api/health` 返回 200 和 `{"ok":true}`
+- [x] HTTP smoke：`/sync/health` 返回 200 和 `{"ok":true}`
+- [x] HTTP smoke：`/sync/pull` 未带 token 返回 401 `unauthorized`
+- [x] HTTP smoke：`/sync/push` 未带 token 返回 401 `unauthorized`
+- [x] CLI 确认 `/api` 指向 `ai-scribe-proxy`
+- [x] CLI 确认 `/sync/health` 指向 `sync-proxy`
+- [x] CLI 确认 `/sync/pull` 指向 `sync-proxy`
+- [x] CLI 确认 `/sync/push` 指向 `sync-proxy`
 - [ ] 如果新增账号服务函数，确认其路由不与 `/api` / `/sync/*` 冲突
+
+当前路由 smoke 记录：
+
+- 2026-05-24 运行 `curl` 检查 CloudBase 默认访问域名。
+- `/api/health` 和 `/sync/health` 均返回 200；`/sync/pull`、`/sync/push` 在未带同步 token 时均返回 401。
+- 2026-05-24 运行 `cloudbase routes list --json` 检查 HTTP 访问服务路由；四条路由均启用，且指向预期函数。
+- HTTP 访问服务路由 `enableAuth=false`，属于公网入口；AI / 同步代理必须继续在 handler 内做 Origin、token、账号关系等应用层校验。
 
 ### 4. CloudBase 费用与权限
 
@@ -117,6 +145,7 @@ CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:audit:stage19
 - [ ] 配置 CloudBase / 云函数 / 数据库相关告警
 - [ ] 确认 `TCB_QcsRole` 是否可收敛为更小权限
 - [ ] 若不能收敛，记录理由和风险
+- [x] 只读查询当前 CloudBase 环境角色：系统角色 5 个，自定义角色 0 个
 - [ ] 确认是否开启自动续费；第一版建议不要开启高规格包年资源
 
 ### 5. Xiaomi MiMo 费用与 key 管理

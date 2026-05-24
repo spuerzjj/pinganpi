@@ -6,7 +6,7 @@
 
 **当前分支：** `main`
 
-**当前开发基线：** 已完成阶段 12 的 App 侧 AI 起稿链路；阶段 13 已跑通本机 Xiaomi MiMo、本地代理、App 写信页、CloudBase HTTP 云函数部署、云端 secret 配置、云端 AI 起稿接口、浏览器写信页云端 AI 烟测、CloudBase 用量基线、禁用 key 安全失败验证和恢复验证，并已删除历史遗留 `/*` 路由，只保留 `/api`。阶段 14 已完成 AI 起稿流式工程链路：本地 / 云端代理支持受控 SSE，App 起稿页可边收边显示，完成前不会进入可投寄正文，云端 `/api/ai/scribe-draft/stream` 已通过非敏感烟测。阶段 15 已完成云端与双人同步准备基础：新增远端模型、sync adapter 边界、AppState / RemoteSnapshot 转换、远端快照合并和本地 mock remote adapter，已用本地测试验证双设备 push / pull / merge；远端实体使用 `remoteId` 避免跨设备 id 冲突，pull 会对收件方未到达来信正文做 redaction，删除草稿可同步 tombstone。阶段 16 已完成真实同步 MVP 收口：阶段 16A 的本地 / 模拟远端同步闭环已完成；阶段 16B 的 HTTP SyncAdapter、CloudBase `sync-proxy` HTTP 函数、CloudBase 数据库 snapshot store、服务端 redaction / 私有草稿 / 照片附件过滤、member token fail closed、stale revision CAS、构建 / 部署脚本和 App 配置开关已完成；真实 CloudBase 集合 `pinganpi_sync_snapshots` 已创建，`sync-proxy` 已部署，显式路由 `/sync/health`、`/sync/pull`、`/sync/push` 已配置，云端 smoke 已通过 health、未带 token 401、合法 pull、push、再 pull。阶段 17 / 18 已完成工程闭环：新增手机号账号本地 adapter、登录态恢复、账号入口页、创建一对关系、24 小时一次性邀请码、输入即加入、本地绑定驱动同步命名空间、服务端账号 / 关系约束和 `sync-proxy` 账号成员授权边界；真实 CloudBase Auth、短信验证码、账号 / 关系 CloudBase 持久化、控制台费用 / 角色和真实双设备验证集中放到阶段 19 / 20。精确提交以 `git log --oneline --decorate -5` 为准。
+**当前开发基线：** 已完成阶段 12 的 App 侧 AI 起稿链路；阶段 13 已跑通本机 Xiaomi MiMo、本地代理、App 写信页、CloudBase HTTP 云函数部署、云端 secret 配置、云端 AI 起稿接口、浏览器写信页云端 AI 烟测、CloudBase 用量基线、禁用 key 安全失败验证和恢复验证，并已删除历史遗留 `/*` 路由，只保留 `/api`。阶段 14 已完成 AI 起稿流式工程链路：本地 / 云端代理支持受控 SSE，App 起稿页可边收边显示，完成前不会进入可投寄正文，云端 `/api/ai/scribe-draft/stream` 已通过非敏感烟测。阶段 15 已完成云端与双人同步准备基础：新增远端模型、sync adapter 边界、AppState / RemoteSnapshot 转换、远端快照合并和本地 mock remote adapter，已用本地测试验证双设备 push / pull / merge；远端实体使用 `remoteId` 避免跨设备 id 冲突，pull 会对收件方未到达来信正文做 redaction，删除草稿可同步 tombstone。阶段 16 已完成真实同步 MVP 收口：阶段 16A 的本地 / 模拟远端同步闭环已完成；阶段 16B 的 HTTP SyncAdapter、CloudBase `sync-proxy` HTTP 函数、CloudBase 数据库 snapshot store、服务端 redaction / 私有草稿 / 照片附件过滤、member token fail closed、stale revision CAS、构建 / 部署脚本和 App 配置开关已完成；真实 CloudBase 集合 `pinganpi_sync_snapshots` 已创建，`sync-proxy` 已部署，显式路由 `/sync/health`、`/sync/pull`、`/sync/push` 已配置，云端 smoke 已通过 health、未带 token 401、合法 pull、push、再 pull。阶段 17 / 18 已完成工程闭环：新增手机号账号本地 adapter、登录态恢复、账号入口页、创建一对关系、24 小时一次性邀请码、输入即加入、本地绑定驱动同步命名空间、服务端账号 / 关系约束和 `sync-proxy` 账号成员授权边界。阶段 19 正在收口外部平台配置：CloudBase 手机号短信登录已开启且两个真实手机号验证码均已收到；App 登录确定采用 CloudBase Auth v2 HTTP API；账号 / 关系集合命名、集合权限、HTTP 路由 smoke 和 CLI 路由查询已确认；预算告警、函数运行角色收敛、MiMo key 管理和真实双设备验证继续放到阶段 19 / 20。精确提交以 `git log --oneline --decorate -5` 为准。
 
 **工作区策略：** 日常开发直接在 `/Users/zhujunjie/code/pinganpi` 进行。除非用户明确要求隔离开发，否则不要创建或使用 `.worktrees/`。
 
@@ -230,7 +230,7 @@
 | 16 | 双人真实同步 MVP | 已完成云端 smoke | 本地 / 模拟远端同步闭环、CloudBase HTTP 同步代理、数据库集合、显式 HTTP 路由、env 配置和云端 pull / push smoke 已完成。 |
 | 17 | 手机号账号系统 | 已完成工程闭环 | 本地手机号登录 mock、稳定 `PinganpiAccount`、登录态恢复、账号入口页和手机号展示已完成；真实 CloudBase Auth / SMS 放入阶段 19。 |
 | 18 | 双人绑定与同步授权 | 已完成工程闭环 | 本地创建关系、24 小时一次性邀请码、输入即加入、唯一 active household、App 同步命名空间接入、服务端关系约束和 sync-proxy 账号授权边界已完成。 |
-| 19 | 外部平台人工配置收口 | 进行中 | 已新增脱敏 CloudBase 审计脚本并记录用量 / 函数状态；下一步由用户进入控制台确认 Auth、短信、预算、权限和 MiMo key 管理。 |
+| 19 | 外部平台人工配置收口 | 进行中 | 已新增脱敏 CloudBase 审计脚本并记录用量 / 函数状态；CloudBase Auth HTTP API、账号 / 关系集合命名、短信真实可达和 HTTP 路由 smoke 已确认；下一步由用户进入控制台确认短信模板、预算、权限和 MiMo key 管理。 |
 | 20 | 完整人工验证引导 | 新增，未开始 | 由 Codex 引导用户完整验证账号、绑定、同步、AI、写信、送达、拆阅、断网和原生真机流程。 |
 | 21 | 邮政异常规则 | 未开始 | 延误、错分、迷失、找回、退回的确定性推进。 |
 | 22 | 系统推送 | 未开始 | 重要信、挂号信、找回、退回等克制提醒。 |
@@ -816,7 +816,7 @@ npx cap doctor
 
 目标：把所有需要用户登录控制台、输入验证码、确认费用或操作真实设备前置配置的事项统一处理，避免打断阶段 17 / 18 的工程开发。
 
-状态：进行中。已新增阶段 19 执行计划和脱敏 CloudBase 审计脚本；已记录当前 CloudBase 用量、函数状态、公开面、默认角色和 env key 存在情况。用户已在 CloudBase 控制台开启手机号短信登录，且两个真实手机号验证码均已实际收到。下一步需要记录短信签名 / 模板 / 发送限制 / 费用策略。
+状态：进行中。已新增阶段 19 执行计划和脱敏 CloudBase 审计脚本；已记录当前 CloudBase 用量、函数状态、公开面、默认角色和 env key 存在情况。用户已在 CloudBase 控制台开启手机号短信登录，且两个真实手机号验证码均已实际收到。App 侧手机号登录接入方式已确定为 CloudBase Auth v2 HTTP API，账号 / 关系集合命名已定稿，HTTP 路由 smoke、CLI 路由查询、集合权限查询和角色列表查询已通过。下一步需要记录短信签名 / 模板 / 发送限制 / 费用策略，并继续确认预算、函数运行角色收敛和 MiMo key 管理。
 
 执行计划：
 
@@ -831,6 +831,12 @@ npx cap doctor
 - `ai-scribe-proxy` 的 `MIMO_API_KEY` 存在但审计输出已脱敏；后续不要直接用会打印完整 env 的 CLI 输出。
 - CloudBase Auth 手机号短信登录已由用户在控制台开启；本环境为 `ap-shanghai`，符合短信登录地域要求。
 - Auth 发送验证码应使用 CloudBase HTTP API 统一域名 `https://pinganpi-d7gml1f6sbcc172ea.api.tcloudbasegateway.com/auth/v1/verification`；已对两个真实手机号各触发一次发送请求，均返回 HTTP 200 和 `verification_id`，用户已确认两台手机均收到验证码。
+- App 第一版手机号登录采用 CloudBase Auth v2 HTTP API，不引入 CloudBase JS SDK：发送验证码 `/auth/v1/verification`，验证验证码 `/auth/v1/verification/verify`，登录 `/auth/v1/signin`，刷新 `/auth/v1/token`。
+- 账号 / 关系集合名确定为 `pinganpi_accounts`、`pinganpi_households`、`pinganpi_members`、`pinganpi_invites`；账号 / 关系写入必须走服务端可信身份边界，客户端不得直接写授权结果。
+- 2026-05-24 HTTP 路由 smoke：`/api/health` 和 `/sync/health` 返回 200；`/sync/pull` 与 `/sync/push` 在未带 token 时返回 401，公网路由和 fail-closed 行为可达。
+- 2026-05-24 CLI 路由查询：`/api` 指向 `ai-scribe-proxy`；`/sync/health`、`/sync/pull`、`/sync/push` 指向 `sync-proxy`；四条路由均启用，类型均为 `WEB_SCF`。
+- 2026-05-24 CLI 权限查询：`pinganpi_sync_snapshots`、`pinganpi_accounts`、`pinganpi_households`、`pinganpi_members`、`pinganpi_invites` 均为 `PRIVATE`；函数 invoke 权限为自定义规则，但 HTTP 访问服务路由 `enableAuth=false`，所以代理 handler 的应用层校验仍是必须边界。
+- 2026-05-24 CLI 角色查询：当前只有系统角色，自定义角色 0 个；函数运行角色仍显示为 `TCB_QcsRole`，是否能收敛仍需控制台 / 云函数平台确认。
 
 推荐范围：
 
@@ -838,7 +844,7 @@ npx cap doctor
 - CloudBase 数据库：确认账号、关系、邀请、同步 snapshot 等集合权限。
 - CloudBase HTTP 路由：确认 AI 代理和同步代理路由可访问。
 - CloudBase 费用：配置或记录费用告警、月费用上限、人工检查频率。
-- CloudBase 默认角色：确认 `TCB_QcsRole` 是否可收敛，若不能收敛则记录风险。
+- CloudBase 默认角色：确认函数运行角色 `TCB_QcsRole` 是否可收敛，若不能收敛则记录风险。
 - Xiaomi MiMo：确认额度、费用提醒、key 撤销 / 轮换入口。
 - 真实环境变量：确认云端 env 已配置且不打印真实 secret。
 - 真实手机号：由用户输入验证码完成至少两个账号登录准备。

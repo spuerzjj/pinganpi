@@ -10,6 +10,8 @@
 
 阶段 17 采用 **CloudBase 手机号验证码登录 + 平安批最小账号档案**。
 
+阶段 19 已确认第一版 App 接入使用 CloudBase Auth v2 HTTP API，而不是 CloudBase JS SDK。App 通过 HTTP API 完成发送验证码、验证验证码、登录和 refresh token 刷新；账号 / 关系写入仍由平安批服务端在可信身份边界内完成。
+
 需要账号系统，但不是完整社交账号系统：
 
 - 需要：手机号验证码登录、CloudBase UID、登录态恢复、UID 到平安批账号的映射。
@@ -26,6 +28,7 @@
 包含：
 
 - CloudBase 手机号验证码登录接入。
+- 使用 CloudBase Auth v2 HTTP API：`/auth/v1/verification`、`/auth/v1/verification/verify`、`/auth/v1/signin`、`/auth/v1/token`。
 - App 启动时恢复 CloudBase 登录态。
 - 建立 `PinganpiAccount`：把 CloudBase UID 映射到平安批账号。
 - 本地保存账号登录状态摘要和账号展示所需手机号；不保存短信验证码或 CloudBase 管理密钥。
@@ -106,6 +109,19 @@ interface PinganpiAccount {
 
 阶段 17 新增账号服务边界，建议放在 `server/account-proxy/` 或合并到后续 auth service 中，具体 implementation plan 再确定。
 
+App 侧 CloudBase Auth HTTP API 职责：
+
+- 发送验证码：`POST /auth/v1/verification`，手机号带 `+86 ` 前缀。
+- 验证验证码：`POST /auth/v1/verification/verify`，得到短期 `verification_token`。
+- 登录：`POST /auth/v1/signin`，用 `verification_token` 换取 `access_token`、`refresh_token` 和 CloudBase `sub`。
+- 刷新：`POST /auth/v1/token`，用 `refresh_token` 轮换新的 token，维持登录态。
+
+平安批服务端职责：
+
+- 验证 CloudBase 登录态，推导可信 `authUid`。
+- 按 `authUid` 确保 `PinganpiAccount` 存在。
+- 返回账号档案和后续关系引导状态。
+
 最小接口：
 
 - `GET /account/session`：返回当前登录 UID 对应的平安批账号档案。
@@ -150,5 +166,6 @@ interface PinganpiAccount {
 - 已新增 `src/app/account/local-account-adapter.ts`，用于本地开发和浏览器调试的手机号 mock 登录、稳定 `PinganpiAccount`、登录态恢复和登出。
 - 已新增 `src/app/pages/AccountGatePage.vue`，App 未登录或未绑定时先进入账号簿入口。
 - 已新增 `server/account-pair/account-pair-service.ts`，服务端按受信任 `authUid` 确保同一平安批账号，并更新 `lastLoginAtIso`。
+- 阶段 19 已确认 App 第一版采用 CloudBase Auth v2 HTTP API，不引入 CloudBase JS SDK；账号集合名确定为 `pinganpi_accounts`。
 - 手机号仍只出现在账号档案和账号入口展示；不得写入信件、邮政记录、AI metadata 或无关日志。
 - 真实 CloudBase 手机号验证码、CloudBase token / refresh token、账号集合持久化和卸载重装后的真实恢复验证进入阶段 19 / 20。

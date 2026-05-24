@@ -85,7 +85,7 @@ interface PinganpiInvite {
 
 ## 同步授权流程
 
-1. App 通过 CloudBase Auth 恢复或完成手机号登录。
+1. App 通过 CloudBase Auth v2 HTTP API 恢复或完成手机号登录。
 2. 客户端请求同步时携带 CloudBase 登录态，不再携带手工 `X-Pinganpi-Sync-Token`。
 3. `sync-proxy` 从 CloudBase 登录态得到 `authUid`。
 4. 服务端按 `authUid` 查询 `PinganpiAccount`。
@@ -144,7 +144,7 @@ interface PinganpiInvite {
 
 ## 后续衔接
 
-阶段 19 统一处理外部平台人工配置收口，包括 CloudBase 身份认证、短信验证码、费用告警、数据库权限、HTTP 路由、真实双设备配置和控制台人工确认。
+阶段 19 统一处理外部平台人工配置收口，包括 CloudBase 身份认证、短信验证码、费用告警、数据库权限、HTTP 路由、真实双设备配置和控制台人工确认。阶段 19 已确认 App 侧第一版采用 CloudBase Auth v2 HTTP API，不引入 CloudBase JS SDK；账号 / 关系集合名为 `pinganpi_accounts`、`pinganpi_households`、`pinganpi_members`、`pinganpi_invites`。
 
 阶段 20 由 Codex 引导用户进行完整人工验证，覆盖账号登录、创建关系、邀请加入、双人同步、写信、送达、拆阅、AI 起稿、断网恢复和原生真机检查。
 
