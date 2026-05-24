@@ -71,7 +71,7 @@ npx cap doctor
 
 ## 当前代码状态
 
-当前迁移工作在 `codex/wechat-miniprogram-pivot` 分支推进。最新路线图基线为：**阶段 1-19 的旧 Capacitor / Vue App 工程能力已形成完整业务参考；2026-05-24 用户确认项目主线切换为微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境。手机号仍是《平安批》业务账号主键，微信一键获取手机号为默认登录入口，短信验证码登录保留兜底。本地开发和上线都优先走 CloudBase 云函数，本地 proxy 降级为诊断工具。阶段 21 已完成迁移设计与重基线；阶段 22 已完成小程序工程基座：`miniprogram/`、页面骨架、TypeScript 检查、微信开发者工具配置和 `dev` CloudBase 环境入口。下一步进入阶段 23：共享领域核心迁移。迁移设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`，阶段 22 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md`。**
+当前迁移工作在 `codex/wechat-miniprogram-pivot` 分支推进。最新路线图基线为：**阶段 1-19 的旧 Capacitor / Vue App 工程能力已形成完整业务参考；2026-05-24 用户确认项目主线切换为微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境。手机号仍是《平安批》业务账号主键，微信一键获取手机号为默认登录入口，短信验证码登录保留兜底。本地开发和上线都优先走 CloudBase 云函数，本地 proxy 降级为诊断工具。阶段 21 已完成迁移设计与重基线；阶段 22 已完成小程序工程基座；阶段 23 已完成共享领域核心迁移：`shared/domain/` 是领域规则真实实现位置，`src/domain/` 保留兼容 re-export，小程序今日页已通过 `miniprogram/services/domain-summary.ts` 使用共享规则。下一步进入阶段 24：小程序本地核心界面。迁移设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`，阶段 22 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md`，阶段 23 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-shared-domain-core.md`。**
 
 旧 App 能力基线仍然重要：阶段 16 双人真实同步 MVP 已完成云端 smoke；阶段 17 手机号账号本地工程闭环已完成；阶段 18 双人绑定与同步授权工程闭环已完成；阶段 19 外部平台配置已收口。阶段 13 / 14 的 CloudBase AI 代理、非流式 / 流式起稿、禁用 key 安全失败验证和恢复验证已跑通。继续开发前以 `git log --oneline --decorate -5` 为准。
 
@@ -87,7 +87,7 @@ npx cap doctor
 
 ### 阶段 1：领域层基础
 
-位置：`src/domain/`
+位置：`shared/domain/`；`src/domain/` 保留兼容 re-export，旧 App 和旧测试入口仍可继续使用。
 
 已实现：
 
@@ -101,7 +101,7 @@ npx cap doctor
 重要要求：
 
 - 后续 UI、持久化、云端、通知等层不要重复实现领域规则。
-- 所有时间、钱、代书先生出勤、邮资、邮路、信件状态计算优先复用 `src/domain`。
+- 所有时间、钱、代书先生出勤、邮资、邮路、信件状态计算优先复用 `shared/domain`；旧 App 代码可继续通过 `src/domain` 兼容入口导入。
 
 ### 阶段 2：Capacitor 移动壳层
 
@@ -156,7 +156,7 @@ npx cap doctor
 - `docs/superpowers/specs/2026-05-23-pinganpi-ai-scribe-design.md`
 - `docs/superpowers/plans/2026-05-23-pinganpi-minimal-ai-proxy.md`
 
-最近验证基线：阶段 22 已通过 `npm test -- miniprogram/config/env.test.ts`（1 个测试文件，3 个测试通过）、`npm run miniprogram:typecheck`、`npm test`（42 个测试文件，328 个测试通过）、`npm run typecheck` 和 `git diff --check`。阶段 17 / 18 旧 App 基线保留：`npm test` 曾为 40 个测试文件、320 个测试通过，`vue-tsc --noEmit`、`vite build`、`cap sync`、`cap doctor`、`npm audit --omit=dev` 均通过；Varlet 首包超过 500 KB 是旧 App 优化项。阶段 16B 云端基线保留：`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:sync` 通过，`npm run cloudbase:smoke:sync` 已通过真实云端 smoke。为避免 `@cloudbase/node-sdk` 传递引入存在原型污染公告的 `lodash.set` / `lodash.unset` 小包，已通过 `vendor/lodash-set` 和 `vendor/lodash-unset` 提供兼容 shim，内部调用已修复的主 `lodash` 子模块。
+最近验证基线：阶段 23 已通过 `npm test -- src/domain`（5 个测试文件，85 个测试通过）、`npm test -- miniprogram/services/domain-summary.test.ts`（1 个测试通过）、`npm run miniprogram:typecheck`、`npm test`（43 个测试文件，329 个测试通过）、`npm run typecheck` 和 `git diff --check`。阶段 22 基线为 `npm test -- miniprogram/config/env.test.ts`（1 个测试文件，3 个测试通过）。阶段 17 / 18 旧 App 基线保留：`npm test` 曾为 40 个测试文件、320 个测试通过，`vue-tsc --noEmit`、`vite build`、`cap sync`、`cap doctor`、`npm audit --omit=dev` 均通过；Varlet 首包超过 500 KB 是旧 App 优化项。阶段 16B 云端基线保留：`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:sync` 通过，`npm run cloudbase:smoke:sync` 已通过真实云端 smoke。为避免 `@cloudbase/node-sdk` 传递引入存在原型污染公告的 `lodash.set` / `lodash.unset` 小包，已通过 `vendor/lodash-set` 和 `vendor/lodash-unset` 提供兼容 shim，内部调用已修复的主 `lodash` 子模块。
 
 ## 后续路线
 
@@ -166,6 +166,7 @@ npx cap doctor
 - `docs/pinganpi-roadmap-dashboard.html`
 - `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`
 - `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md`
+- `docs/superpowers/plans/2026-05-24-pinganpi-shared-domain-core.md`
 - `docs/superpowers/specs/2026-05-24-pinganpi-dual-sync-mvp-design.md`
 - `docs/superpowers/plans/2026-05-24-pinganpi-dual-sync-mvp.md`
 - `docs/superpowers/specs/2026-05-24-pinganpi-cloudbase-sync-design.md`
@@ -211,11 +212,13 @@ npx cap doctor
    - 不继续扩展 Capacitor 壳层。
 
 3. **阶段 23：共享领域核心迁移**
-   - 状态：下一步。
-   - 抽取或适配 `src/domain` 等纯 TypeScript 规则，让小程序复用时间、钱匣、代笔先生、邮资、送达和状态机。
+   - 状态：已完成基础。
+   - 已新增 `shared/domain/` 作为领域规则真实实现位置，`src/domain/` 保留兼容 re-export。
+   - 小程序今日页已通过 `miniprogram/services/domain-summary.ts` 使用共享旧历日期和邮资摘要。
    - 领域层不得引入小程序、CloudBase、Vue、浏览器或 Capacitor 依赖。
 
 4. **阶段 24：小程序本地核心界面**
+   - 状态：下一步。
    - 用 WXML / WXSS / TypeScript 重建今日、写信、先生、钱匣、信箱 / 档案。
    - 第一版先支持本地 mock，不做营销页，不做聊天气泡。
 
@@ -405,11 +408,12 @@ npx cap doctor
 npm audit --omit=dev
 ```
 
-阶段 22 后，小程序相关改动至少运行：
+阶段 23 后，小程序相关改动至少运行：
 
 ```bash
 npm run miniprogram:typecheck
 npm test -- miniprogram/config/env.test.ts
+npm test -- miniprogram/services/domain-summary.test.ts
 ```
 
 后续接入云函数后，应补充微信开发者工具构建、云函数构建、`dev` 环境 smoke 命令，并把它们作为新主线默认验证。

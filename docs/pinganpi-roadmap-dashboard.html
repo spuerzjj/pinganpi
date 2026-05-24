@@ -481,7 +481,7 @@
         <div class="meta">
           <span class="badge done">旧 App：阶段 19 收口</span>
           <span class="badge info">新主线：微信小程序</span>
-          <span class="badge done">阶段 22 已完成基础</span>
+          <span class="badge done">阶段 23 已完成基础</span>
           <span class="badge done">codex/wechat-miniprogram-pivot</span>
           <span class="badge">更新：2026-05-24</span>
         </div>
@@ -490,23 +490,23 @@
       <section class="grid-4" aria-label="关键状态">
         <article class="metric">
           <p class="metric-label">当前基线</p>
-          <p class="metric-value">阶段 22</p>
-          <p class="metric-note">已建立 miniprogram 工程、页面骨架、TypeScript 检查和 dev 环境入口。</p>
+          <p class="metric-value">阶段 23</p>
+          <p class="metric-note">已迁移 shared/domain，共享领域规则已被小程序今日页直接使用。</p>
         </article>
         <article class="metric">
           <p class="metric-label">验证状态</p>
-          <p class="metric-value">328 tests</p>
-          <p class="metric-note">全量测试、旧 Vue typecheck、小程序 typecheck 和环境配置测试已通过。</p>
+          <p class="metric-value">329 tests</p>
+          <p class="metric-note">全量测试、旧 Vue typecheck、小程序 typecheck 和共享领域测试已通过。</p>
         </article>
         <article class="metric">
           <p class="metric-label">下一推荐</p>
-          <p class="metric-value">共享核心</p>
-          <p class="metric-note">进入阶段 23：抽取或适配领域规则，确保小程序不重复实现业务规则。</p>
+          <p class="metric-value">本地界面</p>
+          <p class="metric-note">进入阶段 24：把小程序页面从骨架推进到本地 mock 核心界面。</p>
         </article>
         <article class="metric">
           <p class="metric-label">主要风险</p>
           <p class="metric-value">8 项</p>
-          <p class="metric-note">AppID、prd 环境、手机号能力、隐私审核、共享核心、流式 AI、真实双端、发布。</p>
+          <p class="metric-note">AppID、prd 环境、手机号能力、隐私审核、流式 AI、真实双端、发布和 UI 打磨。</p>
         </article>
       </section>
 
@@ -514,13 +514,13 @@
         <div class="card-header">
           <div>
             <h2>阶段进度</h2>
-            <p class="muted">阶段 1-19 的旧 App 工程能力保留为业务参考；阶段 22 已建立小程序工程基座，下一步迁移共享领域核心。</p>
+            <p class="muted">阶段 1-19 的旧 App 工程能力保留为业务参考；阶段 23 已迁移共享领域核心，下一步进入小程序本地核心界面。</p>
           </div>
-          <span class="badge done">阶段 22</span>
+          <span class="badge done">阶段 23</span>
         </div>
         <div class="card-body progress">
           <div class="progress-track" aria-hidden="true">
-            <div class="progress-fill" style="width: 63%"></div>
+            <div class="progress-fill" style="width: 66%"></div>
           </div>
           <div class="phase-grid">
             <div class="phase done">
@@ -611,11 +611,11 @@
               <span class="phase-number">22</span>
               <span class="phase-title">小程序基座</span>
             </div>
-            <div class="phase next">
+            <div class="phase done">
               <span class="phase-number">23</span>
               <span class="phase-title">共享核心</span>
             </div>
-            <div class="phase">
+            <div class="phase next">
               <span class="phase-number">24</span>
               <span class="phase-title">小程序界面</span>
             </div>
@@ -769,7 +769,11 @@
               <span class="badge warn">chunk warning</span>
             </div>
             <ul class="plain-list" style="margin-top: 12px">
-              <li>全量 42 个测试文件，328 个测试通过。</li>
+              <li>阶段 23 已完成基础：`shared/domain/` 是领域规则真实实现位置，`src/domain/` 保留兼容 re-export。</li>
+              <li>`npm test -- src/domain` 已通过，5 个测试文件，85 个测试通过；旧领域入口验证共享核心行为未变。</li>
+              <li>`npm test -- miniprogram/services/domain-summary.test.ts` 已通过，小程序可直接使用 `shared/domain`。</li>
+              <li>`npm run miniprogram:typecheck` 已通过，小程序共享领域入口可检查。</li>
+              <li>全量 43 个测试文件，329 个测试通过。</li>
               <li>阶段 22 已完成基础：`miniprogram/`、页面骨架、TypeScript 检查、微信开发者工具配置和 CloudBase dev 环境入口已创建。</li>
               <li>`npm test -- miniprogram/config/env.test.ts` 已通过，确认小程序默认使用 `dev` 环境 `pinganpi-d7gml1f6sbcc172ea`，`prd` 仍为空等待用户创建。</li>
               <li>`npm run miniprogram:typecheck` 已通过，小程序页面骨架和 CloudBase dev 配置入口可检查。</li>
@@ -794,7 +798,7 @@
         <article class="card">
           <div class="card-header">
             <h2>后续主线</h2>
-            <span class="badge info">下一工程：阶段 23</span>
+            <span class="badge info">下一工程：阶段 24</span>
           </div>
           <div class="card-body priority-grid">
             <div class="priority">
@@ -813,14 +817,14 @@
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge info">阶段 23 下一步</span>
+                <span class="badge done">阶段 23 完成基础</span>
               </div>
               <h3>共享领域核心迁移</h3>
-              <p>抽取或适配纯 TypeScript 规则，让小程序复用时间、钱匣、代笔先生、邮资、送达和状态机。</p>
+              <p>已新增 `shared/domain/`，旧 App 通过 `src/domain` 兼容入口继续使用，小程序今日页已接入共享旧历日期和邮资摘要。</p>
             </div>
             <div class="priority">
               <div class="meta" style="justify-content: flex-start">
-                <span class="badge">阶段 24</span>
+                <span class="badge info">阶段 24 下一步</span>
               </div>
               <h3>小程序本地核心界面</h3>
               <p>重建今日、写信、代笔先生、钱匣、信箱 / 档案，先跑通本地 mock 慢通信闭环。</p>
@@ -902,6 +906,7 @@
             <a class="button" href="./superpowers/specs/2026-05-23-pinganpi-design.md">产品设计文档</a>
             <a class="button primary" href="./superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md">阶段 21 小程序迁移设计</a>
             <a class="button primary" href="./superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md">阶段 22 小程序基座计划</a>
+            <a class="button primary" href="./superpowers/plans/2026-05-24-pinganpi-shared-domain-core.md">阶段 23 共享核心计划</a>
             <a class="button" href="./superpowers/plans/2026-05-23-pinganpi-cloud-ai-proxy.md">阶段 13 实施计划</a>
             <a class="button" href="./superpowers/specs/2026-05-24-pinganpi-cloud-sync-design.md">阶段 15 同步设计</a>
             <a class="button" href="./superpowers/plans/2026-05-24-pinganpi-cloud-sync-foundation.md">阶段 15 实施计划</a>
