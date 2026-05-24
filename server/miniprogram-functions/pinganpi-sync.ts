@@ -2,10 +2,8 @@ import cloudbase from "@cloudbase/node-sdk";
 import { createCloudBaseSyncSnapshotStore } from "../sync-proxy/cloudbase-store.js";
 import {
   handleSyncProxyRequest,
-  type SyncProxyAuthConfig,
   type SyncSnapshotStore
 } from "../sync-proxy/handler.js";
-import { readSyncProxyAuthConfig } from "../sync-proxy/runtime-auth.js";
 import {
   isRecord,
   miniFail,
@@ -16,13 +14,12 @@ import {
 } from "./result.js";
 
 export async function main(event: PinganpiMiniFunctionEvent): Promise<PinganpiMiniFunctionResult> {
-  return handlePinganpiSyncEvent(createRuntimeStore(), event, readSyncProxyAuthConfig(process.env));
+  return handlePinganpiSyncEvent(createRuntimeStore(), event);
 }
 
 export async function handlePinganpiSyncEvent(
   store: SyncSnapshotStore,
-  event: PinganpiMiniFunctionEvent,
-  authConfig?: SyncProxyAuthConfig
+  event: PinganpiMiniFunctionEvent
 ): Promise<PinganpiMiniFunctionResult> {
   const action = readMiniAction(event);
   const route = readSyncRoute(action);
@@ -39,7 +36,7 @@ export async function handlePinganpiSyncEvent(
       headers: {},
       body: route.method === "GET" ? "" : JSON.stringify(event.payload ?? {})
     },
-    authConfig
+    { required: false, memberTokens: {} }
   );
   const body = parseJsonBody(response.body);
 

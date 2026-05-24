@@ -274,10 +274,10 @@
 
 最近阶段 25 小程序 CloudBase dev 主链路新增验证记录：
 
-- `npm test -- server/miniprogram-functions/pinganpi-ai.test.ts server/miniprogram-functions/pinganpi-sync.test.ts server/account-pair/cloudbase-store.test.ts server/miniprogram-functions/pinganpi-account.test.ts server/miniprogram-functions/pinganpi-pair.test.ts miniprogram/services/cloud-functions.test.ts scripts/smoke-cloudbase-miniprogram-functions.test.ts`：通过，7 个测试文件，29 个测试通过。
+- `npm test -- server/miniprogram-functions/pinganpi-ai.test.ts server/miniprogram-functions/pinganpi-sync.test.ts server/account-pair/cloudbase-store.test.ts server/miniprogram-functions/pinganpi-account.test.ts server/miniprogram-functions/pinganpi-pair.test.ts miniprogram/services/cloud-functions.test.ts scripts/smoke-cloudbase-miniprogram-functions.test.ts`：通过，7 个测试文件，30 个测试通过。
 - `npm run cloudbase:build:miniprogram`：通过，生成 `pinganpi-ai`、`pinganpi-sync`、`pinganpi-account`、`pinganpi-pair` 四个 event 云函数包；生成目录仍由 `.gitignore` 排除。
 - `npm run miniprogram:check`：通过；包含共享副本一致性检查和小程序 typecheck。
-- `npm test`：通过，53 个测试文件，372 个测试通过。
+- `npm test`：通过，53 个测试文件，373 个测试通过。
 - `npm run typecheck`：通过。
 - `git diff --check`：通过。
 
@@ -1010,8 +1010,8 @@ npx cap doctor
 
 - 已新增小程序 event wrapper：`pinganpi-account`、`pinganpi-pair`、`pinganpi-sync`、`pinganpi-ai`。
 - `pinganpi-ai` 复用既有 AI proxy handler；health 不依赖 MiMo env，非流式 `scribeDraft` 使用受控返回。
-- `pinganpi-sync` 复用既有 sync handler、redaction、CloudBase snapshot store 和 runtime auth。
-- `pinganpi-account` / `pinganpi-pair` 复用 `account-pair-service`，新增账号关系 CloudBase store，集合名为 `pinganpi_accounts`、`pinganpi_households`、`pinganpi_members`、`pinganpi_invites`。
+- `pinganpi-sync` 复用既有 sync handler、redaction 和 CloudBase snapshot store；阶段 25 event runtime 使用 dev-only payload namespace，不读取旧 HTTP header token auth，阶段 26 再接微信可信身份推导。
+- `pinganpi-account` / `pinganpi-pair` 复用 `account-pair-service`，新增账号关系 CloudBase store，集合名为 `pinganpi_accounts`、`pinganpi_households`、`pinganpi_members`、`pinganpi_invites`；创建邀请码响应不向客户端返回 `codeHash`。
 - 已新增小程序端 `miniprogram/services/cloud-functions.ts`，封装 `wx.cloud.callFunction`；本阶段尚未接入页面。
 - 已新增 `npm run cloudbase:build:miniprogram`、`npm run cloudbase:deploy:miniprogram`、`npm run cloudbase:smoke:miniprogram`。
 - HTTP 入口保留为诊断工具，不作为小程序主链路。

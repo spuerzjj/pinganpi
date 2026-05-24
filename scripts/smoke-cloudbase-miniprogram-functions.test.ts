@@ -27,6 +27,7 @@ describe("cloudbase miniprogram function smoke helpers", () => {
     const text = [
       "phone=13800138000",
       "invite=ABCD-1234",
+      "invite=135790",
       "MIMO_API_KEY=sk-secretvalue",
       "sync token token-secret",
       "provider raw body: {\"error\":\"upstream\"}",
@@ -39,6 +40,7 @@ describe("cloudbase miniprogram function smoke helpers", () => {
 
     expect(redacted).not.toContain("13800138000");
     expect(redacted).not.toContain("ABCD-1234");
+    expect(redacted).not.toContain("135790");
     expect(redacted).not.toContain("sk-secretvalue");
     expect(redacted).not.toContain("token-secret");
     expect(redacted).not.toContain("{\"error\":\"upstream\"}");

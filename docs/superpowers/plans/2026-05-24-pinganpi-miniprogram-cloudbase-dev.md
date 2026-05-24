@@ -69,6 +69,7 @@ Wrapper 行为：
 - AI wrapper 调用既有 `handleAiProxyRequest`，并设置 `allowMissingOrigin: true`，因为 `wx.cloud.callFunction` 没有浏览器 Origin。
 - Sync wrapper 调用既有 `handleSyncProxyRequest`。阶段 25 dev 通道允许 payload 中携带 `householdId` / `memberId`；阶段 26 再接入真实微信身份并由服务端可信推导成员身份。
 - Account / Pair wrapper 的 dev 通道允许 payload 中携带 `authUid` / `phoneNumber` / `accountId`；阶段 26 再替换为微信手机号能力和服务端可信身份。
+- `pinganpi-sync` event runtime 不读取旧 HTTP header token auth；真实上线前由阶段 26 接入微信可信身份推导。
 
 ## Files
 
@@ -531,7 +532,7 @@ npm run cloudbase:build:miniprogram
 git diff --check
 ```
 
-Expected: PASS. 当前验证基线为 53 个测试文件、372 个测试通过。
+Expected: PASS. 当前验证基线为 53 个测试文件、373 个测试通过。
 
 - [x] **Step 2: Update docs**
 

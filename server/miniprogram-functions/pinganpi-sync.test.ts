@@ -80,6 +80,25 @@ describe("pinganpi sync miniprogram function", () => {
     expect(store.snapshot?.remoteRevision).toBe(1);
   });
 
+  it("uses the dev event payload namespace even when no HTTP auth headers exist", async () => {
+    const store = createMemoryStore();
+    const snapshot = createSnapshot(createStateWithLetter("arrived"), deviceA, 0);
+
+    const response = await handlePinganpiSyncEvent(store, {
+      action: "push",
+      payload: {
+        householdId,
+        deviceId: deviceA,
+        memberId: memberZhou,
+        baseRemoteRevision: null,
+        snapshot
+      }
+    });
+
+    expect(response.ok).toBe(true);
+    expect(store.snapshot?.household?.householdId ?? store.snapshot?.members[0]?.householdId).toBe(householdId);
+  });
+
   it("returns not_found for unknown actions", async () => {
     const response = await handlePinganpiSyncEvent(createMemoryStore(), { action: "deleteEverything" });
 

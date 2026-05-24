@@ -5,7 +5,6 @@ import { handlePinganpiPairEvent, type AccountPairRepository } from "./pinganpi-
 interface CreateInviteResultData {
   code: string;
   invite: {
-    codeHash: string;
     expiresAtIso: string;
   };
 }
@@ -59,7 +58,7 @@ describe("pinganpi pair miniprogram function", () => {
       const data = result.data as CreateInviteResultData;
 
       expect(data.code).toBe("135790");
-      expect(data.invite.codeHash).not.toBe(data.code);
+      expect(data.invite).not.toHaveProperty("codeHash");
       expect(data.invite).not.toHaveProperty("code");
       expect(data.invite.expiresAtIso).toBe("2026-05-25T08:00:00.000Z");
     }

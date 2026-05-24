@@ -1,5 +1,5 @@
 import cloudbase from "@cloudbase/node-sdk";
-import { PairBindingError } from "../../src/app/account/account-model.js";
+import { PairBindingError, type PinganpiInvite } from "../../src/app/account/account-model.js";
 import { createAccountPairService, type AccountPairServiceOptions } from "../account-pair/account-pair-service.js";
 import {
   createCloudBaseAccountPairStore,
@@ -56,7 +56,7 @@ export async function handlePinganpiPairEvent(
       const issue = await service.createInvite(accountId);
 
       return {
-        invite: issue.invite,
+        invite: toClientInvite(issue.invite),
         code: issue.code
       };
     });
@@ -91,6 +91,12 @@ export async function handlePinganpiPairEvent(
   }
 
   return miniFail(action, "not_found", "Unknown pair function action.", 404);
+}
+
+function toClientInvite(invite: PinganpiInvite): Omit<PinganpiInvite, "codeHash"> {
+  const { codeHash: _codeHash, ...clientInvite } = invite;
+
+  return clientInvite;
 }
 
 async function runPairMutation<TData>(
