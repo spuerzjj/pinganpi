@@ -1,7 +1,80 @@
 <view class="page-shell">
-  <view class="archive-panel">
-    <view class="kicker">{{kicker}}</view>
-    <view class="title">{{title}}</view>
-    <view class="body-copy">{{body}}</view>
+  <view class="panel-stack">
+    <view class="archive-panel">
+      <view class="kicker">{{kicker}}</view>
+      <view class="title">{{title}}</view>
+      <view class="body-copy">{{body}}</view>
+      <view class="empty-note">{{statusText}}</view>
+    </view>
+
+    <view class="section-panel" wx:if="{{account}}">
+      <view class="section-title">账号</view>
+      <view class="record-list">
+        <view class="record-row">
+          <view class="meta-row">
+            <text class="meta-label">手机号</text>
+            <text class="meta-value">{{account.phoneNumber}}</text>
+          </view>
+        </view>
+        <view class="record-row">
+          <view class="meta-row">
+            <text class="meta-label">成员</text>
+            <text class="meta-value">{{binding ? binding.member.role : '未入席'}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="section-panel" wx:if="{{!binding}}">
+      <view class="section-title">创建关系</view>
+      <view class="record-copy">创建后会占用第一席，再生成 24 小时一次性邀请码给另一方。</view>
+      <button class="ledger-button primary" loading="{{loading}}" disabled="{{loading}}" bindtap="onCreateHousehold">
+        创建一对关系
+      </button>
+    </view>
+
+    <view class="section-panel" wx:if="{{binding}}">
+      <view class="section-title">关系登记</view>
+      <view class="record-list">
+        <view class="record-row">
+          <view class="meta-row">
+            <text class="meta-label">关系号</text>
+            <text class="meta-value">{{binding.household.householdId}}</text>
+          </view>
+        </view>
+        <view class="record-row">
+          <view class="meta-row">
+            <text class="meta-label">成员数</text>
+            <text class="meta-value">{{binding.activeMemberCount}} / 2</text>
+          </view>
+        </view>
+      </view>
+      <button class="ledger-button primary" loading="{{loading}}" disabled="{{loading}}" bindtap="onCreateInvite">
+        生成邀请码
+      </button>
+      <view class="invite-code" wx:if="{{inviteCode}}">{{inviteCode}}</view>
+      <button class="ledger-button" wx:if="{{binding.activeMemberCount >= 2}}" bindtap="goToday">进入今日</button>
+    </view>
+
+    <view class="section-panel">
+      <view class="section-title">加入关系</view>
+      <view class="record-copy">另一方给你的 6 位邀请码，只能使用一次。</view>
+      <input
+        class="paper-input"
+        type="number"
+        maxlength="6"
+        value="{{joinCode}}"
+        placeholder="输入邀请码"
+        bindinput="onJoinCodeInput"
+      />
+      <button class="ledger-button" loading="{{loading}}" disabled="{{loading}}" bindtap="onJoinByInvite">
+        加入关系
+      </button>
+    </view>
+
+    <view class="section-panel error-panel" wx:if="{{errorText}}">
+      <view class="section-title">未成</view>
+      <view class="record-copy">{{errorText}}</view>
+    </view>
   </view>
 </view>

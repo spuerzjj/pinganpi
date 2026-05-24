@@ -74,7 +74,7 @@ npx cap doctor
 
 ## 当前代码状态
 
-当前迁移工作在 `codex/wechat-miniprogram-pivot` 分支推进。最新路线图基线为：**阶段 1-19 的旧 Capacitor / Vue App 工程能力已形成完整业务参考；2026-05-24 用户确认项目主线切换为微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境。手机号仍是《平安批》业务账号主键，微信一键获取手机号为默认登录入口，短信验证码登录保留兜底。本地开发和上线都优先走 CloudBase 云函数，本地 proxy 降级为诊断工具。阶段 21 已完成迁移设计与重基线；阶段 22 已完成小程序工程基座；阶段 23 已完成共享领域核心迁移；阶段 24 已完成小程序本地核心界面；阶段 25 已完成小程序 CloudBase dev 主链路工程基础：新增 `pinganpi-ai`、`pinganpi-sync`、`pinganpi-account`、`pinganpi-pair` 四个 event 云函数入口、小程序 `wx.cloud.callFunction` adapter、构建 / 部署 / smoke 脚本和账号关系 CloudBase store。下一步进入阶段 26：小程序登录与双人关系真实闭环。迁移设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`，阶段 22 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md`，阶段 23 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-shared-domain-core.md`，阶段 24 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-local-ui.md`，阶段 25 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-cloudbase-dev.md`。**
+当前迁移工作在 `codex/wechat-miniprogram-pivot` 分支推进。最新路线图基线为：**阶段 1-19 的旧 Capacitor / Vue App 工程能力已形成完整业务参考；2026-05-24 用户确认项目主线切换为微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境。手机号仍是《平安批》业务账号主键，微信一键获取手机号为默认登录入口，短信验证码登录保留兜底。本地开发和上线都优先走 CloudBase 云函数，本地 proxy 降级为诊断工具。阶段 21 已完成迁移设计与重基线；阶段 22 已完成小程序工程基座；阶段 23 已完成共享领域核心迁移；阶段 24 已完成小程序本地核心界面；阶段 25 已完成小程序 CloudBase dev 主链路；阶段 26 已完成小程序登录与双人关系工程闭环：账号页接入微信手机号 code 登录和受控兜底入口，关系页接入创建关系、生成邀请码、输入邀请码加入，小程序本地会话只缓存账号 / 绑定摘要，服务端账号和关系云函数改为从可信微信 / CloudBase 上下文推导账号身份，不再信任客户端传入的 `authUid`、`phoneNumber` 或 `accountId`。下一步进入阶段 27：小程序 AI 与同步体验补齐。迁移设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`，阶段 22 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md`，阶段 23 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-shared-domain-core.md`，阶段 24 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-local-ui.md`，阶段 25 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-cloudbase-dev.md`，阶段 26 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-login-pair.md`。**
 
 旧 App 能力基线仍然重要：阶段 16 双人真实同步 MVP 已完成云端 smoke；阶段 17 手机号账号本地工程闭环已完成；阶段 18 双人绑定与同步授权工程闭环已完成；阶段 19 外部平台配置已收口。阶段 13 / 14 的 CloudBase AI 代理、非流式 / 流式起稿、禁用 key 安全失败验证和恢复验证已跑通。继续开发前以 `git log --oneline --decorate -5` 为准。
 
@@ -159,7 +159,7 @@ npx cap doctor
 - `docs/superpowers/specs/2026-05-23-pinganpi-ai-scribe-design.md`
 - `docs/superpowers/plans/2026-05-23-pinganpi-minimal-ai-proxy.md`
 
-最近验证基线：阶段 25 已通过 `npm run miniprogram:check`、`npm test`（53 个测试文件，373 个测试通过）、`npm run typecheck`、`npm run cloudbase:build:miniprogram` 和 `git diff --check`；阶段 25 聚焦测试为 7 个测试文件、30 个测试通过，覆盖 AI / sync / account / pair event wrapper、小程序 cloud adapter、账号关系 CloudBase store 和 smoke helper。阶段 24 基线保留：`npm test -- miniprogram/services/local-model.test.ts`（4 个测试通过）、`npm test -- miniprogram/services/write-flow.test.ts`（6 个测试通过）。阶段 23 基线保留：`npm test -- src/domain`（5 个测试文件，85 个测试通过）、`npm run miniprogram:check-shared`、`npm test -- miniprogram/services/domain-summary.test.ts`（1 个测试通过）、`npm test -- scripts/sync-miniprogram-shared-domain.test.ts`（4 个测试通过）。阶段 17 / 18 旧 App 基线保留：`npm test` 曾为 40 个测试文件、320 个测试通过，`vue-tsc --noEmit`、`vite build`、`cap sync`、`cap doctor`、`npm audit --omit=dev` 均通过；Varlet 首包超过 500 KB 是旧 App 优化项。阶段 16B 云端基线保留：`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:sync` 通过，`npm run cloudbase:smoke:sync` 已通过真实云端 smoke。为避免 `@cloudbase/node-sdk` 传递引入存在原型污染公告的 `lodash.set` / `lodash.unset` 小包，已通过 `vendor/lodash-set` 和 `vendor/lodash-unset` 提供兼容 shim，内部调用已修复的主 `lodash` 子模块。
+最近验证基线：阶段 26 已通过 `npm run miniprogram:check`、`npm test`（56 个测试文件，387 个测试通过）、`npm run typecheck`、`npm run cloudbase:build:miniprogram`、`git diff --check` 和阶段 26 聚焦测试（5 个测试文件，23 个测试通过），覆盖小程序可信身份、账号云函数、关系云函数、会话缓存和 cloud service；`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:miniprogram` 与 `npm run cloudbase:smoke:miniprogram` 已在阶段 26 账号 / 关系可信身份改造后通过。阶段 25 基线保留：小程序 CloudBase dev 主链路已通过构建、部署和 health smoke，AI / sync / account / pair event wrapper、小程序 cloud adapter、账号关系 CloudBase store 和 smoke helper 均有测试覆盖。阶段 24 基线保留：`npm test -- miniprogram/services/local-model.test.ts`（4 个测试通过）、`npm test -- miniprogram/services/write-flow.test.ts`（6 个测试通过）。阶段 23 基线保留：`npm test -- src/domain`（5 个测试文件，85 个测试通过）、`npm run miniprogram:check-shared`、`npm test -- miniprogram/services/domain-summary.test.ts`（1 个测试通过）、`npm test -- scripts/sync-miniprogram-shared-domain.test.ts`（4 个测试通过）。阶段 17 / 18 旧 App 基线保留：`npm test` 曾为 40 个测试文件、320 个测试通过，`vue-tsc --noEmit`、`vite build`、`cap sync`、`cap doctor`、`npm audit --omit=dev` 均通过；Varlet 首包超过 500 KB 是旧 App 优化项。阶段 16B 云端基线保留：`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:sync` 通过，`npm run cloudbase:smoke:sync` 已通过真实云端 smoke。为避免 `@cloudbase/node-sdk` 传递引入存在原型污染公告的 `lodash.set` / `lodash.unset` 小包，已通过 `vendor/lodash-set` 和 `vendor/lodash-unset` 提供兼容 shim，内部调用已修复的主 `lodash` 子模块。
 
 ## 后续路线
 
@@ -235,7 +235,7 @@ npx cap doctor
    - 状态：已完成 dev smoke。
    - 已新增 `pinganpi-ai`、`pinganpi-sync`、`pinganpi-account`、`pinganpi-pair` 四个小程序 event 云函数入口。
    - `pinganpi-ai` 复用既有 AI proxy handler；health 不依赖 MiMo env，非流式 `scribeDraft` 使用受控返回。
-   - `pinganpi-sync` 复用既有 sync handler、redaction 和 CloudBase snapshot store；阶段 25 event runtime 使用 dev-only payload namespace，不读取旧 HTTP header token auth，阶段 26 再接微信可信身份推导。
+   - `pinganpi-sync` 复用既有 sync handler、redaction 和 CloudBase snapshot store；阶段 25 event runtime 使用 dev-only payload namespace，不读取旧 HTTP header token auth，同步侧微信可信身份推导顺延到阶段 27。
    - `pinganpi-account` / `pinganpi-pair` 复用 `account-pair-service`，新增账号关系 CloudBase store，集合名为 `pinganpi_accounts`、`pinganpi_households`、`pinganpi_members`、`pinganpi_invites`；创建邀请码响应不向客户端返回 `codeHash`。
    - 已新增 `miniprogram/services/cloud-functions.ts` 封装 `wx.cloud.callFunction`；本阶段尚未接入页面。
    - 已新增 `npm run cloudbase:build:miniprogram`、`npm run cloudbase:deploy:miniprogram`、`npm run cloudbase:smoke:miniprogram`。
@@ -244,9 +244,13 @@ npx cap doctor
    - HTTP AI / sync 函数保留为诊断工具，不作为小程序主链路；`prd` 仍未创建 / 配置 / 部署。
 
 6. **阶段 26：小程序登录与双人关系真实闭环**
-   - 状态：下一步。
-   - 微信一键手机号登录为默认入口，短信验证码登录兜底。
-   - 服务端可信推导 `accountId -> householdId -> memberId`，客户端传入 id 不作为授权依据。
+   - 状态：已完成工程闭环；真实微信手机号能力和短信验证码人工验证顺延到阶段 29。
+   - 新增 `server/miniprogram-functions/miniprogram-auth.ts`，从 CloudBase / 微信可信上下文读取 `openid` / `unionid` 并生成稳定 `authUid`。
+   - `pinganpi-account` 新增 `loginByWechatPhone`、受控 `loginByDevPhone`、`getCurrentAccount` 和可信 `getActiveBinding`；手机号只来自服务端微信手机号 resolver 或显式 dev guard，不信任客户端伪造字段。
+   - `pinganpi-pair` 的 `createHousehold`、`createInvite`、`joinByInvite` 和 `getActiveBinding` 均从当前可信账号推导，不再接收客户端 `accountId` 作为授权依据。
+   - 新增 `miniprogram/services/account-session.ts` 和 `account-cloud.ts`；小程序只缓存账号 / 绑定摘要，不保存验证码、token、secret 或邀请码 hash。
+   - 账号页接入微信手机号按钮、兜底入口、登录态恢复和登录后路由；关系页接入创建关系、生成邀请码、输入邀请码加入和本地会话刷新。
+   - 微信小程序 AppID 关联、`open-type="getPhoneNumber"` 真机 code、手机号能力、短信真实发送和双手机号加入验证进入阶段 28 / 29。
 
 7. **阶段 27：小程序 AI 与同步体验补齐**
    - 先保证非流式 AI 起稿和失败关闭；小程序流式输出单独验证，不阻塞 MVP。

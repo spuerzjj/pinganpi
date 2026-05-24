@@ -12,6 +12,12 @@ declare global {
         init(options: CloudInitOptions): void;
         callFunction<T = unknown>(options: CloudCallFunctionOptions): Promise<CloudCallFunctionResult<T>>;
       };
+      getStorageSync(key: string): unknown;
+      setStorageSync(key: string, value: unknown): void;
+      removeStorageSync(key: string): void;
+      showToast(options: ShowToastOptions): void;
+      redirectTo(options: NavigateOptions): void;
+      switchTab(options: NavigateOptions): void;
     }
 
     interface CloudInitOptions {
@@ -26,6 +32,16 @@ declare global {
 
     interface CloudCallFunctionResult<T = unknown> {
       result?: T;
+    }
+
+    interface ShowToastOptions {
+      title: string;
+      icon?: "success" | "error" | "loading" | "none";
+      duration?: number;
+    }
+
+    interface NavigateOptions {
+      url: string;
     }
 
     interface AppOptions {

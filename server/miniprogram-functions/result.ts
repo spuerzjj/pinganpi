@@ -1,6 +1,12 @@
 export interface PinganpiMiniFunctionEvent<TPayload = unknown> {
   action?: string;
   payload?: TPayload;
+  userInfo?: {
+    appId?: string;
+    openId?: string;
+    unionId?: string;
+    [key: string]: unknown;
+  };
 }
 
 export type PinganpiMiniFunctionResult<TData = unknown> =

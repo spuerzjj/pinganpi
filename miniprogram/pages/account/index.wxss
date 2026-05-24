@@ -1,1 +1,42 @@
+.ledger-button {
+  margin: 22rpx 0 0;
+  border: 2rpx solid var(--line);
+  border-radius: 0;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 28rpx;
+  line-height: 2.4;
+}
 
+.ledger-button::after {
+  border: 0;
+}
+
+.ledger-button.primary {
+  border-color: var(--seal);
+  color: var(--seal);
+  font-weight: 700;
+}
+
+.ledger-button[disabled] {
+  border-color: var(--line);
+  color: var(--muted);
+  opacity: 0.55;
+}
+
+.paper-input {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 22rpx;
+  border: 2rpx solid var(--line);
+  background: #fffdf7;
+  color: var(--ink);
+  font-size: 28rpx;
+  line-height: 2.4;
+  min-height: 86rpx;
+  padding: 0 22rpx;
+}
+
+.error-panel {
+  border-color: var(--seal);
+}
