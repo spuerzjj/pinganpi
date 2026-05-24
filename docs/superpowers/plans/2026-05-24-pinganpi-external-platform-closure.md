@@ -83,7 +83,7 @@ CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:audit:stage19
 - [ ] 记录发送限制和费用策略
 - [x] 真实手机号 A 可收到验证码
 - [x] 真实手机号 B 可收到验证码
-- [ ] 若出现图片验证码或频率限制，记录具体提示，不把验证码写进仓库
+- [x] 若出现图片验证码或频率限制，记录具体提示，不把验证码写进仓库；本次两次真实手机号触发均未出现图片验证码或频率限制
 
 当前触发记录：
 
@@ -127,7 +127,7 @@ CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:audit:stage19
 - [x] CLI 确认 `/sync/health` 指向 `sync-proxy`
 - [x] CLI 确认 `/sync/pull` 指向 `sync-proxy`
 - [x] CLI 确认 `/sync/push` 指向 `sync-proxy`
-- [ ] 如果新增账号服务函数，确认其路由不与 `/api` / `/sync/*` 冲突
+- [x] 如果新增账号服务函数，确认其路由不与 `/api` / `/sync/*` 冲突；当前未新增账号服务函数，后续新增时不得复用 `/api` 或 `/sync/*`
 
 当前路由 smoke 记录：
 
@@ -157,7 +157,7 @@ CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:audit:stage19
 - [ ] 确认额度、费用提醒、余额提醒或月上限
 - [ ] 找到 key 撤销入口
 - [ ] 找到 key 轮换 / 新建入口
-- [ ] 记录“出现异常费用时如何停用”：可先移除 CloudBase `MIMO_API_KEY`，使云端 AI 代理 fail closed
+- [x] 记录“出现异常费用时如何停用”：运行 `CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:disable:ai-env` 移除 CloudBase `MIMO_API_KEY`，使云端 AI 代理 fail closed
 
 ### 6. 阶段 19 结束条件
 
