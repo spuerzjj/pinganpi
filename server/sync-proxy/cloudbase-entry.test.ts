@@ -67,6 +67,27 @@ describe("cloudbase sync entry", () => {
     });
   });
 
+  it("reads member tokens from base64 runtime env", () => {
+    const rawTokens = JSON.stringify({
+      [householdId]: {
+        [memberId]: "token-zhou"
+      }
+    });
+
+    expect(
+      readSyncProxyAuthConfig({
+        PINGANPI_SYNC_MEMBER_TOKENS_B64: Buffer.from(rawTokens, "utf8").toString("base64")
+      })
+    ).toEqual({
+      required: true,
+      memberTokens: {
+        [householdId]: {
+          [memberId]: "token-zhou"
+        }
+      }
+    });
+  });
+
   it("fails closed when runtime member tokens are not configured", () => {
     expect(readSyncProxyAuthConfig({})).toEqual({
       required: true,

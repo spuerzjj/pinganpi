@@ -6,7 +6,7 @@
 
 **Architecture:** App 新增 HTTP `SyncAdapter`，配置 `VITE_PINGANPI_SYNC_PROXY_URL` 后调用 CloudBase HTTP 云函数；云函数内通过 CloudBase 数据库保存每个 household 的完整 `RemoteSnapshot`，并复用既有 merge/redaction 规则。真实控制台权限、费用告警和部署烟测作为阶段末手工收口。
 
-**Security Note:** 阶段 16B 同步函数要求成员 token。App 配置 `VITE_PINGANPI_SYNC_MEMBER_TOKEN` 后由 HTTP adapter 发送 `X-Pinganpi-Sync-Token`；云端用 `PINGANPI_SYNC_MEMBER_TOKENS` 校验 `householdId + memberId`，缺失配置时同步请求 fail closed。
+**Security Note:** 阶段 16B 同步函数要求成员 token。App 配置 `VITE_PINGANPI_SYNC_MEMBER_TOKEN` 后由 HTTP adapter 发送 `X-Pinganpi-Sync-Token`；云端用 `PINGANPI_SYNC_MEMBER_TOKENS` 或 `PINGANPI_SYNC_MEMBER_TOKENS_B64` 校验 `householdId + memberId`，缺失配置时同步请求 fail closed。
 
 **Tech Stack:** TypeScript、Vue 3、Vitest、CloudBase HTTP 云函数、CloudBase Node SDK、既有 `SyncAdapter` / `RemoteSnapshot`。
 
@@ -92,6 +92,7 @@
 - [x] `cloudbaserc.json` 增加 HTTP 函数 `sync-proxy`，运行时 `Nodejs20.19`。
 - [x] `.env.example` 增加 `VITE_PINGANPI_SYNC_PROXY_URL` 和 `PINGANPI_SYNC_SNAPSHOT_COLLECTION` 示例。
 - [x] `.env.example` 增加 `VITE_PINGANPI_SYNC_MEMBER_TOKEN` 和 `PINGANPI_SYNC_MEMBER_TOKENS` 示例。
+- [x] 新增 `cloudbase:configure:sync-env` 和 `cloudbase:smoke:sync`，CloudBase env 实际使用 `PINGANPI_SYNC_MEMBER_TOKENS_B64` 避免 JSON 值被 CLI 误解析。
 - [x] 运行：
 
 ```bash
@@ -140,6 +141,6 @@ rg -n "(tp|sk)-[A-Za-z0-9]{8,}" src server scripts vendor docs --glob '!**/*.tes
 npm audit --omit=dev
 ```
 
-执行记录：本阶段新增 6 个聚焦测试文件、29 个测试用例；全量 Vitest 最近通过为 34 个测试文件、292 个测试通过。`vite build` 仍保留 Varlet 首包超过 500 KB 的既有提示，不作为当前阻塞项。`npm audit --omit=dev` 最近通过，0 vulnerabilities。
+执行记录：本阶段新增 6 个聚焦测试文件、29 个测试用例；后续云端 smoke 收口又新增脚本测试和路由兼容测试。CloudBase `sync-proxy` 已部署，集合 `pinganpi_sync_snapshots` 已创建，HTTP 路由使用 `/sync/health`、`/sync/pull`、`/sync/push`，`npm run cloudbase:smoke:sync` 已通过真实云端 health、401 fail-closed、pull、push、再 pull。`vite build` 仍保留 Varlet 首包超过 500 KB 的既有提示，不作为当前阻塞项。`npm audit --omit=dev` 最近通过，0 vulnerabilities。
 
 - [x] 提交：`feat(sync): 接入 CloudBase 同步代理`

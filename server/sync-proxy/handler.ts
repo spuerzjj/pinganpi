@@ -365,6 +365,14 @@ function jsonResponse(statusCode: number, body: unknown): SyncProxyResponse {
 }
 
 function normalizeSyncPathname(pathname: string): string {
+  if (pathname === "/api/sync/health") {
+    return "/health";
+  }
+
+  if (pathname === "/sync/health") {
+    return "/health";
+  }
+
   return pathname.startsWith("/api/") ? pathname.slice(4) : pathname;
 }
 

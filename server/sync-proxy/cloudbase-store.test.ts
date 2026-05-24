@@ -101,8 +101,7 @@ interface FakeDoc {
 }
 
 interface FakeTransaction {
-  get(documentReference: FakeDoc): Promise<{ data: SnapshotDocument | null }>;
-  set(documentReference: FakeDoc, data: SnapshotDocument): Promise<{ updated: number }>;
+  collection(name: string): FakeCollection;
 }
 
 function createFakeDb(): FakeDb {
@@ -116,11 +115,8 @@ function createFakeDb(): FakeDb {
     async runTransaction(callback) {
       db.transactionRuns += 1;
       return callback({
-        async get(documentReference) {
-          return documentReference.get();
-        },
-        async set(documentReference, data) {
-          return documentReference.set(data);
+        collection(name) {
+          return createCollection(documentsByCollection, name);
         }
       });
     },

@@ -15,6 +15,8 @@
     "cloudbase:disable:ai-env": "PINGANPI_CLOUDBASE_AI_ENV_MODE=disabled node --env-file-if-exists=.env.ai.local --import tsx scripts/configure-cloudbase-ai-env.ts",
     "cloudbase:deploy:ai": "npm run cloudbase:build:ai && cloudbase fn deploy ai-scribe-proxy --httpFn --force",
     "cloudbase:build:sync": "node --import tsx scripts/build-cloudbase-sync-proxy.ts",
+    "cloudbase:configure:sync-env": "node --env-file-if-exists=.env.sync.local --import tsx scripts/configure-cloudbase-sync-env.ts",
+    "cloudbase:smoke:sync": "node --env-file-if-exists=.env.sync.local --import tsx scripts/smoke-cloudbase-sync-proxy.ts",
     "cloudbase:deploy:sync": "npm run cloudbase:build:sync && cloudbase fn deploy sync-proxy --httpFn --force",
     "cap:sync": "npm run build && npx cap sync",
     "typecheck": "vue-tsc --noEmit",

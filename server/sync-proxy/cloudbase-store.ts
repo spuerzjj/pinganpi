@@ -22,8 +22,7 @@ interface CloudBaseDocumentReference {
 }
 
 interface CloudBaseTransaction {
-  get(documentReference: CloudBaseDocumentReference): Promise<{ data?: unknown }>;
-  set(documentReference: CloudBaseDocumentReference, data: SyncSnapshotDocument): Promise<unknown>;
+  collection(name: string): CloudBaseCollection;
 }
 
 interface SyncSnapshotDocument {
@@ -50,13 +49,13 @@ export function createCloudBaseSyncSnapshotStore(
 
       if (typeof db.runTransaction === "function") {
         await db.runTransaction(async (transaction) => {
-          const documentReference = db.collection(collectionName).doc(input.householdId);
+          const documentReference = transaction.collection(collectionName).doc(input.householdId);
           const currentDocument = await loadDocumentWithGetter(
-            () => transaction.get(documentReference),
+            () => documentReference.get(),
             input.householdId
           );
           assertExpectedRevision(currentDocument, input.expectedRemoteRevision);
-          await transaction.set(documentReference, document);
+          await documentReference.set(document);
         });
         return;
       }

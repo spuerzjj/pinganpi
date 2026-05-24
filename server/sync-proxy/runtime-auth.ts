@@ -1,7 +1,7 @@
 import type { SyncProxyAuthConfig } from "./handler.js";
 
 export function readSyncProxyAuthConfig(env: Record<string, string | undefined>): SyncProxyAuthConfig {
-  const raw = env.PINGANPI_SYNC_MEMBER_TOKENS?.trim();
+  const raw = readMemberTokensJson(env);
 
   if (raw === undefined || raw.length === 0) {
     return {
@@ -22,6 +22,26 @@ export function readSyncProxyAuthConfig(env: Record<string, string | undefined>)
       required: true,
       memberTokens: {}
     };
+  }
+}
+
+function readMemberTokensJson(env: Record<string, string | undefined>): string | undefined {
+  const raw = env.PINGANPI_SYNC_MEMBER_TOKENS?.trim();
+
+  if (raw !== undefined && raw.length > 0) {
+    return raw;
+  }
+
+  const rawBase64 = env.PINGANPI_SYNC_MEMBER_TOKENS_B64?.trim();
+
+  if (rawBase64 === undefined || rawBase64.length === 0) {
+    return undefined;
+  }
+
+  try {
+    return Buffer.from(rawBase64, "base64").toString("utf8");
+  } catch {
+    return undefined;
   }
 }
 

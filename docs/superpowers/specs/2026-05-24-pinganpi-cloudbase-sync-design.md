@@ -24,7 +24,7 @@
 - `push` 必须检查 `baseRemoteRevision`。过期 revision 返回受控冲突错误，不接受写入。
 - `pull` 和 `push` 返回给 App 的快照必须按 `memberId` redaction，未到达来信不泄露正文、口述、代笔稿或 AI metadata，也不返回对方未投寄私有草稿。
 - App 默认仍使用本地 adapter；只有配置 `VITE_PINGANPI_SYNC_PROXY_URL` 时才启用云同步。
-- 云端同步请求必须带成员 token。服务端用 `PINGANPI_SYNC_MEMBER_TOKENS` 把 `householdId + memberId` 绑定到 token；缺失配置时同步请求 fail closed，`GET /health` 仍可用于部署检查。
+- 云端同步请求必须带成员 token。服务端用 `PINGANPI_SYNC_MEMBER_TOKENS` 或 CloudBase env 中的 `PINGANPI_SYNC_MEMBER_TOKENS_B64` 把 `householdId + memberId` 绑定到 token；缺失配置时同步请求 fail closed，`GET /health` / `GET /sync/health` 仍可用于部署检查。
 
 ## 非目标
 
@@ -54,7 +54,7 @@ CloudBase 文档 id 即 `householdId`；真实 SDK 写入使用 `doc(householdId
 
 ## API
 
-### `GET /health`
+### `GET /health` / `GET /sync/health`
 
 返回 `{ "ok": true }`，用于部署和路由验证。
 
@@ -130,8 +130,9 @@ HTTP adapter 会把该错误转换为 `code: "stale_remote_revision"`，让现�
 ## 安全与隐私
 
 - App 不保存 CloudBase 管理密钥。
-- `VITE_PINGANPI_SYNC_MEMBER_TOKEN` 是阶段 16B 的临时双人同步凭据，不能等同正式账号体系；后续真实登录 / 设备绑定阶段应替换为 CloudBase Auth 或等价身份方案。
+- `VITE_PINGANPI_SYNC_MEMBER_TOKEN` 是阶段 16B 的临时双人同步凭据，不能等同正式账号体系；后续真实登录 / 双人绑定阶段应替换为 CloudBase Auth 或等价身份方案。
 - 同步代理不能信任客户端传入的 `memberId` 本身，必须通过服务端 `PINGANPI_SYNC_MEMBER_TOKENS` 做 `householdId + memberId + token` 绑定校验；缺失或解析失败时，除 `GET /health` 外的同步请求必须 fail closed。
+- CloudBase 函数环境变量中使用 `PINGANPI_SYNC_MEMBER_TOKENS_B64` 保存 token map，避免 CloudBase CLI 把 JSON env 值误解析为对象；本地开发仍可直接使用 `PINGANPI_SYNC_MEMBER_TOKENS` 明文 JSON。
 - CloudBase 服务端环境不打印完整快照、信件正文、AI prompt、provider raw response 或 key。
 - HTTP handler 只返回受控 JSON 错误，不把 CloudBase SDK 原始异常透给 UI。
 - 未到达来信的正文、摘要、口述、代笔稿、最终稿、AI metadata 和附件定位信息必须在服务端 redaction 后才返回。
@@ -146,3 +147,5 @@ HTTP adapter 会把该错误转换为 `code: "stale_remote_revision"`，让现�
 - CloudBase store 单测使用 fake collection 覆盖 load/save CAS 语义和真实 SDK 的 `doc.set(data)` / `transaction.set(doc, data)` 调用形状。
 - App 配置测试覆盖未设置 `VITE_PINGANPI_SYNC_PROXY_URL` 使用本地 adapter，设置后使用 HTTP adapter。
 - 全量通过 `vitest`、`vue-tsc`、`vite build`、`cap sync`、`cap doctor`。
+- CloudBase 部署使用显式路由 `/sync/health`、`/sync/pull`、`/sync/push`；`/api/sync/*` 会被既有 AI `/api` 路由优先匹配，`/sync/*` 在默认域名下对子路径返回 `INVALID_PATH`，不要使用。
+- `npm run cloudbase:smoke:sync` 真实云端 smoke 通过，覆盖 health、未带 token 401、合法 pull、push、再 pull。

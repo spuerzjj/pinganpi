@@ -36,6 +36,32 @@ describe("sync proxy handler", () => {
     expect(store.saveCalls).toEqual([]);
   });
 
+  it("returns health under the routed /api/sync prefix", async () => {
+    const store = createMemoryStore();
+
+    const response = await handleSyncProxyRequest(store, {
+      method: "GET",
+      url: "/api/sync/health",
+      body: ""
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toBe(JSON.stringify({ ok: true }));
+  });
+
+  it("returns health under the standalone /sync route", async () => {
+    const store = createMemoryStore();
+
+    const response = await handleSyncProxyRequest(store, {
+      method: "GET",
+      url: "/sync/health",
+      body: ""
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toBe(JSON.stringify({ ok: true }));
+  });
+
   it("pulls an empty household snapshot at revision zero", async () => {
     const store = createMemoryStore();
 
