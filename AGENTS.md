@@ -232,13 +232,15 @@ npx cap doctor
    - 本阶段仍不接 CloudBase、真实登录、真实同步或 AI 起稿。
 
 5. **阶段 25：小程序 CloudBase dev 主链路**
-   - 状态：已完成工程基础；真实 CloudBase dev 部署 smoke 待执行。
+   - 状态：已完成 dev smoke。
    - 已新增 `pinganpi-ai`、`pinganpi-sync`、`pinganpi-account`、`pinganpi-pair` 四个小程序 event 云函数入口。
    - `pinganpi-ai` 复用既有 AI proxy handler；health 不依赖 MiMo env，非流式 `scribeDraft` 使用受控返回。
    - `pinganpi-sync` 复用既有 sync handler、redaction 和 CloudBase snapshot store；阶段 25 event runtime 使用 dev-only payload namespace，不读取旧 HTTP header token auth，阶段 26 再接微信可信身份推导。
    - `pinganpi-account` / `pinganpi-pair` 复用 `account-pair-service`，新增账号关系 CloudBase store，集合名为 `pinganpi_accounts`、`pinganpi_households`、`pinganpi_members`、`pinganpi_invites`；创建邀请码响应不向客户端返回 `codeHash`。
    - 已新增 `miniprogram/services/cloud-functions.ts` 封装 `wx.cloud.callFunction`；本阶段尚未接入页面。
    - 已新增 `npm run cloudbase:build:miniprogram`、`npm run cloudbase:deploy:miniprogram`、`npm run cloudbase:smoke:miniprogram`。
+   - `CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:miniprogram` 已通过，四个 event 云函数均部署成功。
+   - `CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:smoke:miniprogram` 已通过，四个 event 云函数 health invoke 均通过；AI 起稿 smoke 默认跳过，未产生 provider 调用。
    - HTTP AI / sync 函数保留为诊断工具，不作为小程序主链路；`prd` 仍未创建 / 配置 / 部署。
 
 6. **阶段 26：小程序登录与双人关系真实闭环**

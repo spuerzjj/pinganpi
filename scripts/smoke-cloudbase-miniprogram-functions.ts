@@ -248,6 +248,10 @@ function unwrapCloudBaseResult(value: unknown, depth = 0): unknown {
     return unwrapCloudBaseResult(value.Result, depth + 1);
   }
 
+  if (value.data !== undefined) {
+    return unwrapCloudBaseResult(value.data, depth + 1);
+  }
+
   if (value.Response !== undefined) {
     return unwrapCloudBaseResult(value.Response, depth + 1);
   }

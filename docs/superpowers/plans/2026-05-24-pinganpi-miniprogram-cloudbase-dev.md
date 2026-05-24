@@ -12,7 +12,7 @@
 
 ## Scope
 
-本计划对应路线图阶段 25：小程序 CloudBase dev 主链路。当前状态：已完成工程基础；真实 CloudBase dev 部署 smoke 待执行。下方 checkbox 是实施记录，不是待执行事项。
+本计划对应路线图阶段 25：小程序 CloudBase dev 主链路。当前状态：已完成 dev smoke；下方 checkbox 是实施记录，不是待执行事项。
 
 本阶段包含：
 

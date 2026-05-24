@@ -238,7 +238,7 @@
 | 22 | 小程序工程基座 | 已完成基础 | 已新增 `miniprogram/`、TypeScript 检查、页面骨架、微信开发者工具配置和 `dev` CloudBase 环境入口。 |
 | 23 | 共享领域核心迁移 | 已完成基础 | 已新增 `shared/domain/` 作为领域规则真实实现，`src/domain/` 保留兼容 re-export，小程序根内副本和一致性检查已建立，今日页已使用共享领域摘要。 |
 | 24 | 小程序本地核心界面 | 已完成基础 | 今日、写信、先生、钱匣、信箱 / 档案已接入本地 mock view-model；写信页已有本地 5 步流程，tab 切换保留进度，口述变更会重新起稿。 |
-| 25 | 小程序 CloudBase dev 主链路 | 已完成工程基础 | 已新增账号、绑定、同步、AI event 云函数入口，小程序 cloud function adapter，构建 / 部署 / smoke 脚本；真实云端部署 smoke 待执行。 |
+| 25 | 小程序 CloudBase dev 主链路 | 已完成 dev smoke | 已新增并部署账号、绑定、同步、AI event 云函数入口，小程序 cloud function adapter，构建 / 部署 / smoke 脚本；dev health smoke 已通过。 |
 | 26 | 小程序登录与双人关系真实闭环 | 未开始 | 微信一键手机号、短信兜底、账号恢复、邀请码加入。 |
 | 27 | 小程序 AI 与同步体验补齐 | 未开始 | AI 起稿、失败关闭、同步状态，必要时恢复流式专项。 |
 | 28 | 微信小程序上架配置 | 未开始 | AppID、隐私、手机号能力、`prd` 环境、审核发布人工清单。 |
@@ -276,6 +276,8 @@
 
 - `npm test -- server/miniprogram-functions/pinganpi-ai.test.ts server/miniprogram-functions/pinganpi-sync.test.ts server/account-pair/cloudbase-store.test.ts server/miniprogram-functions/pinganpi-account.test.ts server/miniprogram-functions/pinganpi-pair.test.ts miniprogram/services/cloud-functions.test.ts scripts/smoke-cloudbase-miniprogram-functions.test.ts`：通过，7 个测试文件，30 个测试通过。
 - `npm run cloudbase:build:miniprogram`：通过，生成 `pinganpi-ai`、`pinganpi-sync`、`pinganpi-account`、`pinganpi-pair` 四个 event 云函数包；生成目录仍由 `.gitignore` 排除。
+- `CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:miniprogram`：通过，四个 event 云函数均部署成功。
+- `CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:smoke:miniprogram`：通过，四个 event 云函数 health invoke 均通过；AI 起稿 smoke 默认跳过，未产生 provider 调用。
 - `npm run miniprogram:check`：通过；包含共享副本一致性检查和小程序 typecheck。
 - `npm test`：通过，53 个测试文件，373 个测试通过。
 - `npm run typecheck`：通过。
@@ -1006,7 +1008,7 @@ npx cap doctor
 
 目标：让小程序通过 `wx.cloud.callFunction` 调用 `dev` 云函数，跑通账号、绑定、同步和 AI 的工程通道。
 
-状态：已完成工程基础；真实 CloudBase dev 部署 smoke 待执行。
+状态：已完成 dev smoke。
 
 - 已新增小程序 event wrapper：`pinganpi-account`、`pinganpi-pair`、`pinganpi-sync`、`pinganpi-ai`。
 - `pinganpi-ai` 复用既有 AI proxy handler；health 不依赖 MiMo env，非流式 `scribeDraft` 使用受控返回。

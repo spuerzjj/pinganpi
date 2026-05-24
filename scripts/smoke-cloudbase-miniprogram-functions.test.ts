@@ -21,6 +21,7 @@ describe("cloudbase miniprogram function smoke helpers", () => {
     expect(parseCloudBaseInvokeResult(JSON.stringify({ Response: { Result: { RetMsg: JSON.stringify(result) } } }))).toEqual(
       result,
     );
+    expect(parseCloudBaseInvokeResult(JSON.stringify({ data: { RetMsg: JSON.stringify(result) } }))).toEqual(result);
   });
 
   it("redacts sensitive values before logging", () => {
