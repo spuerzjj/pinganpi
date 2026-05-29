@@ -1,37 +1,37 @@
 {
-  "updatedAt": "2026-05-25",
+  "updatedAt": "2026-05-30",
   "title": "平安批 Roadmap",
-  "summary": "微信原生小程序是当前主线；工程已按 apps / packages / services / tools 分区。",
-  "currentPhaseId": 26,
-  "nextPhaseId": 27,
+  "summary": "微信原生小程序是当前主线；阶段 27 已补齐小程序 AI 起稿与同步簿。",
+  "currentPhaseId": 27,
+  "nextPhaseId": 28,
   "metrics": [
     {
       "label": "当前基线",
-      "value": "阶段 26",
-      "note": "小程序登录与双人关系工程闭环已完成。"
+      "value": "阶段 27",
+      "note": "小程序 AI 起稿、失败关闭和今日同步簿已完成工程闭环。"
     },
     {
       "label": "验证状态",
-      "value": "395 tests",
-      "note": "全量测试、小程序检查、云函数构建、结构审计、cap sync / doctor 和 DevTools 自动化巡检已通过。"
+      "value": "407 tests",
+      "note": "全量测试、小程序检查、云函数构建、Roadmap 构建、结构审计和 DevTools flow 已通过。"
     },
     {
       "label": "下一推荐",
-      "value": "阶段 27",
-      "note": "补齐小程序 AI 起稿、失败关闭、同步状态和必要流式专项。"
+      "value": "阶段 28",
+      "note": "进入微信小程序上架配置：AppID、隐私、手机号能力、prd 环境和审核发布。"
     },
     {
       "label": "主要风险",
-      "value": "9 项",
-      "note": "AppID、prd 环境、手机号能力、隐私审核、流式 AI、DevTools 端口、真实双端、发布和 UI 打磨。"
+      "value": "8 项",
+      "note": "AppID、prd 环境、手机号能力、隐私审核、真实 AI smoke、真实双端、发布和 UI 打磨。"
     }
   ],
   "risks": [
     "微信小程序 AppID、主体、服务类目和手机号能力仍需人工配置。",
     "CloudBase prd 环境尚未创建、配置或部署。",
     "微信手机号授权弹窗、真实 code 和短信验证码兜底需要真机 / 开发者工具验证。",
-    "小程序 AI 起稿和同步状态仍未接入页面。",
-    "小程序端流式输出不能默认复用浏览器 SSE，需要阶段 27 专项验证。",
+    "小程序 AI 起稿 DevTools 自动化使用测试桩；真实 MiMo 小程序 smoke 仍需人工确认。",
+    "小程序端流式不纳入阶段 27；后续若恢复流式需另开 HTTP / wx.request 专项。",
     "微信开发者工具自动化依赖服务端口开启；当前本机验证端口为 62046。",
     "真实双端、断网恢复、清空数据后恢复和 prd smoke 仍未人工验证。",
     "上架所需隐私保护指引、用户协议、AI 第三方处理说明仍待整理。",
@@ -231,13 +231,13 @@
     {
       "id": 27,
       "title": "小程序 AI 与同步体验",
-      "status": "next",
-      "summary": "补齐小程序 AI 起稿、失败关闭、同步状态和必要流式专项。"
+      "status": "done",
+      "summary": "写信页接入非流式 AI 起稿、失败关闭、AI metadata、今日同步簿和 DevTools 云函数测试桩；流式不纳入本期。"
     },
     {
       "id": 28,
       "title": "微信小程序上架配置",
-      "status": "pending",
+      "status": "next",
       "summary": "AppID、隐私、手机号能力、prd 环境和审核发布人工清单。"
     },
     {

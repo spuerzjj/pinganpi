@@ -10,6 +10,8 @@ import {
 import type { MiniLocalState, MiniMember } from "./local-model.js";
 
 export type WriteStep = "method" | "oral" | "draft" | "revise" | "post";
+export type DraftStatus = "idle" | "pending" | "ready" | "failed";
+export type DraftSource = "none" | "local-template" | "ai";
 
 export interface WriteStepItem {
   id: WriteStep;
@@ -26,6 +28,10 @@ export interface WriteFlowModel {
   oralText: string;
   draftText: string;
   finalText: string;
+  draftStatus: DraftStatus;
+  draftErrorText: string;
+  draftSource: DraftSource;
+  generationMeta: Record<string, unknown> | null;
   registered: boolean;
   selectedScribeId: string;
   selectedScribeName: string;
@@ -54,6 +60,11 @@ export interface PostedReceipt {
   dueText: string;
 }
 
+export interface AppliedAiDraft {
+  draftText: string;
+  generationMeta?: Record<string, unknown>;
+}
+
 const writeSteps: Array<{ id: WriteStep; label: string }> = [
   { id: "method", label: "选写法" },
   { id: "oral", label: "口述" },
@@ -77,6 +88,10 @@ export function createWriteFlowModel(state: MiniLocalState, now: Date): WriteFlo
     oralText: "",
     draftText: "",
     finalText: "",
+    draftStatus: "idle",
+    draftErrorText: "",
+    draftSource: "none",
+    generationMeta: null,
     registered: false,
     selectedScribeId: selectedScribe?.id ?? "",
     selectedScribeName: selectedScribe?.name ?? "今日暂无先生在馆",
@@ -102,15 +117,69 @@ export function createWriteFlowModel(state: MiniLocalState, now: Date): WriteFlo
 export function updateOralText(flow: WriteFlowModel, oralText: string): WriteFlowModel {
   const oralTextChanged = flow.oralText.trim() !== oralText.trim();
   const shouldInvalidateDraft =
-    oralTextChanged && (flow.draftText.trim().length > 0 || flow.finalText.trim().length > 0);
+    oralTextChanged &&
+    (flow.draftText.trim().length > 0 ||
+      flow.finalText.trim().length > 0 ||
+      flow.draftStatus !== "idle" ||
+      flow.draftSource !== "none" ||
+      flow.generationMeta !== null);
 
   return withComputedFields({
     ...flow,
     oralText,
     draftText: shouldInvalidateDraft ? "" : flow.draftText,
     finalText: shouldInvalidateDraft ? "" : flow.finalText,
+    draftStatus: shouldInvalidateDraft ? "idle" : flow.draftStatus,
+    draftErrorText: shouldInvalidateDraft ? "" : flow.draftErrorText,
+    draftSource: shouldInvalidateDraft ? "none" : flow.draftSource,
+    generationMeta: shouldInvalidateDraft ? null : flow.generationMeta,
     step: flow.step === "method" || shouldInvalidateDraft ? "oral" : flow.step,
   });
+}
+
+export function beginDraftGeneration(flow: WriteFlowModel): WriteFlowModel {
+  return withComputedFields({
+    ...flow,
+    step: "draft",
+    draftText: "",
+    finalText: "",
+    draftStatus: "pending",
+    draftErrorText: "",
+    draftSource: "none",
+    generationMeta: null,
+  });
+}
+
+export function applyAiDraft(flow: WriteFlowModel, draft: AppliedAiDraft): WriteFlowModel {
+  const draftText = draft.draftText.trim();
+
+  return withComputedFields({
+    ...flow,
+    step: "revise",
+    draftText,
+    finalText: draftText,
+    draftStatus: "ready",
+    draftErrorText: "",
+    draftSource: "ai",
+    generationMeta: draft.generationMeta ?? null,
+  });
+}
+
+export function failDraftGeneration(flow: WriteFlowModel, draftErrorText: string): WriteFlowModel {
+  return withComputedFields({
+    ...flow,
+    step: "draft",
+    draftText: "",
+    finalText: "",
+    draftStatus: "failed",
+    draftErrorText,
+    draftSource: "none",
+    generationMeta: null,
+  });
+}
+
+export function canNavigateBack(flow: WriteFlowModel): boolean {
+  return flow.step !== "method" && flow.draftStatus !== "pending";
 }
 
 export function generateLocalDraft(flow: WriteFlowModel, state: MiniLocalState, now: Date): WriteFlowModel {
@@ -134,6 +203,10 @@ export function generateLocalDraft(flow: WriteFlowModel, state: MiniLocalState, 
     steps: createStepItems("revise"),
     draftText,
     finalText: draftText,
+    draftStatus: draftText.length > 0 ? "ready" : "idle",
+    draftErrorText: "",
+    draftSource: draftText.length > 0 ? "local-template" : "none",
+    generationMeta: null,
     dueText: formatDueText(now, state.route.distanceKm),
   });
 }
@@ -175,6 +248,7 @@ function withComputedFields(flow: WriteFlowModel): WriteFlowModel {
   const hasFinalText = flow.finalText.trim().length > 0;
   const hasScribe = flow.selectedScribeId.length > 0;
   const hasEnoughBalance = flow.walletBalanceFen >= totalCostFen;
+  const isGenerating = flow.draftStatus === "pending";
 
   return {
     ...flow,
@@ -183,8 +257,8 @@ function withComputedFields(flow: WriteFlowModel): WriteFlowModel {
     postageText: formatFen(postageFen),
     totalCostFen,
     totalCostText: formatFen(totalCostFen),
-    canGenerate: flow.oralText.trim().length > 0 && hasScribe,
-    canPost: hasFinalText && hasScribe && hasEnoughBalance,
+    canGenerate: flow.oralText.trim().length > 0 && hasScribe && !isGenerating,
+    canPost: hasFinalText && hasScribe && hasEnoughBalance && !isGenerating,
     postBlockReason: createPostBlockReason(hasFinalText, hasScribe, hasEnoughBalance),
   };
 }

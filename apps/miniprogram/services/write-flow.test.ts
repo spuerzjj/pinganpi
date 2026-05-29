@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { createLocalMockState } from "./local-model.js";
 import {
+  applyAiDraft,
+  beginDraftGeneration,
+  canNavigateBack,
   createWriteFlowModel,
+  failDraftGeneration,
   generateLocalDraft,
   preparePostedReceipt,
   reviseDraft,
@@ -19,6 +23,8 @@ describe("miniprogram write flow", () => {
     expect(flow.selectedScribeName).toBe("许鹤年");
     expect(flow.postageText).toBe("8 分");
     expect(flow.totalCostText).toBe("1 角 1 分");
+    expect(flow.draftStatus).toBe("idle");
+    expect(flow.draftSource).toBe("none");
     expect(flow.canPost).toBe(false);
   });
 
@@ -29,10 +35,80 @@ describe("miniprogram write flow", () => {
     const revised = reviseDraft(drafted, "兰卿：近来天阴，望你安好。");
 
     expect(drafted.step).toBe("revise");
+    expect(drafted.draftStatus).toBe("ready");
+    expect(drafted.draftSource).toBe("local-template");
     expect(drafted.draftText).toContain("许鹤年先生代拟");
     expect(drafted.draftText).toContain("近来天阴");
     expect(revised.finalText).toBe("兰卿：近来天阴，望你安好。");
     expect(revised.canPost).toBe(true);
+  });
+
+  it("marks draft generation as pending and blocks posting", () => {
+    const state = createLocalMockState(fixedNow);
+    const oral = updateOralText(createWriteFlowModel(state, fixedNow), "近来天阴，问她可安。");
+    const pending = beginDraftGeneration(oral);
+
+    expect(pending.step).toBe("draft");
+    expect(pending.draftStatus).toBe("pending");
+    expect(pending.draftText).toBe("");
+    expect(pending.finalText).toBe("");
+    expect(pending.canGenerate).toBe(false);
+    expect(pending.canPost).toBe(false);
+  });
+
+  it("blocks stepping back while AI draft generation is pending", () => {
+    const state = createLocalMockState(fixedNow);
+    const oral = updateOralText(createWriteFlowModel(state, fixedNow), "近来天阴，问她可安。");
+    const pending = beginDraftGeneration(oral);
+    const failed = failDraftGeneration(pending, "先生暂未起成稿。");
+
+    expect(canNavigateBack(createWriteFlowModel(state, fixedNow))).toBe(false);
+    expect(canNavigateBack(oral)).toBe(true);
+    expect(canNavigateBack(pending)).toBe(false);
+    expect(canNavigateBack(failed)).toBe(true);
+  });
+
+  it("applies an AI draft and keeps controlled generation metadata", () => {
+    const state = createLocalMockState(fixedNow);
+    const pending = beginDraftGeneration(
+      updateOralText(createWriteFlowModel(state, fixedNow), "近来天阴，问她可安。"),
+    );
+    const drafted = applyAiDraft(pending, {
+      draftText: "兰卿：近来天阴，望你安好。",
+      generationMeta: {
+        engine: "ai-scribe-v1",
+        provider: "xiaomi-mimo",
+      },
+    });
+
+    expect(drafted.step).toBe("revise");
+    expect(drafted.draftStatus).toBe("ready");
+    expect(drafted.draftSource).toBe("ai");
+    expect(drafted.draftText).toBe("兰卿：近来天阴，望你安好。");
+    expect(drafted.finalText).toBe("兰卿：近来天阴，望你安好。");
+    expect(drafted.generationMeta).toEqual({
+      engine: "ai-scribe-v1",
+      provider: "xiaomi-mimo",
+    });
+  });
+
+  it("keeps oral text and does not enter revise when AI draft generation fails", () => {
+    const state = createLocalMockState(fixedNow);
+    const pending = beginDraftGeneration(
+      updateOralText(createWriteFlowModel(state, fixedNow), "近来天阴，问她可安。"),
+    );
+    const failed = failDraftGeneration(
+      pending,
+      "先生暂未起成稿，口述已留在信纸上，稍后可再请先生起稿。",
+    );
+
+    expect(failed.step).toBe("draft");
+    expect(failed.oralText).toBe("近来天阴，问她可安。");
+    expect(failed.draftStatus).toBe("failed");
+    expect(failed.draftErrorText).toBe("先生暂未起成稿，口述已留在信纸上，稍后可再请先生起稿。");
+    expect(failed.draftText).toBe("");
+    expect(failed.finalText).toBe("");
+    expect(failed.canPost).toBe(false);
   });
 
   it("invalidates generated draft when oral text changes", () => {
@@ -41,6 +117,10 @@ describe("miniprogram write flow", () => {
     const changed = updateOralText(drafted, "今日雨冷，问她衣裳可够。");
 
     expect(changed.step).toBe("oral");
+    expect(changed.draftStatus).toBe("idle");
+    expect(changed.draftSource).toBe("none");
+    expect(changed.draftErrorText).toBe("");
+    expect(changed.generationMeta).toBeNull();
     expect(changed.draftText).toBe("");
     expect(changed.finalText).toBe("");
     expect(changed.canPost).toBe(false);

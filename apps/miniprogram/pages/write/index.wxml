@@ -53,9 +53,11 @@
         <view class="section-title">先生起稿</view>
         <view class="record-copy" wx:if="{{flow.oralText}}">口述：{{flow.oralText}}</view>
         <button class="ledger-button primary" disabled="{{!flow.canGenerate}}" bindtap="onGenerateDraft">
-          请先生起稿
+          {{flow.draftStatus === 'pending' ? '先生起稿中' : '请先生起稿'}}
         </button>
-        <view class="letter-paper" wx:if="{{flow.draftText}}">{{flow.draftText}}</view>
+        <view class="empty-note" wx:if="{{flow.draftStatus === 'pending'}}">先生正在落笔。</view>
+        <view class="empty-note warning-note" wx:elif="{{flow.draftErrorText}}">{{flow.draftErrorText}}</view>
+        <view class="letter-paper" wx:elif="{{flow.draftText}}">{{flow.draftText}}</view>
         <view class="empty-note" wx:else>先生尚未落笔。</view>
       </view>
 

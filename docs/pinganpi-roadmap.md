@@ -8,7 +8,7 @@
 
 **当前分支：** `codex/wechat-miniprogram-pivot`
 
-**当前开发基线：** 阶段 1-19 的 Capacitor / Vue App 工程能力已形成完整业务参考：领域层、写信流程、AI 起稿、流式起稿、CloudBase AI 代理、同步模型、CloudBase 同步代理、手机号账号本地闭环、双人绑定本地 / 服务端边界和外部平台配置收口均已完成对应验证。2026-05-24 用户确认重大方向调整：目标运行环境从 iOS / Android App 改为微信小程序并需要上架；新主线采用微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境；手机号仍是《平安批》业务账号主键；微信一键获取手机号为默认登录入口，短信验证码保留兜底；本地开发和线上都优先走 CloudBase 云函数，本地 proxy 降级为诊断工具。阶段 21 已完成迁移设计与重基线；阶段 22 已完成小程序工程基座；阶段 23 已完成共享领域核心迁移；阶段 24 已完成小程序本地核心界面；阶段 25 已完成小程序 CloudBase dev 主链路；阶段 26 已完成小程序登录与双人关系工程闭环：账号页接入微信手机号 code 登录和受控兜底入口，关系页接入创建关系、生成邀请码、输入邀请码加入，小程序本地会话只缓存账号 / 绑定摘要，服务端账号和关系云函数改为从可信微信 / CloudBase 上下文推导账号身份，不再信任客户端传入的 `authUid`、`phoneNumber` 或 `accountId`。下一步进入阶段 27：小程序 AI 与同步体验补齐，实施计划为 `docs/superpowers/plans/2026-05-25-pinganpi-miniprogram-ai-sync-experience.md`。2026-05-25 已完成一次治理审查并固化 worktree / 多 agent 协作规则，记录为 `docs/governance-reviews/2026-05-25-project-governance-review.md` 和 `docs/agent-collaboration.md`。迁移设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`，阶段 22 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md`，阶段 23 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-shared-domain-core.md`，阶段 24 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-local-ui.md`，阶段 25 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-cloudbase-dev.md`，阶段 26 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-login-pair.md`。精确提交以 `git log --oneline --decorate -5` 为准。
+**当前开发基线：** 阶段 1-19 的 Capacitor / Vue App 工程能力已形成完整业务参考：领域层、写信流程、AI 起稿、流式起稿、CloudBase AI 代理、同步模型、CloudBase 同步代理、手机号账号本地闭环、双人绑定本地 / 服务端边界和外部平台配置收口均已完成对应验证。2026-05-24 用户确认重大方向调整：目标运行环境从 iOS / Android App 改为微信小程序并需要上架；新主线采用微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境；手机号仍是《平安批》业务账号主键；微信一键获取手机号为默认登录入口，短信验证码保留兜底；本地开发和线上都优先走 CloudBase 云函数，本地 proxy 降级为诊断工具。阶段 21 已完成迁移设计与重基线；阶段 22 已完成小程序工程基座；阶段 23 已完成共享领域核心迁移；阶段 24 已完成小程序本地核心界面；阶段 25 已完成小程序 CloudBase dev 主链路；阶段 26 已完成小程序登录与双人关系工程闭环；阶段 27 已完成小程序 AI 与同步体验补齐：写信页默认通过 `wx.cloud.callFunction` 调用 `pinganpi-ai/scribeDraft` 非流式起稿，AI 成功后进入校改，失败保留口述且不回退模板；今日页新增低调同步簿，通过 `pinganpi-sync/health` 查验云端入口；DevTools flow 使用云函数测试桩覆盖 AI 成功路径，避免消耗真实 MiMo 额度。小程序端流式结论：当前 CloudBase event 云函数主链路不能按浏览器 SSE 方式消费分片，本期不纳入流式实现，保留“先生起稿中”的等待状态；若后续恢复流式，应另开专项评估 `wx.request` + HTTP 云函数 / CloudBase Run 的安全与稳定性。下一步进入阶段 28：微信小程序上架配置。2026-05-25 已完成一次治理审查并固化 worktree / 多 agent 协作规则，记录为 `docs/governance-reviews/2026-05-25-project-governance-review.md` 和 `docs/agent-collaboration.md`。迁移设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`，阶段 22 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md`，阶段 23 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-shared-domain-core.md`，阶段 24 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-local-ui.md`，阶段 25 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-cloudbase-dev.md`，阶段 26 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-login-pair.md`，阶段 27 实施计划为 `docs/superpowers/plans/2026-05-25-pinganpi-miniprogram-ai-sync-experience.md`。精确提交以 `git log --oneline --decorate -5` 为准。
 
 **工程结构基线：** 2026-05-25 已完成工程目录结构治理：小程序主线位于 `apps/miniprogram/`，旧 Capacitor / Vue App 归档到 `apps/legacy-capacitor/`，共享领域位于 `packages/domain/src/`，服务端模块位于 `services/`，脚本和 Roadmap Viewer 位于 `tools/`。结构边界说明见 `docs/project-structure.md`，治理记录见 `docs/governance-reviews/2026-05-25-project-structure-governance.md`，自动审计命令为 `npm run structure:audit`。
 
@@ -214,7 +214,7 @@
 
 新主线从阶段 21 开始改为“微信小程序迁移设计 → 小程序工程基座 → 共享领域核心 → 小程序核心界面 → CloudBase dev 主链路 → 登录绑定真实闭环 → AI 与同步补齐 → 小程序上架配置 → 小程序完整人工验证 → 邮政异常 / 推送 / 附件 / 发布打磨”。
 
-**本期目标：** 阶段 26 已完成小程序登录与双人关系工程闭环。下一步进入阶段 27：补齐小程序 AI 起稿、失败关闭、同步状态和必要流式专项。旧 Capacitor / Vue 实现暂存为历史参考，不再作为主开发目标。
+**本期目标：** 阶段 27 已完成小程序 AI 起稿与同步状态补齐。下一步进入阶段 28：微信小程序上架配置，处理 AppID、隐私保护指引、手机号能力、CloudBase `prd` 环境和审核发布人工事项。旧 Capacitor / Vue 实现暂存为历史参考，不再作为主开发目标。
 
 | 阶段 | 名称 | 状态 | 说明 |
 | --- | --- | --- | --- |
@@ -244,8 +244,8 @@
 | 24 | 小程序本地核心界面 | 已完成基础 | 今日、写信、先生、钱匣、信箱 / 档案已接入本地 mock view-model；写信页已有本地 5 步流程，tab 切换保留进度，口述变更会重新起稿。 |
 | 25 | 小程序 CloudBase dev 主链路 | 已完成 dev smoke | 已新增并部署账号、绑定、同步、AI event 云函数入口，小程序 cloud function adapter，构建 / 部署 / smoke 脚本；dev health smoke 已通过。 |
 | 26 | 小程序登录与双人关系真实闭环 | 已完成工程闭环 | 账号页接入微信手机号 code 登录和受控兜底入口；关系页接入创建关系、邀请码和加入；服务端可信推导账号，不信任客户端身份字段。 |
-| 27 | 小程序 AI 与同步体验补齐 | 未开始 | AI 起稿、失败关闭、同步状态，必要时恢复流式专项。 |
-| 28 | 微信小程序上架配置 | 未开始 | AppID、隐私、手机号能力、`prd` 环境、审核发布人工清单。 |
+| 27 | 小程序 AI 与同步体验补齐 | 已完成工程闭环 | 小程序写信页接入非流式 AI 起稿、失败关闭、AI metadata、今日同步簿和 DevTools 云函数测试桩；流式不纳入本期。 |
+| 28 | 微信小程序上架配置 | 下一步 | AppID、隐私、手机号能力、`prd` 环境、审核发布人工清单。 |
 | 29 | 小程序完整人工验证 | 未开始 | 双手机号、双端、写信、送达、拆阅、断网、清空数据、`prd` smoke。 |
 | 30 | 邮政异常规则 | 未开始 | 延误、错分、迷失、找回、退回的确定性推进。 |
 | 31 | 系统推送 / 订阅消息 | 未开始 | 重要信、挂号信、找回、退回等克制提醒；小程序内优先评估订阅消息。 |
@@ -269,13 +269,25 @@
 - 阶段 24 依赖阶段 23，先用本地 mock 跑通小程序核心界面。
 - 阶段 25 依赖阶段 24，并把账号、绑定、同步、AI 接到 CloudBase `dev` 云函数 event wrapper。
 - 阶段 26 依赖阶段 25，已完成小程序账号 / 关系工程闭环；微信手机号能力真机弹窗、短信真实验证码、AppID 关联和 prd 验证顺延到阶段 28 / 29。
-- 阶段 27 依赖阶段 25 / 26，补齐小程序 AI 起稿、失败关闭、同步状态和必要的流式专项验证。
-- 阶段 27 已补齐可执行实施计划：`docs/superpowers/plans/2026-05-25-pinganpi-miniprogram-ai-sync-experience.md`。
+- 阶段 27 依赖阶段 25 / 26，已补齐小程序 AI 起稿、失败关闭、同步状态和流式专项结论；实施计划为 `docs/superpowers/plans/2026-05-25-pinganpi-miniprogram-ai-sync-experience.md`。
+- 阶段 27 流式结论：小程序主链路使用 `wx.cloud.callFunction` 调 CloudBase event 云函数，当前不按 SSE 分片返回；本期保留非流式 AI 起稿和“先生起稿中”等待反馈，不强行模拟流式。
 - 阶段 28 依赖阶段 22-27 的可演示小程序，统一处理 AppID、隐私、手机号能力、`prd` 环境和审核发布人工清单。
 - 阶段 29 依赖阶段 28，由 Codex 引导用户做小程序完整人工验证。
 - 阶段 30-33 是原阶段 21-24 顺延，分别处理邮政异常、推送 / 订阅消息、照片附件和发布准备。
 
 ## 验证基线
+
+阶段 27 新增验证记录：
+
+- `npm test`：通过，61 个测试文件，407 个测试通过。
+- `npm run miniprogram:check`：通过；包含共享副本一致性检查和小程序 typecheck。
+- `npm run typecheck`：通过。
+- `npm run structure:audit`：通过。
+- `npm run roadmap:build`：通过；Roadmap Viewer 数据源和构建可用。
+- `npm run cloudbase:build:miniprogram`：通过；小程序 event 云函数构建成功。
+- `node --check tools/scripts/miniprogram-devtools-automator.cjs`：通过；DevTools flow 脚本语法有效。
+- `npm run miniprogram:devtools:flow`：通过；自动读取微信开发者工具端口 `62046`，用云函数测试桩覆盖账号、关系、今日、写信 AI、先生、钱匣、信箱和档案；未调用真实 MiMo，未点击真实投寄。
+- `git diff --check`：通过。
 
 工程结构治理新增验证记录：
 
@@ -1078,14 +1090,23 @@ npm run cap:doctor
 
 ### 阶段 27：小程序 AI 与同步体验补齐
 
+状态：已完成工程闭环。
+
 目标：补齐小程序中的 AI 起稿、失败关闭、同步状态和必要流式专项。
 
-推荐范围：
+已实现：
 
-- AI 起稿先保证非流式可用。
-- 评估小程序端流式输出可行性；不可行时保留非流式 + 明确等待反馈。
-- 同步状态展示 dev / prd 环境、最近同步、失败原因。
-- 投寄和拆阅继续要求联网校验。
+- 新增 `apps/miniprogram/services/ai-scribe-cloud.ts`，封装 `callPinganpiAi("scribeDraft")`，把服务端 `scribeDraft` 映射为页面 `draftText`，并把云端失败 / 畸形响应归一为受控错误。
+- 写信页默认走非流式 AI 起稿；pending 时禁用“请先生起稿 / 下一步 / 本地投寄”，成功后进入校改，失败停留在起稿并保留口述，不回退模板正文。
+- `WriteFlowModel` 新增 `draftStatus`、`draftErrorText`、`draftSource`、`generationMeta`；本地 `generateLocalDraft` 仅作为测试 / fallback helper 保留。
+- 今日页新增“同步簿”，通过 `pinganpi-sync/health` 展示 `idle / syncing / synced / failed / offlineRequired`，只显示环境、最近查验和克制错误摘要，不展示现代在线状态。
+- DevTools `flow` 脚本增加云函数测试桩，拦截 `pinganpi-ai/scribeDraft` 和 `pinganpi-sync/health`，覆盖 AI 成功路径而不消耗真实 MiMo 额度。
+- 小程序端流式专项结论：当前主链路是 CloudBase event 云函数 `wx.cloud.callFunction`，不按浏览器 SSE 方式消费分片；阶段 27 不纳入流式实现，后续若需要流式，另开专项评估 HTTP 云函数 / CloudBase Run + `wx.request` 的安全、鉴权和稳定性。
+
+仍需后续阶段处理：
+
+- 投寄 / 拆阅的真实联网校验、双端真实同步和清空本地数据后的恢复验证放入阶段 29。
+- 真实 MiMo 起稿、微信手机号授权和 `prd` 环境验证依赖阶段 28 / 29 的人工配置。
 
 ### 阶段 28：微信小程序上架配置
 

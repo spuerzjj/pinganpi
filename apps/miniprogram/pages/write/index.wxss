@@ -97,3 +97,7 @@
 .nav-row .ledger-button {
   margin-top: 0;
 }
+
+.warning-note {
+  color: var(--seal);
+}

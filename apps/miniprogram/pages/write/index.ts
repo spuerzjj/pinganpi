@@ -1,7 +1,15 @@
-import { createLocalMockState, type MiniLocalState } from "../../services/local-model.js";
 import {
+  AI_SCRIBE_DRAFT_FAILURE_TEXT,
+  generateAiScribeDraft,
+  type MiniProgramAiScribeDraftInput,
+} from "../../services/ai-scribe-cloud.js";
+import { createLocalMockState, type MiniLocalState, type MiniMember } from "../../services/local-model.js";
+import {
+  applyAiDraft,
+  beginDraftGeneration,
+  canNavigateBack,
   createWriteFlowModel,
-  generateLocalDraft,
+  failDraftGeneration,
   preparePostedReceipt,
   reviseDraft,
   setRegistered,
@@ -52,6 +60,7 @@ const stepLabels: Record<WriteStep, string> = {
 };
 
 let localState = createLocalMockState(new Date());
+let draftRequestSerial = 0;
 
 Page({
   data: {
@@ -84,7 +93,7 @@ Page({
   goBack(this: WritePageInstance) {
     const flow = this.data.flow;
 
-    if (flow === null || flow.step === "method") {
+    if (flow === null || !canNavigateBack(flow)) {
       return;
     }
 
@@ -109,14 +118,36 @@ Page({
 
     setFlow(this, reviseDraft(flow, event.detail.value), null);
   },
-  onGenerateDraft(this: WritePageInstance) {
+  async onGenerateDraft(this: WritePageInstance) {
     const flow = this.data.flow;
 
     if (flow === null || !flow.canGenerate) {
       return;
     }
 
-    setFlow(this, generateLocalDraft(flow, localState, new Date()), null);
+    const oralSnapshot = flow.oralText.trim();
+    const requestSerial = ++draftRequestSerial;
+    const pendingFlow = beginDraftGeneration(flow);
+    setFlow(this, pendingFlow, null);
+
+    try {
+      const draft = await generateAiScribeDraft(createAiDraftInput(pendingFlow, localState));
+      const latestFlow = this.data.flow;
+
+      if (!shouldApplyDraftResult(latestFlow, requestSerial, oralSnapshot)) {
+        return;
+      }
+
+      setFlow(this, applyAiDraft(latestFlow, draft), null);
+    } catch {
+      const latestFlow = this.data.flow;
+
+      if (!shouldApplyDraftResult(latestFlow, requestSerial, oralSnapshot)) {
+        return;
+      }
+
+      setFlow(this, failDraftGeneration(latestFlow, AI_SCRIBE_DRAFT_FAILURE_TEXT), null);
+    }
   },
   onToggleRegistered(this: WritePageInstance, event: SwitchChangeEvent) {
     const flow = this.data.flow;
@@ -147,7 +178,7 @@ function setFlow(page: WritePageInstance, flow: WriteFlowModel, receipt?: Posted
     isDraftStep: flow.step === "draft",
     isReviseStep: flow.step === "revise",
     isPostStep: flow.step === "post",
-    canGoBack: flow.step !== "method",
+    canGoBack: canNavigateBack(flow),
     canGoNext: flow.step !== "post",
     nextDisabled: isNextDisabled(flow),
   };
@@ -195,7 +226,7 @@ function isNextDisabled(flow: WriteFlowModel): boolean {
   }
 
   if (flow.step === "draft") {
-    return flow.draftText.trim().length === 0;
+    return flow.draftStatus === "pending" || flow.draftText.trim().length === 0;
   }
 
   if (flow.step === "revise") {
@@ -203,4 +234,64 @@ function isNextDisabled(flow: WriteFlowModel): boolean {
   }
 
   return flow.step === "post";
+}
+
+function shouldApplyDraftResult(
+  flow: WriteFlowModel | null,
+  requestSerial: number,
+  oralSnapshot: string,
+): flow is WriteFlowModel {
+  return (
+    flow !== null &&
+    draftRequestSerial === requestSerial &&
+    flow.draftStatus === "pending" &&
+    flow.oralText.trim() === oralSnapshot
+  );
+}
+
+function createAiDraftInput(flow: WriteFlowModel, state: MiniLocalState): MiniProgramAiScribeDraftInput {
+  const current = getMember(state, state.currentMemberId);
+  const recipient = getMember(state, state.recipientMemberId);
+  const scribe = state.scribes.find((item) => item.id === flow.selectedScribeId);
+
+  return {
+    oralText: flow.oralText,
+    scribeName: flow.selectedScribeName,
+    scribeStyle: formatScribeStyle(scribe?.style),
+    senderGreeting: recipient.dailyName,
+    senderSignature: current.dailyName,
+    senderCity: state.route.fromCity,
+    recipientCity: state.route.toCity,
+    letterType: flow.registered ? "registered" : "ordinary",
+  };
+}
+
+function getMember(state: MiniLocalState, memberId: string): MiniMember {
+  const member = state.members.find((item) => item.id === memberId);
+
+  if (member === undefined) {
+    throw new Error(`Missing member: ${memberId}`);
+  }
+
+  return member;
+}
+
+function formatScribeStyle(style: MiniLocalState["scribes"][number]["style"] | undefined): string {
+  if (style === "street") {
+    return "街坊口吻";
+  }
+
+  if (style === "old-scholar") {
+    return "旧塾文气";
+  }
+
+  if (style === "schoolmaster") {
+    return "先生训诂";
+  }
+
+  if (style === "clerk") {
+    return "邮局书记";
+  }
+
+  return "旧时代代书口吻";
 }

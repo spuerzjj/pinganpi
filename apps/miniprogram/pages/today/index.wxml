@@ -32,6 +32,26 @@
       </view>
 
       <view class="section-panel">
+        <view class="section-title">同步簿</view>
+        <view class="record-list">
+          <view class="record-row">
+            <view class="meta-row">
+              <text class="meta-label">云端</text>
+              <text class="meta-value">{{syncStatus.label}}</text>
+            </view>
+            <view class="record-copy">{{syncStatus.detailText}}</view>
+          </view>
+          <view class="record-row">
+            <view class="meta-row">
+              <text class="meta-label">环境</text>
+              <text class="meta-value">{{syncStatus.envText}}</text>
+            </view>
+            <view class="record-copy">最近查验：{{syncStatus.checkedAtText}}</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="section-panel">
         <view class="section-title">邮路摘记</view>
         <view class="record-list">
           <view class="record-row">

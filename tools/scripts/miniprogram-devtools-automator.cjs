@@ -25,9 +25,13 @@ if (!["smoke", "flow"].includes(mode)) {
   fail(`未知命令：${mode}。可用命令：smoke, flow`);
 }
 
-main().catch((error) => {
-  fail(error instanceof Error ? error.message : String(error), error);
-});
+main()
+  .then(() => {
+    process.exit(0);
+  })
+  .catch((error) => {
+    fail(error instanceof Error ? error.message : String(error), error);
+  });
 
 async function main() {
   const devtoolsPort = resolveDevtoolsPort();
@@ -36,16 +40,20 @@ async function main() {
     : defaultAutomatorPort;
   const { miniProgram, automatorPort } = await launchMiniProgram(devtoolsPort, preferredAutomatorPort);
   const results = [];
+  let cloudFunctionStubInstalled = false;
 
   try {
     if (mode === "smoke") {
       results.push(await runScenario("account-invalid-phone", () => runAccountInvalidPhoneSmoke(miniProgram)));
     } else {
+      await installCloudFunctionStub(miniProgram);
+      cloudFunctionStubInstalled = true;
+
       const scenarios = [
         ["account-invalid-phone", () => runAccountInvalidPhoneSmoke(miniProgram)],
         ["pair-invalid-invite", () => runPairInvalidInviteSmoke(miniProgram)],
-        ["today", () => inspectStaticPage(miniProgram, "/pages/today/index", "today", ["model.title"])],
-        ["write-local-flow-no-post", () => inspectWriteFlow(miniProgram)],
+        ["today", () => inspectStaticPage(miniProgram, "/pages/today/index", "today", ["model.title", "syncStatus.state"])],
+        ["write-ai-flow-no-post", () => inspectWriteFlow(miniProgram)],
         ["scribes", () => inspectStaticPage(miniProgram, "/pages/scribes/index", "scribes", ["model.scribes"])],
         ["wallet", () => inspectStaticPage(miniProgram, "/pages/wallet/index", "wallet", ["model.balanceText"])],
         ["mailbox", () => inspectStaticPage(miniProgram, "/pages/mailbox/index", "mailbox", ["model.letters"])],
@@ -72,6 +80,9 @@ async function main() {
     );
   } finally {
     await safeRestore(miniProgram, "redirectTo");
+    if (cloudFunctionStubInstalled) {
+      await safeRestoreCloudFunctionStub(miniProgram);
+    }
     await safeRemoveStorage(miniProgram, storageKey);
     miniProgram.disconnect();
   }
@@ -261,11 +272,15 @@ async function inspectWriteFlow(miniProgram) {
   data = await page.data();
   assertEqual(data.flow.step, "draft", "写信页应进入起稿步骤");
   await tapButton(page, "请先生起稿");
-  await page.waitFor(300);
 
-  data = await page.data();
+  data = await waitForPageData(
+    page,
+    (pageData) => pageData.flow.step === "revise" || pageData.flow.draftStatus === "failed",
+    "写信页 AI 起稿应进入校改或受控失败状态",
+  );
   assertEqual(data.flow.step, "revise", "写信页起稿后应进入校改步骤");
   assert(data.flow.draftText.length > 0, "先生起稿后应有 draftText");
+  assertEqual(data.flow.draftSource, "ai", "写信页应使用 AI 起稿来源");
   await input(page, ".final-input", `${data.flow.draftText}\n自动化调试补记。`);
   await page.waitFor(200);
   await tapButton(page, "下一步");
@@ -276,12 +291,70 @@ async function inspectWriteFlow(miniProgram) {
   assert(data.flow.canPost === true, "写信页定稿后应可进入本地投寄状态");
 
   return {
-    scenario: "write-local-flow-no-post",
+    scenario: "write-ai-flow-no-post",
     route: page.path,
     finalStep: data.flow.step,
+    draftSource: data.flow.draftSource,
     canPost: data.flow.canPost,
     totalCostText: data.flow.totalCostText,
   };
+}
+
+async function installCloudFunctionStub(miniProgram) {
+  await miniProgram.evaluate((draftText) => {
+    const root = typeof globalThis === "object" && globalThis ? globalThis : {};
+
+    if (!wx.cloud) {
+      wx.cloud = {};
+    }
+
+    if (!root.__pinganpiOriginalCloudCallFunction) {
+      root.__pinganpiOriginalCloudCallFunction =
+        typeof wx.cloud.callFunction === "function"
+          ? wx.cloud.callFunction.bind(wx.cloud)
+          : async () => {
+              throw new Error("wx.cloud.callFunction is unavailable");
+            };
+    }
+
+    wx.cloud.callFunction = async (options) => {
+      const name = options && options.name;
+      const data = (options && options.data) || {};
+      const action = data.action;
+
+      if (name === "pinganpi-ai" && action === "scribeDraft") {
+        return {
+          result: {
+            ok: true,
+            action,
+            data: {
+              ok: true,
+              scribeDraft: draftText,
+              readAloudText: draftText,
+              signature: "阿周",
+              generationMeta: {
+                engine: "devtools-stub",
+                provider: "devtools",
+                promptVersion: "devtools-flow",
+              },
+            },
+          },
+        };
+      }
+
+      if (name === "pinganpi-sync" && action === "health") {
+        return {
+          result: {
+            ok: true,
+            action,
+            data: { ok: true },
+          },
+        };
+      }
+
+      return root.__pinganpiOriginalCloudCallFunction(options);
+    };
+  }, "兰卿：今日试写一封平安批，托先生先作一稿。");
 }
 
 async function relaunch(miniProgram, route) {
@@ -319,6 +392,23 @@ async function tapButton(page, textIncludes) {
   }
 
   throw new Error(`找不到按钮：${textIncludes}`);
+}
+
+async function waitForPageData(page, predicate, message, timeoutMs = 8_000) {
+  const deadline = Date.now() + timeoutMs;
+  let lastData = null;
+
+  while (Date.now() < deadline) {
+    lastData = await page.data();
+
+    if (predicate(lastData)) {
+      return lastData;
+    }
+
+    await page.waitFor(200);
+  }
+
+  throw new Error(`${message}；最后数据：${JSON.stringify(lastData)}`);
 }
 
 function resolveDevtoolsPort() {
@@ -472,6 +562,21 @@ async function safeRestore(miniProgram, method) {
     await miniProgram.restoreWxMethod(method);
   } catch {
     // Method restoration is best-effort when the method was not mocked in the active scenario.
+  }
+}
+
+async function safeRestoreCloudFunctionStub(miniProgram) {
+  try {
+    await miniProgram.evaluate(() => {
+      const root = typeof globalThis === "object" && globalThis ? globalThis : {};
+
+      if (root.__pinganpiOriginalCloudCallFunction && wx.cloud) {
+        wx.cloud.callFunction = root.__pinganpiOriginalCloudCallFunction;
+        delete root.__pinganpiOriginalCloudCallFunction;
+      }
+    });
+  } catch {
+    // Cloud function stubs are best-effort for DevTools flow isolation.
   }
 }
 
