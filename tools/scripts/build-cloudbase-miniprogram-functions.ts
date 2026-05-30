@@ -9,6 +9,7 @@ interface MiniProgramFunctionBuildEntry {
 }
 
 const projectRoot = resolve(import.meta.dirname, "../..");
+const miniProgramEventFunctionTimeoutSeconds = 30;
 
 const entries: MiniProgramFunctionBuildEntry[] = [
   {
@@ -62,6 +63,9 @@ async function buildMiniProgramFunction(entry: MiniProgramFunctionBuildEntry): P
         version: "0.1.0",
         private: true,
         main: "index.js",
+        "cloudfunction-config": {
+          timeout: miniProgramEventFunctionTimeoutSeconds,
+        },
       },
       null,
       2,
