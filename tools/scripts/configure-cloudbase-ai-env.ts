@@ -5,7 +5,7 @@ import { spawnSync } from "node:child_process";
 
 const projectRoot = resolve(import.meta.dirname, "../..");
 const cloudbaseConfigPath = resolve(projectRoot, "cloudbaserc.json");
-const functionName = "ai-scribe-proxy";
+const functionName = readOptionalEnv("PINGANPI_CLOUDBASE_AI_FUNCTION_NAME", "ai-scribe-proxy");
 
 const envId = readRequiredEnv("CLOUDBASE_ENV_ID");
 const mode = readMode();

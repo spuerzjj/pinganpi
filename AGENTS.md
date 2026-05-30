@@ -60,12 +60,14 @@ npm run ai-proxy:dev
 npm run cloudbase:login
 npm run cloudbase:build:ai
 CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:configure:ai-env
+CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:configure:miniprogram-ai-env
 CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:disable:ai-env
 CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:deploy:ai
 npm run cloudbase:build:sync
 CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:configure:sync-env
 npm run cloudbase:smoke:sync
 CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:deploy:sync
+CLOUDBASE_ENV_ID=<env-id> WECHAT_DEVTOOLS_PORT=<port> npm run miniprogram:cloud:deploy:functions
 npm run miniprogram:sync-shared
 npm run miniprogram:check-shared
 npm run miniprogram:check
@@ -174,7 +176,7 @@ Roadmap 日常查看方式：使用独立 Vue 工具 `tools/roadmap-viewer/`，�
 - `docs/superpowers/specs/2026-05-23-pinganpi-ai-scribe-design.md`
 - `docs/superpowers/plans/2026-05-23-pinganpi-minimal-ai-proxy.md`
 
-最近验证基线：阶段 27 已通过 `npm test`（61 个测试文件，407 个测试通过）、`npm run miniprogram:check`、`npm run typecheck`、`npm run cloudbase:build:miniprogram`、`npm run roadmap:build`、`npm run structure:audit`、`node --check tools/scripts/miniprogram-devtools-automator.cjs`、`npm run miniprogram:devtools:flow` 和 `git diff --check`。2026-05-25 工程结构治理基线保留：`npm run cap:sync`、`npm run cap:doctor` 已通过；`npm run build` 已在 `npm run cap:sync` 内重新执行并通过，保留 Varlet 首包超过 500 KB 的既有提示。Capacitor 根配置现在只作为 CLI 路由，指向 `apps/legacy-capacitor/dist`、`apps/legacy-capacitor/android` 和 `apps/legacy-capacitor/ios`。微信开发者工具基线保留：阶段 27 后的 `npm run miniprogram:devtools:flow` 已自动读取端口 `62046` 并通过，使用云函数测试桩覆盖 AI 成功路径，不调用真实 MiMo，也不点击真实投寄。阶段 26 云端基线保留：`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:miniprogram` 与 `npm run cloudbase:smoke:miniprogram` 已在账号 / 关系可信身份改造后通过。阶段 16B 云端基线保留：`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:sync` 通过，`npm run cloudbase:smoke:sync` 已通过真实云端 smoke。为避免 `@cloudbase/node-sdk` 传递引入存在原型污染公告的 `lodash.set` / `lodash.unset` 小包，已通过 `vendor/lodash-set` 和 `vendor/lodash-unset` 提供兼容 shim，内部调用已修复的主 `lodash` 子模块。
+最近验证基线：阶段 27 已通过 `npm test`（61 个测试文件，407 个测试通过）、`npm run miniprogram:check`、`npm run typecheck`、`npm run cloudbase:build:miniprogram`、`npm run roadmap:build`、`npm run structure:audit`、`node --check tools/scripts/miniprogram-devtools-automator.cjs`、`npm run miniprogram:devtools:flow` 和 `git diff --check`。2026-05-25 工程结构治理基线保留：`npm run cap:sync`、`npm run cap:doctor` 已通过；`npm run build` 已在 `npm run cap:sync` 内重新执行并通过，保留 Varlet 首包超过 500 KB 的既有提示。Capacitor 根配置现在只作为 CLI 路由，指向 `apps/legacy-capacitor/dist`、`apps/legacy-capacitor/android` 和 `apps/legacy-capacitor/ios`。微信开发者工具基线保留：阶段 27 后的 `npm run miniprogram:devtools:flow` 已自动读取端口 `62046` 并通过，使用云函数测试桩覆盖 AI 成功路径，不调用真实 MiMo，也不点击真实投寄。当前小程序 `dev` 环境已从历史腾讯云控制台环境切换为绑定当前 AppID 的 `cloud1-d6gg9pfb476fc78b4`；该环境当前由微信开发者工具 CLI 可见，腾讯云 `cloudbase` CLI 当前登录态不可见。部署四个小程序 event 云函数使用 `CLOUDBASE_ENV_ID=<env-id> WECHAT_DEVTOOLS_PORT=<port> npm run miniprogram:cloud:deploy:functions`；`pinganpi-ai` 的 MiMo env 若目标环境能被腾讯云 CLI 看见，可用 `CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:configure:miniprogram-ai-env` 配置，否则需要在微信开发者工具 / 小程序云开发控制台手工配置函数环境变量。阶段 26 云端历史基线保留：`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:miniprogram` 与 `npm run cloudbase:smoke:miniprogram` 已在账号 / 关系可信身份改造后通过。阶段 16B 云端基线保留：`CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:sync` 通过，`npm run cloudbase:smoke:sync` 已通过真实云端 smoke。为避免 `@cloudbase/node-sdk` 传递引入存在原型污染公告的 `lodash.set` / `lodash.unset` 小包，已通过 `vendor/lodash-set` 和 `vendor/lodash-unset` 提供兼容 shim，内部调用已修复的主 `lodash` 子模块。
 
 ## 后续路线
 
@@ -262,8 +264,12 @@ Roadmap 日常查看方式：使用独立 Vue 工具 `tools/roadmap-viewer/`，�
    - `pinganpi-account` / `pinganpi-pair` 复用 `account-pair-service`，新增账号关系 CloudBase store，集合名为 `pinganpi_accounts`、`pinganpi_households`、`pinganpi_members`、`pinganpi_invites`；创建邀请码响应不向客户端返回 `codeHash`。
    - 已新增 `apps/miniprogram/services/cloud-functions.ts` 封装 `wx.cloud.callFunction`；本阶段尚未接入页面。
    - 已新增 `npm run cloudbase:build:miniprogram`、`npm run cloudbase:deploy:miniprogram`、`npm run cloudbase:smoke:miniprogram`。
-   - `CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:deploy:miniprogram` 已通过，四个 event 云函数均部署成功。
-   - `CLOUDBASE_ENV_ID=pinganpi-d7gml1f6sbcc172ea npm run cloudbase:smoke:miniprogram` 已通过，四个 event 云函数 health invoke 均通过；AI 起稿 smoke 默认跳过，未产生 provider 调用。
+   - 小程序 `dev` CloudBase 环境为 `cloud1-d6gg9pfb476fc78b4`，这是微信开发者工具内新开通并绑定当前 AppID 的环境。
+   - 旧环境 `pinganpi-d7gml1f6sbcc172ea` 的四个 event 云函数部署和 smoke 记录只作为历史基线保留，不再作为小程序主线 dev 环境。
+   - `cloud1-d6gg9pfb476fc78b4` 当前使用微信开发者工具 CLI 部署：`CLOUDBASE_ENV_ID=<env-id> WECHAT_DEVTOOLS_PORT=<port> npm run miniprogram:cloud:deploy:functions`。
+   - `CLOUDBASE_ENV_ID=cloud1-d6gg9pfb476fc78b4 WECHAT_DEVTOOLS_PORT=24248 npm run miniprogram:cloud:deploy:functions` 已通过，四个 event 云函数部署成功；微信开发者工具运行时 `pinganpi-sync/health` 与 `pinganpi-ai/health` 均返回 `cloud.callFunction:ok`。
+   - 微信开发者工具 CLI 当前把新建函数显示为默认 `Nodejs16.13`、`timeout=3`；health 可用，但真实 AI 起稿前需要在控制台把 `pinganpi-ai` 的 MiMo env 和必要超时配置补齐。
+   - `pinganpi-ai` 的 MiMo env 若目标环境能被腾讯云 CLI 看见，可用 `CLOUDBASE_ENV_ID=<env-id> npm run cloudbase:configure:miniprogram-ai-env` 配置；旧 `cloudbase:configure:ai-env` 默认仍配置 HTTP `ai-scribe-proxy`。当前微信侧 `cloud1-...` 环境需要在微信开发者工具 / 小程序云开发控制台手工配置函数环境变量后才能真实 AI 起稿。
    - HTTP AI / sync 函数保留为诊断工具，不作为小程序主链路；`prd` 仍未创建 / 配置 / 部署。
 
 6. **阶段 26：小程序登录与双人关系真实闭环**

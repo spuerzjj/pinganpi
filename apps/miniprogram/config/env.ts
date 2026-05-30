@@ -16,7 +16,7 @@ export const miniProgramEnvironments: Record<
   MiniProgramEnvironmentConfig
 > = {
   dev: {
-    cloudbaseEnvId: "pinganpi-d7gml1f6sbcc172ea",
+    cloudbaseEnvId: "cloud1-d6gg9pfb476fc78b4",
   },
   prd: {
     cloudbaseEnvId: "",

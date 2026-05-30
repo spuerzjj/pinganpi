@@ -9,7 +9,7 @@ describe("miniprogram env config", () => {
   it("uses the current CloudBase environment as dev by default", () => {
     expect(getMiniProgramRuntimeConfig()).toEqual({
       envName: "dev",
-      cloudbaseEnvId: "pinganpi-d7gml1f6sbcc172ea",
+      cloudbaseEnvId: "cloud1-d6gg9pfb476fc78b4",
     });
   });
 
@@ -18,6 +18,6 @@ describe("miniprogram env config", () => {
   });
 
   it("returns a concrete env id for the active environment", () => {
-    expect(getMiniProgramCloudbaseEnvId()).toBe("pinganpi-d7gml1f6sbcc172ea");
+    expect(getMiniProgramCloudbaseEnvId()).toBe("cloud1-d6gg9pfb476fc78b4");
   });
 });

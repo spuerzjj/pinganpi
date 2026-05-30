@@ -248,7 +248,7 @@ interface PinganpiWechatIdentity {
 - 两套账号 / 关系数据。
 - 两套审计和 smoke 记录。
 
-当前环境 `pinganpi-d7gml1f6sbcc172ea` 不直接假定为 `prd`。迁移实施默认先把现有环境作为 `dev` 使用，等用户创建或确认线上环境后再配置 `prd`。
+当前小程序 `dev` 环境已切换为微信开发者工具内新开通并绑定当前 AppID 的 CloudBase 环境 `cloud1-d6gg9pfb476fc78b4`。历史环境 `pinganpi-d7gml1f6sbcc172ea` 只保留为旧 HTTP AI / sync 验证基线，不再作为小程序主线 dev 环境。当前 `cloud1-...` 环境由微信开发者工具 CLI 部署云函数；本机腾讯云 `cloudbase` CLI 登录态暂不可见，因此 `pinganpi-ai` 的 MiMo env 需要在微信开发者工具 / 小程序云开发控制台手工配置。等用户创建或确认线上环境后再配置 `prd`。
 
 配置策略：
 
