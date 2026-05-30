@@ -75,6 +75,52 @@ describe("AI proxy handler", () => {
     });
   });
 
+  it("returns safe provider status details without leaking provider body", async () => {
+    const response = await handleAiProxyRequest(
+      config,
+      {
+        method: "POST",
+        url: "/ai/scribe-draft",
+        headers: { origin: "http://localhost:5173", "content-type": "application/json" },
+        body: validBody()
+      },
+      async () => {
+        throw new Error("MiMo request failed with status 401. provider raw body: bad key tp-secret");
+      }
+    );
+
+    expect(response.statusCode).toBe(502);
+    expect(JSON.parse(response.body)).toEqual({
+      ok: false,
+      reason: "provider_error",
+      message: "MiMo request failed with status 401."
+    });
+    expect(response.body).not.toContain("tp-secret");
+    expect(response.body).not.toContain("provider raw body");
+  });
+
+  it("returns safe provider timeout details", async () => {
+    const response = await handleAiProxyRequest(
+      config,
+      {
+        method: "POST",
+        url: "/ai/scribe-draft",
+        headers: { origin: "http://localhost:5173", "content-type": "application/json" },
+        body: validBody()
+      },
+      async () => {
+        throw new Error("MiMo request timed out.");
+      }
+    );
+
+    expect(response.statusCode).toBe(502);
+    expect(JSON.parse(response.body)).toMatchObject({
+      ok: false,
+      reason: "provider_error",
+      message: "MiMo request timed out."
+    });
+  });
+
   it("rejects non-local browser origins before calling the provider", async () => {
     let called = false;
     const response = await handleAiProxyRequest(

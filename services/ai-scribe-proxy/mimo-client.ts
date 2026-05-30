@@ -1,3 +1,5 @@
+import { request as requestHttp } from "node:http";
+import { request as requestHttps } from "node:https";
 import type { AiProxyConfig } from "./config.js";
 
 export interface MimoChatMessage {
@@ -38,10 +40,19 @@ interface MimoStreamResponse {
   }>;
 }
 
+type MimoFetch = (url: string, init: RequestInit) => Promise<MimoFetchResponse>;
+
+interface MimoFetchResponse {
+  ok: boolean;
+  status: number;
+  body: ReadableStream<Uint8Array> | null;
+  json: () => Promise<unknown>;
+}
+
 export async function requestMimoChatCompletion(
   config: AiProxyConfig,
   messages: MimoChatMessage[],
-  fetcher: typeof fetch = fetch
+  fetcher: MimoFetch = resolveFetch()
 ): Promise<MimoChatResult> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), config.requestTimeoutMs);
@@ -83,7 +94,7 @@ export async function requestMimoChatCompletion(
 export async function* requestMimoChatCompletionStream(
   config: AiProxyConfig,
   messages: MimoChatMessage[],
-  fetcher: typeof fetch = fetch
+  fetcher: MimoFetch = resolveFetch()
 ): AsyncIterable<MimoChatStreamDelta> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), config.requestTimeoutMs);
@@ -166,6 +177,141 @@ function parseMimoResponse(payload: MimoResponse): MimoChatResult {
   };
 }
 
+function resolveFetch(): MimoFetch {
+  const fetcher = globalThis.fetch;
+
+  if (typeof fetcher === "function") {
+    return fetcher.bind(globalThis) as MimoFetch;
+  }
+
+  return requestWithNodeHttp;
+}
+
+function requestWithNodeHttp(urlValue: string, init: RequestInit): Promise<MimoFetchResponse> {
+  const url = new URL(urlValue);
+  const body = readBodyString(init.body);
+  const headers = normalizeHeaders(init.headers);
+  const request = url.protocol === "https:" ? requestHttps : requestHttp;
+
+  if (body.length > 0 && !hasHeader(headers, "content-length")) {
+    headers["content-length"] = String(Buffer.byteLength(body));
+  }
+
+  return new Promise((resolve, reject) => {
+    const requestOptions = {
+      protocol: url.protocol,
+      hostname: url.hostname,
+      port: url.port,
+      path: `${url.pathname}${url.search}`,
+      method: init.method ?? "GET",
+      headers
+    };
+    const clientRequest = request(requestOptions, (response) => {
+      const chunks: Buffer[] = [];
+
+      response.on("data", (chunk: Buffer | string) => {
+        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+      });
+      response.on("end", () => {
+        const text = Buffer.concat(chunks).toString("utf8");
+        const status = response.statusCode ?? 0;
+
+        resolve({
+          ok: status >= 200 && status < 300,
+          status,
+          body: null,
+          json: async () => JSON.parse(text)
+        });
+      });
+    });
+
+    clientRequest.on("error", reject);
+
+    const signal = init.signal;
+
+    if (signal !== undefined && signal !== null) {
+      if (signal.aborted) {
+        clientRequest.destroy(new DOMException("aborted", "AbortError"));
+        return;
+      }
+
+      signal.addEventListener(
+        "abort",
+        () => {
+          clientRequest.destroy(new DOMException("aborted", "AbortError"));
+        },
+        { once: true }
+      );
+    }
+
+    if (body.length > 0) {
+      clientRequest.write(body);
+    }
+
+    clientRequest.end();
+  });
+}
+
+function normalizeHeaders(headers: RequestInit["headers"]): Record<string, string> {
+  const result: Record<string, string> = {};
+
+  if (headers === undefined) {
+    return result;
+  }
+
+  if (typeof Headers !== "undefined" && headers instanceof Headers) {
+    headers.forEach((value, key) => {
+      result[key] = value;
+    });
+    return result;
+  }
+
+  if (Array.isArray(headers)) {
+    for (const [key, value] of headers) {
+      result[key] = value;
+    }
+    return result;
+  }
+
+  for (const [key, value] of Object.entries(headers)) {
+    if (value !== undefined) {
+      result[key] = value;
+    }
+  }
+
+  return result;
+}
+
+function hasHeader(headers: Record<string, string>, name: string): boolean {
+  const normalizedName = name.toLowerCase();
+
+  return Object.keys(headers).some((key) => key.toLowerCase() === normalizedName);
+}
+
+function readBodyString(body: RequestInit["body"]): string {
+  if (body === undefined || body === null) {
+    return "";
+  }
+
+  if (typeof body === "string") {
+    return body;
+  }
+
+  if (body instanceof URLSearchParams) {
+    return body.toString();
+  }
+
+  if (body instanceof ArrayBuffer) {
+    return Buffer.from(body).toString("utf8");
+  }
+
+  if (ArrayBuffer.isView(body)) {
+    return Buffer.from(body.buffer, body.byteOffset, body.byteLength).toString("utf8");
+  }
+
+  throw new Error("Unsupported MiMo request body type.");
+}
+
 async function* parseSseData(body: ReadableStream<Uint8Array>): AsyncIterable<string> {
   const reader = body.getReader();
   const decoder = new TextDecoder();
@@ -220,5 +366,5 @@ function parseSseDataLine(rawLine: string): string | undefined {
 }
 
 function isAbortError(error: unknown): boolean {
-  return error instanceof DOMException && error.name === "AbortError";
+  return typeof DOMException !== "undefined" && error instanceof DOMException && error.name === "AbortError";
 }

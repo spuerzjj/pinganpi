@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { createServer } from "node:http";
 import { requestMimoChatCompletion, requestMimoChatCompletionStream } from "./mimo-client.js";
 import type { AiProxyConfig } from "./config.js";
 
@@ -45,6 +46,83 @@ describe("MiMo client", () => {
       max_completion_tokens: 900
     });
     expect(calls[0]?.init.signal).toBeInstanceOf(AbortSignal);
+  });
+
+  it("does not require global fetch when a compatible requester is provided by the runtime", async () => {
+    const originalFetch = globalThis.fetch;
+    const calls: Array<{ url: string; init: RequestInit }> = [];
+
+    try {
+      Reflect.deleteProperty(globalThis, "fetch");
+      const fetcher = async (url: string | URL, init?: RequestInit) => {
+        calls.push({ url: String(url), init: init ?? {} });
+
+        return new Response(JSON.stringify({ choices: [{ message: { content: "平安。" } }] }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        });
+      };
+
+      const result = await requestMimoChatCompletion(
+        config,
+        [{ role: "user", content: "写一封问安信。" }],
+        fetcher
+      );
+
+      expect(result.content).toBe("平安。");
+      expect(calls[0]?.url).toBe("https://api.xiaomimimo.com/v1/chat/completions");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("falls back to Node HTTP when global fetch is unavailable", async () => {
+    const originalFetch = globalThis.fetch;
+    const originalHeaders = globalThis.Headers;
+    const server = createServer((request, response) => {
+      let body = "";
+      request.setEncoding("utf8");
+      request.on("data", (chunk) => {
+        body += chunk;
+      });
+      request.on("end", () => {
+        expect(request.url).toBe("/v1/chat/completions");
+        expect(request.headers["api-key"]).toBe("tp-test-key");
+        expect(JSON.parse(body)).toMatchObject({
+          model: "mimo-v2.5-pro",
+          stream: false
+        });
+        response.writeHead(200, { "content-type": "application/json" });
+        response.end(JSON.stringify({ choices: [{ message: { content: "平安。" } }] }));
+      });
+    });
+
+    await new Promise<void>((resolve) => {
+      server.listen(0, "127.0.0.1", resolve);
+    });
+
+    try {
+      Reflect.deleteProperty(globalThis, "fetch");
+      Reflect.deleteProperty(globalThis, "Headers");
+      const address = server.address();
+      if (address === null || typeof address === "string") {
+        throw new Error("Unexpected test server address.");
+      }
+
+      const result = await requestMimoChatCompletion(
+        {
+          ...config,
+          baseUrl: `http://127.0.0.1:${address.port}/v1`
+        },
+        [{ role: "user", content: "写一封问安信。" }]
+      );
+
+      expect(result.content).toBe("平安。");
+    } finally {
+      globalThis.fetch = originalFetch;
+      globalThis.Headers = originalHeaders;
+      server.close();
+    }
   });
 
   it("uses the configured completion token limit", async () => {

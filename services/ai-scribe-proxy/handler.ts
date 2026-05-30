@@ -125,7 +125,7 @@ export async function handleAiProxyRequest(
       {
         ok: false,
         reason: "provider_error",
-        message: "AI provider request failed."
+        message: safeProviderErrorMessage(error)
       },
       origin
     );
@@ -293,6 +293,24 @@ async function* streamScribeDraftEvents(
       message: "AI provider request failed."
     });
   }
+}
+
+function safeProviderErrorMessage(error: unknown): string {
+  if (!(error instanceof Error)) {
+    return "AI provider request failed.";
+  }
+
+  const statusMatch = /^MiMo request failed with status \d+\./u.exec(error.message);
+
+  if (statusMatch !== null) {
+    return statusMatch[0];
+  }
+
+  if (error.message === "MiMo request timed out.") {
+    return error.message;
+  }
+
+  return "AI provider request failed.";
 }
 
 function sseEvent(event: "delta" | "done" | "error", data: unknown): string {

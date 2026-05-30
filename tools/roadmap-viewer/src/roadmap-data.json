@@ -12,8 +12,8 @@
     },
     {
       "label": "验证状态",
-      "value": "407 tests",
-      "note": "全量测试、小程序检查、云函数构建、Roadmap 构建、结构审计和 DevTools flow 已通过。"
+      "value": "412 tests",
+      "note": "全量测试、小程序检查、云函数部署、Roadmap 构建、结构审计和真实 AI smoke 已通过。"
     },
     {
       "label": "下一推荐",
@@ -30,7 +30,7 @@
     "微信小程序 AppID、主体、服务类目和手机号能力仍需人工配置。",
     "CloudBase dev 环境已切到 cloud1-d6gg9pfb476fc78b4；prd 环境尚未创建、配置或部署。",
     "微信手机号授权弹窗、真实 code 和短信验证码兜底需要真机 / 开发者工具验证。",
-    "小程序 AI 起稿 DevTools 自动化使用测试桩；cloud1 dev 环境的 pinganpi-ai 还需在微信云开发控制台配置 MiMo env 后做真实 smoke。",
+    "小程序 AI 起稿 DevTools 自动化使用测试桩；cloud1 dev 环境已完成真实 MiMo smoke，但后续仍需控制真实调用频率。",
     "小程序端流式不纳入阶段 27；后续若恢复流式需另开 HTTP / wx.request 专项。",
     "微信开发者工具自动化依赖服务端口开启；当前本机验证端口为 62046。",
     "真实双端、断网恢复、清空数据后恢复和 prd smoke 仍未人工验证。",
