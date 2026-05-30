@@ -22,6 +22,7 @@
 - 新增账号 / 关系 CloudBase store，使用阶段 19 已确认的集合名：`pinganpi_accounts`、`pinganpi_households`、`pinganpi_members`、`pinganpi_invites`。
 - 新增小程序端 `wx.cloud.callFunction` adapter 和类型。
 - 新增构建、部署和 smoke 脚本。
+- 新增显式 CloudBase 空环境初始化命令 `npm run miniprogram:cloud:init`，用一次性 token 维护函数创建账号、关系和同步集合；业务云函数不在运行时自动建集合。
 - 更新 roadmap、dashboard 和 AGENTS。
 
 本阶段不包含：
@@ -32,6 +33,35 @@
 - 不实现小程序 AI 流式输出。
 - 不创建或部署 `prd` 环境。
 - 不改变旧 HTTP AI / sync proxy 的诊断用途。
+
+## 2026-05-30 Follow-up: Dev Environment Initialization
+
+新 `cloud1-d6gg9pfb476fc78b4` 环境是微信开发者工具内开通并绑定当前 AppID 的空 CloudBase 环境。账号云函数在空环境中访问 `pinganpi_accounts` 会返回 `Db or Table not exist`，因此初始化应作为显式维护动作完成，而不是在 `pinganpi-account` / `pinganpi-pair` / `pinganpi-sync` 业务函数执行过程中偷偷建集合。
+
+已新增：
+
+- `tools/scripts/init-miniprogram-cloudbase.cjs`
+- `tools/scripts/init-miniprogram-cloudbase.test.ts`
+- `npm run miniprogram:cloud:init`
+
+使用方式：
+
+```bash
+CLOUDBASE_ENV_ID=<env-id> WECHAT_DEVTOOLS_PORT=<port> npm run miniprogram:cloud:init
+```
+
+该命令会生成并部署 `pinganpi-init-db` 维护函数，使用本次运行随机生成的一次性 token 调用，固定创建以下集合：
+
+- `pinganpi_accounts`
+- `pinganpi_households`
+- `pinganpi_members`
+- `pinganpi_invites`
+- `pinganpi_sync_snapshots`
+
+当前验证记录：
+
+- `CLOUDBASE_ENV_ID=cloud1-d6gg9pfb476fc78b4 WECHAT_DEVTOOLS_PORT=24248 WECHAT_AUTOMATOR_PORT=9440 npm run miniprogram:cloud:init` 已通过，5 个集合均返回 `created`。
+- 初始化后复测 `pinganpi-account/getCurrentAccount`，返回 `ok: true`、`account: null`、`binding: null`，不再触发 `Db or Table not exist`。
 
 ## Event Contract
 

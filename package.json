@@ -24,6 +24,7 @@
     "cloudbase:deploy:miniprogram": "npm run cloudbase:build:miniprogram && cloudbase fn deploy pinganpi-ai --force && cloudbase fn deploy pinganpi-sync --force && cloudbase fn deploy pinganpi-account --force && cloudbase fn deploy pinganpi-pair --force",
     "cloudbase:smoke:miniprogram": "node --env-file-if-exists=.env.ai.local --env-file-if-exists=.env.sync.local --import tsx tools/scripts/smoke-cloudbase-miniprogram-functions.ts",
     "miniprogram:cloud:deploy:functions": "npm run cloudbase:build:miniprogram && node tools/scripts/deploy-miniprogram-cloud-functions-with-devtools.cjs",
+    "miniprogram:cloud:init": "node tools/scripts/init-miniprogram-cloudbase.cjs",
     "cap:sync": "npm run build && npx cap sync",
     "cap:doctor": "npx cap doctor",
     "cap:open:ios": "npx cap open ios",
