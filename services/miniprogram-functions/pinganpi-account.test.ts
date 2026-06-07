@@ -112,6 +112,49 @@ describe("pinganpi account miniprogram function", () => {
     expect(repository.saveCount).toBe(2);
   });
 
+  it("logs in by trusted WeChat openid with no phone number and no client payload", async () => {
+    const repository = createMemoryRepository();
+
+    const result = await handlePinganpiAccountEvent(
+      repository,
+      { action: "loginByWechat" },
+      {
+        ...createDeterministicOptions(),
+        trustedIdentity: createIdentity("openid-a")
+      }
+    );
+
+    expect(result).toEqual({
+      ok: true,
+      action: "loginByWechat",
+      data: {
+        account: {
+          accountId: "account-id-a",
+          authUid: "wx-openid:wx-app-a:openid-a",
+          phoneNumber: "",
+          status: "active",
+          createdAtIso: "2026-05-24T08:00:00.000Z",
+          lastLoginAtIso: "2026-05-24T08:00:00.000Z"
+        },
+        binding: null
+      }
+    });
+    expect(repository.saveCount).toBe(1);
+  });
+
+  it("rejects openid login when trusted identity is missing", async () => {
+    const repository = createMemoryRepository();
+
+    await expect(
+      handlePinganpiAccountEvent(repository, { action: "loginByWechat" })
+    ).resolves.toMatchObject({
+      ok: false,
+      action: "loginByWechat",
+      reason: "unauthorized",
+      statusCode: 401
+    });
+  });
+
   it("reads current account and active binding from trusted identity, not payload account id", async () => {
     const repository = createMemoryRepository(createStoreWithBoundAccount());
     const options = createDeterministicOptions();

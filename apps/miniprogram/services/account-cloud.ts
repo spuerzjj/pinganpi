@@ -23,7 +23,7 @@ export interface MiniProgramPairMutationData {
 }
 
 export interface MiniProgramAccountCloudService {
-  loginWithWechatPhoneCode(phoneCode: string): Promise<MiniProgramAccountBindingData>;
+  loginWithWechat(): Promise<MiniProgramAccountBindingData>;
   loginWithDevPhone(phoneNumber: string): Promise<MiniProgramAccountBindingData>;
   loadCurrentAccount(): Promise<MiniProgramAccountBindingData>;
   loadActiveBinding(): Promise<MiniProgramAccountBindingData>;
@@ -44,8 +44,8 @@ export function createMiniProgramAccountCloudService(
   const callPair = options.callPair ?? callPinganpiPair;
 
   return {
-    async loginWithWechatPhoneCode(phoneCode) {
-      return (await callAccount("loginByWechatPhone", { phoneCode })) as MiniProgramAccountBindingData;
+    async loginWithWechat() {
+      return (await callAccount("loginByWechat")) as MiniProgramAccountBindingData;
     },
     async loginWithDevPhone(phoneNumber) {
       return (await callAccount("loginByDevPhone", { phoneNumber })) as MiniProgramAccountBindingData;

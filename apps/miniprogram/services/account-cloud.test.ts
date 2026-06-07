@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { createMiniProgramAccountCloudService } from "./account-cloud.js";
 
 describe("miniprogram account cloud service", () => {
-  it("logs in through the account cloud function with a WeChat phone code", async () => {
+  it("logs in through the account cloud function with the trusted WeChat openid", async () => {
     const calls: Array<{ action: string; payload?: unknown }> = [];
     const service = createMiniProgramAccountCloudService({
       async callAccount(action, payload) {
@@ -18,14 +18,14 @@ describe("miniprogram account cloud service", () => {
       }
     });
 
-    await expect(service.loginWithWechatPhoneCode("phone-code-a")).resolves.toEqual({
+    await expect(service.loginWithWechat()).resolves.toEqual({
       account: { accountId: "account-a" },
       binding: null
     });
     expect(calls).toEqual([
       {
-        action: "loginByWechatPhone",
-        payload: { phoneCode: "phone-code-a" }
+        action: "loginByWechat",
+        payload: undefined
       }
     ]);
   });

@@ -49,6 +49,17 @@ export async function handlePinganpiAccountEvent(
     return miniOk(action, { ok: true });
   }
 
+  if (action === "loginByWechat") {
+    // 个人主体 path: the trusted WX_OPENID from the call context is the whole
+    // identity. No phone number, no client payload — ensure/return the account.
+    return runAccountMutation(repository, event, action, options, context, async (store, service, identity) => {
+      const account = await service.ensureAccount({ authUid: identity.authUid });
+      const binding = await service.getActiveBinding(account.accountId);
+
+      return { account, binding };
+    });
+  }
+
   if (action === "loginByWechatPhone") {
     const phoneCode = readPhoneCodePayload(event.payload);
 

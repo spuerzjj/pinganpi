@@ -1,4 +1,5 @@
 import cloudbase from "@cloudbase/node-sdk";
+import { isValidMainlandPhoneNumber } from "../../apps/legacy-capacitor/src/app/account/account-model.js";
 import { isRecord, type PinganpiMiniFunctionEvent } from "./result.js";
 
 export type MiniProgramAuthErrorCode = "trusted_identity_unavailable" | "phone_number_unavailable";
@@ -54,7 +55,7 @@ export function readTrustedMiniProgramIdentity(
 
 export function createWechatPhoneNumberResolver(caller = createRuntimeOpenApiCaller()): WechatPhoneNumberResolver {
   return {
-    async resolve(phoneCode) {
+    async resolve(phoneCode, identity) {
       const code = phoneCode.trim();
 
       if (code.length === 0) {
@@ -66,13 +67,25 @@ export function createWechatPhoneNumberResolver(caller = createRuntimeOpenApiCal
           apiName: "phonenumber.getPhoneNumber",
           requestData: { code }
         });
-        const phoneNumber = readPhoneNumberFromOpenApiResponse(response);
+        const phoneInfo = readPhoneInfoFromOpenApiResponse(response);
 
-        if (phoneNumber === null) {
+        if (phoneInfo.phoneNumber === null) {
           throw new MiniProgramAuthError("phone_number_unavailable");
         }
 
-        return phoneNumber;
+        // Defense-in-depth: a WeChat phone payload carries a watermark bound to the
+        // mini program that requested it. Reject a payload minted for a different
+        // app id. Fail open when either side is absent so a missing WX_APPID at
+        // runtime (or an older response without watermark) does not block login.
+        if (
+          phoneInfo.watermarkAppId !== null &&
+          identity.appId !== undefined &&
+          phoneInfo.watermarkAppId !== identity.appId
+        ) {
+          throw new MiniProgramAuthError("phone_number_unavailable");
+        }
+
+        return phoneInfo.phoneNumber;
       } catch (error) {
         if (error instanceof MiniProgramAuthError) {
           throw error;
@@ -106,12 +119,17 @@ function readCloudBaseContext(context?: unknown): CloudBaseContext {
   }
 }
 
-function readPhoneNumberFromOpenApiResponse(response: unknown): string | null {
+interface WechatPhoneInfo {
+  phoneNumber: string | null;
+  watermarkAppId: string | null;
+}
+
+function readPhoneInfoFromOpenApiResponse(response: unknown): WechatPhoneInfo {
   const result = isRecord(response) && response.result !== undefined ? response.result : response;
   const errcode = isRecord(result) ? result.errcode : undefined;
 
   if (typeof errcode === "number" && errcode !== 0) {
-    return null;
+    return { phoneNumber: null, watermarkAppId: null };
   }
 
   const phoneInfo = isRecord(result)
@@ -122,7 +140,29 @@ function readPhoneNumberFromOpenApiResponse(response: unknown): string | null {
         : result
     : {};
 
-  return readNonEmptyString(phoneInfo.phoneNumber);
+  // Prefer purePhoneNumber (no country code); fall back to phoneNumber, which may
+  // carry a country code for overseas numbers.
+  const rawPhone = readNonEmptyString(phoneInfo.purePhoneNumber) ?? readNonEmptyString(phoneInfo.phoneNumber);
+  const watermark = isRecord(phoneInfo.watermark) ? phoneInfo.watermark : undefined;
+
+  return {
+    phoneNumber: rawPhone === null ? null : normalizeMainlandPhoneNumber(rawPhone),
+    watermarkAppId: watermark === undefined ? null : readNonEmptyString(watermark.appid)
+  };
+}
+
+function normalizeMainlandPhoneNumber(raw: string): string | null {
+  let value = raw.replace(/[\s-]/g, "").trim();
+
+  if (value.startsWith("+")) {
+    value = value.slice(1);
+  }
+
+  if (value.length === 13 && value.startsWith("86")) {
+    value = value.slice(2);
+  }
+
+  return isValidMainlandPhoneNumber(value) ? value : null;
 }
 
 export function readNonEmptyString(value: unknown): string | null {

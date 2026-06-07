@@ -21,3 +21,5 @@ apps/legacy-capacitor/ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swi
 # WeChat Mini Program local IDE state
 apps/miniprogram/project.private.config.json
 apps/miniprogram/miniprogram_npm/
+
+.codegraph

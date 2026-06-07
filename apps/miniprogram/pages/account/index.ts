@@ -20,7 +20,6 @@ interface AccountPageData {
   loading: boolean;
   account: MiniProgramAccount | null;
   binding: MiniProgramBinding | null;
-  devPhoneNumber: string;
   errorText: string;
   statusText: string;
 }
@@ -29,18 +28,17 @@ interface AccountPageInstance {
   data: AccountPageData;
   setData(data: Partial<AccountPageData>): void;
   refreshAccount(): Promise<void>;
-  loginWithWechatPhoneCode(phoneCode: string): Promise<void>;
+  loginWithWechat(): Promise<void>;
 }
 
 Page({
   data: {
     kicker: "平安批 / 账号簿",
     title: "请先登录",
-    body: "微信一键手机号为默认入口；短信验证码兜底和开发调试走同一处账号簿。",
+    body: "通过微信授权一键登录，手机号写入你的账号簿。",
     loading: false,
     account: null,
     binding: null,
-    devPhoneNumber: "",
     errorText: "",
     statusText: "未登录"
   } satisfies AccountPageData,
@@ -88,23 +86,15 @@ Page({
     }
   },
 
-  async onGetPhoneNumber(this: AccountPageInstance, event: { detail?: { errMsg?: string; code?: string } }) {
-    const code = event.detail?.code?.trim() ?? "";
-
-    if (event.detail?.errMsg !== "getPhoneNumber:ok" || code.length === 0) {
-      this.setData({ errorText: "未取得微信手机号授权，请稍后再试或使用兜底入口。" });
-      showToast("未取得手机号授权");
-      return;
-    }
-
-    await this.loginWithWechatPhoneCode(code);
+  async onWechatLogin(this: AccountPageInstance) {
+    await this.loginWithWechat();
   },
 
-  async loginWithWechatPhoneCode(this: AccountPageInstance, phoneCode: string) {
+  async loginWithWechat(this: AccountPageInstance) {
     this.setData({ loading: true, errorText: "" });
 
     try {
-      const data = await accountService.loginWithWechatPhoneCode(phoneCode);
+      const data = await accountService.loginWithWechat();
       const session = createSessionFromCloudData(data);
 
       if (session === null) {
@@ -121,44 +111,6 @@ Page({
     } catch (error) {
       this.setData({ errorText: toUserMessage(error) });
       showToast("登录未成");
-    } finally {
-      this.setData({ loading: false });
-    }
-  },
-
-  onDevPhoneInput(this: AccountPageInstance, event: { detail?: { value?: string } }) {
-    this.setData({ devPhoneNumber: event.detail?.value ?? "" });
-  },
-
-  async onDevLogin(this: AccountPageInstance) {
-    const phoneNumber = this.data.devPhoneNumber.trim();
-
-    if (!/^1[3-9]\d{9}$/.test(phoneNumber)) {
-      this.setData({ errorText: "请填写 11 位中国大陆手机号。" });
-      showToast("手机号不合规");
-      return;
-    }
-
-    this.setData({ loading: true, errorText: "" });
-
-    try {
-      const data = await accountService.loginWithDevPhone(phoneNumber);
-      const session = createSessionFromCloudData(data);
-
-      if (session === null) {
-        throw new Error("empty_account");
-      }
-
-      saveStoredAccountSession(session);
-      this.setData({
-        account: session.account,
-        binding: session.binding,
-        statusText: createStatusText(session.account, session.binding)
-      });
-      routeAfterLogin(session.binding);
-    } catch (error) {
-      this.setData({ errorText: toUserMessage(error) });
-      showToast("兜底登录未成");
     } finally {
       this.setData({ loading: false });
     }
@@ -193,9 +145,7 @@ function routeAfterLogin(binding: MiniProgramBinding | null): void {
 }
 
 function createStatusText(account: MiniProgramAccount, binding: MiniProgramBinding | null): string {
-  return binding === null
-    ? `${account.phoneNumber} 已入账号簿，尚未建立关系`
-    : `${account.phoneNumber} 已绑定关系`;
+  return binding === null ? "已登录，尚未建立关系" : "已登录，关系已绑定";
 }
 
 function showToast(title: string): void {
@@ -206,10 +156,6 @@ function toUserMessage(error: unknown): string {
   if (error instanceof PinganpiCloudFunctionError) {
     if (error.reason === "phone_number_unavailable") {
       return "微信手机号暂未换取成功，请确认小程序手机号能力或稍后重试。";
-    }
-
-    if (error.reason === "dev_login_disabled") {
-      return "兜底登录入口未在云端开启；真机验证时请使用微信手机号按钮。";
     }
 
     if (error.reason === "unauthorized") {

@@ -1105,6 +1105,12 @@ npm run cap:doctor
 - `pinganpi-pair` 的 `createHousehold`、`createInvite`、`joinByInvite` 和 `getActiveBinding` 均从当前可信账号推导，不再接收客户端 `accountId` 作为授权依据。
 - 新增 `apps/miniprogram/services/account-session.ts` 和 `account-cloud.ts`，小程序只缓存账号 / 绑定摘要，不保存验证码、token、secret 或邀请码 hash。
 - 账号页接入微信手机号按钮、兜底入口、登录态恢复和登录后路由；关系页接入创建关系、生成邀请码、输入邀请码加入和本地会话刷新。
+- 2026-05-31 登录方式转向 openid 静默登录（个人主体决策）：小程序主体为个人，微信 `getPhoneNumber` 组件对个人主体不可用（点击必然失败），短信验证码又需企业资质且要自建发送 / 频控，均不可行。鉴于账号身份本就由可信 `WX_OPENID` 派生的 `authUid` 做主键、手机号在 `PinganpiAccount` 中只是展示字段，改用 openid 静默登录：
+  - 后端 `pinganpi-account.ts` 新增 `loginByWechat` action，无 payload，直接用 `runAccountMutation` 读到的可信身份 `ensureAccount({ authUid })`；`account-pair-service.ts` 的 `EnsureAccountInput.phoneNumber` 改为可选，缺省时不覆盖已有手机号、新账号默认空串（旧版 Capacitor 短信登录始终传手机号，不受影响）。
+  - 客户端 `account-cloud.ts` 新增 `loginWithWechat()`（移除 `loginWithWechatPhoneCode`）；账号页改为单个「微信登录」按钮 `bindtap="onWechatLogin"`，移除手机号展示行与 `statusText` 中的手机号；删除已无引用的 `apps/miniprogram/services/wechat-phone.ts` 及其测试。
+  - 后端 `loginByWechatPhone` + resolver + watermark 校验及其测试全部保留（无害、已测试），将来升级企业主体可仅改客户端重新启用；客户端 `loginWithDevPhone` 薄封装亦保留作调试通道。
+  - 验证：`miniprogram:typecheck`、`typecheck`（vue-tsc）通过；全量 `npm test` 64 文件 / 426 测试通过；`git diff --check` 干净。
+- 2026-05-31 微信一键取号路径健壮性补齐：服务端 `createWechatPhoneNumberResolver` 改为优先取 `purePhoneNumber`、归一化区号（去空格 / 去 `+86` / 去前导 `86`）、用 `isValidMainlandPhoneNumber` 校验，畸形 / 境外号现在受控失败而不再把脏值写进账号档案（此前 `loginByWechatPhone` 完全不校验 resolver 返回值）；并对响应 `watermark.appid` 与可信 `WX_APPID` 做 defense-in-depth 校验，仅在两者都存在且不一致时拒绝，任一缺失则放行，不阻断尚未真机验证的首测。（注：客户端取号路径已于同日转向 openid 静默登录，见上一条；此条后端硬化逻辑作为将来企业主体重启手机号登录的基础保留。）
 
 仍需人工验证：
 

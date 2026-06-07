@@ -24,6 +24,20 @@ describe("account pair service", () => {
     expect(second.lastLoginAtIso).toBe("2026-05-25T09:30:00.000Z");
   });
 
+  it("creates an account with an empty phone number for openid login and preserves it on later phone login", async () => {
+    const service = createAccountPairService(createInMemoryAccountPairStore(), {
+      now: () => new Date("2026-05-24T08:00:00.000Z")
+    });
+
+    const created = await service.ensureAccount({ authUid: "wx-openid:app:openid-a" });
+    expect(created.phoneNumber).toBe("");
+
+    // A subsequent openid login must not wipe a phone set in between.
+    await service.ensureAccount({ authUid: "wx-openid:app:openid-a", phoneNumber: "13800138000" });
+    const afterOpenidAgain = await service.ensureAccount({ authUid: "wx-openid:app:openid-a" });
+    expect(afterOpenidAgain.phoneNumber).toBe("13800138000");
+  });
+
   it("creates a pair, issues a 24 hour one-time invite, and lets the second account join", async () => {
     const service = createAccountPairService(createInMemoryAccountPairStore(), {
       now: () => new Date("2026-05-24T08:00:00.000Z"),

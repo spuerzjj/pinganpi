@@ -20,7 +20,12 @@ export interface AccountPairStore {
 
 export interface EnsureAccountInput {
   authUid: string;
-  phoneNumber: string;
+  /**
+   * Optional. WeChat openid login (个人主体) has no phone number, so this is
+   * omitted there. When omitted we keep an existing account's phone untouched and
+   * default new accounts to an empty string — the legacy SMS app always supplies it.
+   */
+  phoneNumber?: string;
 }
 
 export interface AccountPairService {
@@ -60,7 +65,9 @@ export function createAccountPairService(
       const nowIso = now().toISOString();
 
       if (existing !== undefined) {
-        existing.phoneNumber = input.phoneNumber;
+        if (input.phoneNumber !== undefined) {
+          existing.phoneNumber = input.phoneNumber;
+        }
         existing.lastLoginAtIso = nowIso;
         return existing;
       }
@@ -68,7 +75,7 @@ export function createAccountPairService(
       const account: PinganpiAccount = {
         accountId: `account-${idGenerator()}`,
         authUid: input.authUid,
-        phoneNumber: input.phoneNumber,
+        phoneNumber: input.phoneNumber ?? "",
         status: "active",
         createdAtIso: nowIso,
         lastLoginAtIso: nowIso

@@ -12,12 +12,6 @@
       <view class="record-list">
         <view class="record-row">
           <view class="meta-row">
-            <text class="meta-label">手机号</text>
-            <text class="meta-value">{{account.phoneNumber}}</text>
-          </view>
-        </view>
-        <view class="record-row">
-          <view class="meta-row">
             <text class="meta-label">关系</text>
             <text class="meta-value">{{binding ? '已建立' : '未建立'}}</text>
           </view>
@@ -28,33 +22,16 @@
       <button class="action-button" bindtap="logoutLocal">清除本机登录态</button>
     </view>
 
-    <view class="section-panel">
-      <view class="section-title">微信手机号</view>
-      <view class="record-copy">由微信授权后，云函数换取完整手机号并写入账号档案。</view>
+    <view class="section-panel" wx:if="{{!account}}">
+      <view class="section-title">微信登录</view>
+      <view class="record-copy">使用微信授权登录，进入你的账号簿。</view>
       <button
         class="action-button primary"
         loading="{{loading}}"
         disabled="{{loading}}"
-        open-type="getPhoneNumber"
-        bindgetphonenumber="onGetPhoneNumber"
+        bindtap="onWechatLogin"
       >
-        微信手机号登录
-      </button>
-    </view>
-
-    <view class="section-panel">
-      <view class="section-title">开发兜底入口</view>
-      <view class="record-copy">仅用于开发调试；短信验证码真实兜底会在人工验证阶段补齐，云端未开启时会安全拒绝。</view>
-      <input
-        class="form-input"
-        type="number"
-        maxlength="11"
-        value="{{devPhoneNumber}}"
-        placeholder="输入手机号"
-        bindinput="onDevPhoneInput"
-      />
-      <button class="action-button" loading="{{loading}}" disabled="{{loading}}" bindtap="onDevLogin">
-        使用兜底入口
+        微信登录
       </button>
     </view>
 
