@@ -196,7 +196,7 @@ async function runAccountInvalidPhoneSmoke(miniProgram) {
 
   const page = await relaunch(miniProgram, "/pages/account/index");
   const before = await page.data();
-  await input(page, ".paper-input", "123");
+  await input(page, ".form-input", "123");
   await tapButton(page, "使用兜底入口");
   await page.waitFor(500);
 
@@ -217,7 +217,7 @@ async function runPairInvalidInviteSmoke(miniProgram) {
   await miniProgram.mockWxMethod("redirectTo", { errMsg: "redirectTo:ok" });
 
   const page = await relaunch(miniProgram, "/pages/pair/index");
-  await input(page, ".paper-input", "12");
+  await input(page, ".form-input", "12");
   await tapButton(page, "加入关系");
   await page.waitFor(500);
 

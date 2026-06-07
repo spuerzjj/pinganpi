@@ -11,15 +11,15 @@
   ],
   "window": {
     "navigationBarTitleText": "平安批",
-    "navigationBarBackgroundColor": "#f7f1e4",
+    "navigationBarBackgroundColor": "#f7f8f5",
     "navigationBarTextStyle": "black",
-    "backgroundColor": "#f7f1e4",
+    "backgroundColor": "#f7f8f5",
     "backgroundTextStyle": "dark"
   },
   "tabBar": {
-    "color": "#7b6a55",
-    "selectedColor": "#2f2418",
-    "backgroundColor": "#f7f1e4",
+    "color": "#7a8378",
+    "selectedColor": "#31543f",
+    "backgroundColor": "#ffffff",
     "borderStyle": "black",
     "list": [
       {

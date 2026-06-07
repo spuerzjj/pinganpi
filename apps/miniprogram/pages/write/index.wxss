@@ -1,7 +1,7 @@
-.step-ledger {
+.step-track {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  border: 1rpx solid var(--line);
+  gap: 8rpx;
 }
 
 .step-cell {
@@ -9,83 +9,52 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-left: 1rpx solid var(--line);
-  color: var(--muted);
+  border: 1rpx solid var(--border);
+  border-radius: 999rpx;
+  background: var(--surface-raised);
+  color: var(--text-muted);
   font-size: 22rpx;
   line-height: 1.3;
   text-align: center;
 }
 
-.step-cell:first-child {
-  border-left: 0;
-}
-
 .step-active {
-  background: var(--paper-strong);
-  color: var(--ink);
-  font-weight: 700;
+  border-color: rgba(49, 84, 63, 0.3);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 650;
 }
 
 .step-done {
-  color: var(--seal);
-}
-
-.paper-input {
-  width: 100%;
-  box-sizing: border-box;
-  border: 2rpx solid var(--line);
-  background: #fffdf7;
-  color: var(--ink);
-  font-size: 28rpx;
-  line-height: 1.7;
-  padding: 22rpx;
+  border-color: transparent;
+  background: var(--surface-muted);
+  color: var(--text-secondary);
 }
 
 .oral-input {
   min-height: 260rpx;
   margin-top: 22rpx;
+  line-height: 1.7;
+  padding: 22rpx;
 }
 
 .final-input {
   min-height: 360rpx;
   margin-top: 22rpx;
+  line-height: 1.7;
+  padding: 22rpx;
 }
 
-.letter-paper {
+.draft-preview {
   margin-top: 22rpx;
-  border: 2rpx solid var(--line);
-  background: #fffdf7;
-  color: var(--ink);
+  border: 1rpx solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  color: var(--text-primary);
   font-size: 28rpx;
   line-height: 1.8;
   padding: 26rpx;
   white-space: pre-wrap;
-}
-
-.ledger-button {
-  margin: 22rpx 0 0;
-  border: 2rpx solid var(--line);
-  border-radius: 0;
-  background: var(--surface);
-  color: var(--ink);
-  font-size: 28rpx;
-  line-height: 2.4;
-}
-
-.ledger-button::after {
-  border: 0;
-}
-
-.ledger-button.primary {
-  border-color: var(--seal);
-  color: var(--seal);
-  font-weight: 700;
-}
-
-.ledger-button[disabled] {
-  border-color: var(--line);
-  color: var(--muted);
-  opacity: 0.55;
 }
 
 .nav-row {
@@ -94,10 +63,10 @@
   gap: 18rpx;
 }
 
-.nav-row .ledger-button {
+.nav-row .action-button {
   margin-top: 0;
 }
 
 .warning-note {
-  color: var(--seal);
+  color: var(--danger);
 }

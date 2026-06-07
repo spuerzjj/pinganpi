@@ -1,10 +1,10 @@
 <view class="page-shell">
   <block wx:if="{{model}}">
     <view class="panel-stack">
-      <view class="archive-panel">
-        <view class="kicker">{{model.kicker}}</view>
-        <view class="title">{{model.title}}</view>
-        <view class="body-copy">旧信、邮政记录和往来线索在此归档。</view>
+      <view class="hero-panel">
+        <view class="page-label">{{model.kicker}}</view>
+        <view class="page-title">{{model.title}}</view>
+        <view class="page-copy">旧信、邮政记录和往来线索在此归档。</view>
       </view>
 
       <view class="section-panel">

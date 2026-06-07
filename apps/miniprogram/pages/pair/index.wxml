@@ -1,9 +1,9 @@
 <view class="page-shell">
   <view class="panel-stack">
-    <view class="archive-panel">
-      <view class="kicker">{{kicker}}</view>
-      <view class="title">{{title}}</view>
-      <view class="body-copy">{{body}}</view>
+    <view class="hero-panel">
+      <view class="page-label">{{kicker}}</view>
+      <view class="page-title">{{title}}</view>
+      <view class="page-copy">{{body}}</view>
       <view class="empty-note">{{statusText}}</view>
     </view>
 
@@ -28,7 +28,7 @@
     <view class="section-panel" wx:if="{{!binding}}">
       <view class="section-title">创建关系</view>
       <view class="record-copy">创建后会占用第一席，再生成 24 小时一次性邀请码给另一方。</view>
-      <button class="ledger-button primary" loading="{{loading}}" disabled="{{loading}}" bindtap="onCreateHousehold">
+      <button class="action-button primary" loading="{{loading}}" disabled="{{loading}}" bindtap="onCreateHousehold">
         创建一对关系
       </button>
     </view>
@@ -49,25 +49,25 @@
           </view>
         </view>
       </view>
-      <button class="ledger-button primary" loading="{{loading}}" disabled="{{loading}}" bindtap="onCreateInvite">
+      <button class="action-button primary" loading="{{loading}}" disabled="{{loading}}" bindtap="onCreateInvite">
         生成邀请码
       </button>
       <view class="invite-code" wx:if="{{inviteCode}}">{{inviteCode}}</view>
-      <button class="ledger-button" wx:if="{{binding.activeMemberCount >= 2}}" bindtap="goToday">进入今日</button>
+      <button class="action-button" wx:if="{{binding.activeMemberCount >= 2}}" bindtap="goToday">进入今日</button>
     </view>
 
     <view class="section-panel">
       <view class="section-title">加入关系</view>
       <view class="record-copy">另一方给你的 6 位邀请码，只能使用一次。</view>
       <input
-        class="paper-input"
+        class="form-input"
         type="number"
         maxlength="6"
         value="{{joinCode}}"
         placeholder="输入邀请码"
         bindinput="onJoinCodeInput"
       />
-      <button class="ledger-button" loading="{{loading}}" disabled="{{loading}}" bindtap="onJoinByInvite">
+      <button class="action-button" loading="{{loading}}" disabled="{{loading}}" bindtap="onJoinByInvite">
         加入关系
       </button>
     </view>

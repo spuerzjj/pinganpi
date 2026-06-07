@@ -1,14 +1,14 @@
 <view class="page-shell">
   <block wx:if="{{flow}}">
     <view class="panel-stack">
-      <view class="archive-panel">
-        <view class="kicker">{{flow.kicker}}</view>
-        <view class="title">{{flow.title}}</view>
-        <view class="body-copy">{{flow.methodText}}</view>
+      <view class="hero-panel">
+        <view class="page-label">{{flow.kicker}}</view>
+        <view class="page-title">{{flow.title}}</view>
+        <view class="page-copy">{{flow.methodText}}</view>
       </view>
 
       <view class="section-panel">
-        <view class="step-ledger">
+        <view class="step-track">
           <view class="step-cell step-{{item.status}}" wx:for="{{flow.steps}}" wx:key="id">
             <text>{{item.label}}</text>
           </view>
@@ -40,7 +40,7 @@
       <view class="section-panel" wx:if="{{isOralStep}}">
         <view class="section-title">口述原意</view>
         <textarea
-          class="paper-input oral-input"
+          class="form-input oral-input"
           value="{{flow.oralText}}"
           maxlength="800"
           placeholder="把要告诉她的话先记在这里。"
@@ -52,20 +52,20 @@
       <view class="section-panel" wx:if="{{isDraftStep}}">
         <view class="section-title">先生起稿</view>
         <view class="record-copy" wx:if="{{flow.oralText}}">口述：{{flow.oralText}}</view>
-        <button class="ledger-button primary" disabled="{{!flow.canGenerate}}" bindtap="onGenerateDraft">
+        <button class="action-button primary" disabled="{{!flow.canGenerate}}" bindtap="onGenerateDraft">
           {{flow.draftStatus === 'pending' ? '先生起稿中' : '请先生起稿'}}
         </button>
         <view class="empty-note" wx:if="{{flow.draftStatus === 'pending'}}">先生正在落笔。</view>
         <view class="empty-note warning-note" wx:elif="{{flow.draftErrorText}}">{{flow.draftErrorText}}</view>
-        <view class="letter-paper" wx:elif="{{flow.draftText}}">{{flow.draftText}}</view>
+        <view class="draft-preview" wx:elif="{{flow.draftText}}">{{flow.draftText}}</view>
         <view class="empty-note" wx:else>先生尚未落笔。</view>
       </view>
 
       <view class="section-panel" wx:if="{{isReviseStep}}">
         <view class="section-title">校改定稿</view>
-        <view class="letter-paper" wx:if="{{flow.draftText}}">{{flow.draftText}}</view>
+        <view class="draft-preview" wx:if="{{flow.draftText}}">{{flow.draftText}}</view>
         <textarea
-          class="paper-input final-input"
+          class="form-input final-input"
           value="{{flow.finalText}}"
           maxlength="1200"
           placeholder="在此校改定稿。"
@@ -119,7 +119,7 @@
             </view>
           </view>
         </view>
-        <button class="ledger-button primary" disabled="{{!flow.canPost}}" bindtap="onPostLocal">本地投寄</button>
+        <button class="action-button primary" disabled="{{!flow.canPost}}" bindtap="onPostLocal">本地投寄</button>
         <view class="empty-note" wx:if="{{!flow.canPost}}">{{flow.postBlockReason}}</view>
       </view>
 
@@ -148,8 +148,8 @@
       </view>
 
       <view class="nav-row">
-        <button class="ledger-button" disabled="{{!canGoBack}}" bindtap="goBack">上一步</button>
-        <button class="ledger-button" disabled="{{!canGoNext || nextDisabled}}" bindtap="goNext">下一步</button>
+        <button class="action-button" disabled="{{!canGoBack}}" bindtap="goBack">上一步</button>
+        <button class="action-button" disabled="{{!canGoNext || nextDisabled}}" bindtap="goNext">下一步</button>
       </view>
     </view>
   </block>

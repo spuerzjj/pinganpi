@@ -25,7 +25,7 @@ export function createInitialSyncStatus(options: Partial<MiniProgramSyncEnvironm
   return {
     state: "idle",
     label: "云端未查验",
-    detailText: "今日登记先按本地账簿显示。",
+    detailText: "今日登记先按本地记录显示。",
     envText: formatEnvText(resolveEnvironment(options)),
     checkedAtText: "尚未查验",
   };
@@ -58,7 +58,7 @@ export async function checkMiniProgramSyncStatus(
     return {
       state: "synced",
       label: "云端已查验",
-      detailText: "今日登记可先读本地账簿，云端同步入口可用。",
+      detailText: "今日登记可先读本地记录，云端同步入口可用。",
       envText: formatEnvText(env),
       checkedAtText: formatCheckedAt(now),
     };

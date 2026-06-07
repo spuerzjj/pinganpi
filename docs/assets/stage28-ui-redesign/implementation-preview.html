@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>平安批阶段 28 UI 实现预览</title>
+    <style>
+      :root {
+        --app-bg: #f7f8f5;
+        --surface: #ffffff;
+        --surface-raised: #fbfcfa;
+        --surface-muted: #eef2ed;
+        --text-primary: #17211b;
+        --text-secondary: #59645c;
+        --text-muted: #7a8378;
+        --border: #dde4dc;
+        --border-strong: #c9d4ca;
+        --accent: #31543f;
+        --accent-soft: #e6eee7;
+        --danger: #a64a3a;
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 18px;
+        --shadow-soft: 0 18px 45px rgba(23, 33, 27, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--app-bg);
+        color: var(--text-primary);
+        font-family:
+          -apple-system,
+          BlinkMacSystemFont,
+          "PingFang SC",
+          "Microsoft YaHei",
+          sans-serif;
+      }
+
+      main {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 42px 28px 52px;
+      }
+
+      .preview-head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 26px;
+      }
+
+      .preview-title {
+        margin: 0;
+        font-size: 32px;
+        font-weight: 650;
+        letter-spacing: 0;
+      }
+
+      .preview-note {
+        max-width: 480px;
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 15px;
+        line-height: 1.7;
+      }
+
+      .screens {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 22px;
+      }
+
+      .phone {
+        min-height: 740px;
+        border: 1px solid var(--border);
+        border-radius: 30px;
+        background: var(--app-bg);
+        padding: 18px;
+        box-shadow: var(--shadow-soft);
+      }
+
+      .page-shell {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .hero-panel {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        background: var(--surface);
+        padding: 22px 20px;
+        box-shadow: var(--shadow-soft);
+      }
+
+      .page-label {
+        color: var(--text-muted);
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .page-title {
+        margin-top: 7px;
+        font-size: 26px;
+        font-weight: 650;
+        line-height: 1.25;
+      }
+
+      .page-copy {
+        margin-top: 9px;
+        color: var(--text-secondary);
+        font-size: 15px;
+        line-height: 1.68;
+      }
+
+      .section-panel {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        background: var(--surface);
+        padding: 18px;
+      }
+
+      .section-title {
+        font-size: 17px;
+        font-weight: 650;
+      }
+
+      .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .metric-card {
+        min-height: 82px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        background: var(--surface-raised);
+        padding: 14px;
+      }
+
+      .metric-card.wide {
+        grid-column: 1 / -1;
+      }
+
+      .metric-label,
+      .meta-label {
+        color: var(--text-muted);
+        font-size: 12px;
+      }
+
+      .metric-value {
+        margin-top: 8px;
+        font-size: 18px;
+        font-weight: 650;
+        line-height: 1.35;
+      }
+
+      .status-block,
+      .draft-preview {
+        margin-top: 12px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        background: var(--surface-raised);
+        padding: 15px;
+      }
+
+      .record-list {
+        margin-top: 14px;
+        border-top: 1px solid var(--border);
+      }
+
+      .record-row {
+        padding: 14px 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .record-row:last-child {
+        border-bottom: 0;
+      }
+
+      .record-head,
+      .meta-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+      }
+
+      .record-title {
+        font-size: 17px;
+        font-weight: 650;
+        line-height: 1.45;
+      }
+
+      .record-meta,
+      .record-copy {
+        margin-top: 7px;
+        color: var(--text-secondary);
+        font-size: 13px;
+        line-height: 1.65;
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        min-height: 23px;
+        padding: 0 9px;
+        border: 1px solid var(--border-strong);
+        border-radius: 999px;
+        background: var(--surface-muted);
+        color: var(--text-secondary);
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .status-present {
+        border-color: rgba(49, 84, 63, 0.22);
+        background: var(--accent-soft);
+        color: var(--accent);
+      }
+
+      .step-track {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 5px;
+      }
+
+      .step-cell {
+        min-height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: var(--surface-raised);
+        color: var(--text-muted);
+        font-size: 12px;
+        text-align: center;
+      }
+
+      .step-active {
+        border-color: rgba(49, 84, 63, 0.3);
+        background: var(--accent-soft);
+        color: var(--accent);
+        font-weight: 650;
+      }
+
+      .form-input {
+        width: 100%;
+        min-height: 120px;
+        margin-top: 14px;
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-md);
+        background: var(--surface-raised);
+        color: var(--text-primary);
+        font-size: 15px;
+        line-height: 1.7;
+        padding: 14px;
+      }
+
+      .action-button {
+        margin-top: 14px;
+        border: 1px solid var(--accent);
+        border-radius: var(--radius-md);
+        background: var(--accent);
+        color: #ffffff;
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 2.6;
+        text-align: center;
+      }
+
+      @media (max-width: 960px) {
+        .screens {
+          grid-template-columns: 1fr;
+        }
+
+        .phone {
+          min-height: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="preview-head">
+        <h1 class="preview-title">平安批阶段 28 UI 实现预览</h1>
+        <p class="preview-note">基于小程序当前 token、页面结构和组件语义生成，用于在微信开发者工具端口不可用时做静态视觉核对。</p>
+      </header>
+
+      <section class="screens" aria-label="阶段 28 代表页面">
+        <article class="phone">
+          <div class="page-shell">
+            <section class="hero-panel">
+              <div class="page-label">一九六〇年五月二十三日</div>
+              <div class="page-title">今日</div>
+              <div class="page-copy">今日登记先按本地记录显示；云端查验会在打开页面后低调更新。</div>
+            </section>
+            <section class="section-panel">
+              <div class="section-title">今日摘要</div>
+              <div class="metric-grid">
+                <div class="metric-card">
+                  <div class="metric-label">钱匣</div>
+                  <div class="metric-value">三元二角</div>
+                </div>
+                <div class="metric-card">
+                  <div class="metric-label">先生</div>
+                  <div class="metric-value">李先生在</div>
+                </div>
+                <div class="metric-card wide">
+                  <div class="metric-label">信箱</div>
+                  <div class="metric-value">一封在路上</div>
+                </div>
+              </div>
+            </section>
+            <section class="section-panel">
+              <div class="section-title">同步簿</div>
+              <div class="status-block">
+                <span class="status-pill status-present">云端已查验</span>
+                <div class="record-copy">dev · cloud1-d6gg9pfb476fc78b4</div>
+              </div>
+            </section>
+          </div>
+        </article>
+
+        <article class="phone">
+          <div class="page-shell">
+            <section class="hero-panel">
+              <div class="page-label">代笔先生</div>
+              <div class="page-title">写信</div>
+              <div class="page-copy">先把话写下来，请先生起稿，再校改定稿后核算投寄。</div>
+            </section>
+            <section class="section-panel">
+              <div class="step-track">
+                <div class="step-cell">写法</div>
+                <div class="step-cell">口述</div>
+                <div class="step-cell step-active">起稿</div>
+                <div class="step-cell">校改</div>
+                <div class="step-cell">投寄</div>
+              </div>
+            </section>
+            <section class="section-panel">
+              <div class="section-title">先生起稿</div>
+              <div class="record-copy">口述：今天的天气很好，我想告诉她院子里的花开了，也想问她近来睡得好不好。</div>
+              <div class="action-button">请先生起稿</div>
+              <div class="draft-preview">见字如面。今日院中花开，忽然想起你从前说过春末最宜静坐看天。近来可安睡？若有空，也回我几句。</div>
+            </section>
+          </div>
+        </article>
+
+        <article class="phone">
+          <div class="page-shell">
+            <section class="hero-panel">
+              <div class="page-label">今日信箱</div>
+              <div class="page-title">信箱</div>
+              <div class="page-copy">到达前不展示正文；拆阅后进入档案。</div>
+            </section>
+            <section class="section-panel">
+              <div class="section-title">来信</div>
+              <div class="record-list">
+                <div class="record-row">
+                  <div class="record-head">
+                    <div>
+                      <div class="record-title">沪上来信</div>
+                      <div class="record-meta">预计三日后到达</div>
+                    </div>
+                    <span class="status-pill">在路上</span>
+                  </div>
+                </div>
+                <div class="record-row">
+                  <div class="record-head">
+                    <div>
+                      <div class="record-title">昨日到达</div>
+                      <div class="record-meta">普通信 · 可拆阅</div>
+                    </div>
+                    <span class="status-pill status-present">已到</span>
+                  </div>
+                  <div class="record-copy">信已到今日信箱，拆阅后会留下记录。</div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

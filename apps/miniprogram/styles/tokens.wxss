@@ -1,9 +1,20 @@
 page {
-  --paper: #f7f1e4;
-  --paper-strong: #efe1c5;
-  --ink: #2f2418;
-  --muted: #7b6a55;
-  --line: #d9c9a8;
-  --seal: #8f2f1f;
-  --surface: #fffaf0;
+  --app-bg: #f7f8f5;
+  --surface: #ffffff;
+  --surface-raised: #fbfcfa;
+  --surface-muted: #eef2ed;
+  --text-primary: #17211b;
+  --text-secondary: #59645c;
+  --text-muted: #7a8378;
+  --border: #dde4dc;
+  --border-strong: #c9d4ca;
+  --accent: #31543f;
+  --accent-soft: #e6eee7;
+  --accent-warm: #d78b5d;
+  --danger: #a64a3a;
+  --success: #31543f;
+  --radius-sm: 10rpx;
+  --radius-md: 16rpx;
+  --radius-lg: 22rpx;
+  --shadow-soft: 0 14rpx 44rpx rgba(44, 64, 50, 0.08);
 }

@@ -1,9 +1,9 @@
 <view class="page-shell">
   <view class="panel-stack">
-    <view class="archive-panel">
-      <view class="kicker">{{kicker}}</view>
-      <view class="title">{{title}}</view>
-      <view class="body-copy">{{body}}</view>
+    <view class="hero-panel">
+      <view class="page-label">{{kicker}}</view>
+      <view class="page-title">{{title}}</view>
+      <view class="page-copy">{{body}}</view>
       <view class="empty-note">{{statusText}}</view>
     </view>
 
@@ -23,16 +23,16 @@
           </view>
         </view>
       </view>
-      <button class="ledger-button primary" wx:if="{{binding}}" bindtap="goToday">进入今日</button>
-      <button class="ledger-button primary" wx:else bindtap="goPair">去关系簿</button>
-      <button class="ledger-button" bindtap="logoutLocal">清除本机登录态</button>
+      <button class="action-button primary" wx:if="{{binding}}" bindtap="goToday">进入今日</button>
+      <button class="action-button primary" wx:else bindtap="goPair">去关系簿</button>
+      <button class="action-button" bindtap="logoutLocal">清除本机登录态</button>
     </view>
 
     <view class="section-panel">
       <view class="section-title">微信手机号</view>
       <view class="record-copy">由微信授权后，云函数换取完整手机号并写入账号档案。</view>
       <button
-        class="ledger-button primary"
+        class="action-button primary"
         loading="{{loading}}"
         disabled="{{loading}}"
         open-type="getPhoneNumber"
@@ -46,14 +46,14 @@
       <view class="section-title">开发兜底入口</view>
       <view class="record-copy">仅用于开发调试；短信验证码真实兜底会在人工验证阶段补齐，云端未开启时会安全拒绝。</view>
       <input
-        class="paper-input"
+        class="form-input"
         type="number"
         maxlength="11"
         value="{{devPhoneNumber}}"
         placeholder="输入手机号"
         bindinput="onDevPhoneInput"
       />
-      <button class="ledger-button" loading="{{loading}}" disabled="{{loading}}" bindtap="onDevLogin">
+      <button class="action-button" loading="{{loading}}" disabled="{{loading}}" bindtap="onDevLogin">
         使用兜底入口
       </button>
     </view>

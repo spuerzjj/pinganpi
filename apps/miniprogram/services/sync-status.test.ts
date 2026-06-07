@@ -13,7 +13,7 @@ describe("miniprogram sync status", () => {
     expect(createInitialSyncStatus({ envName: "dev", cloudbaseEnvId: "env-dev" })).toEqual({
       state: "idle",
       label: "云端未查验",
-      detailText: "今日登记先按本地账簿显示。",
+      detailText: "今日登记先按本地记录显示。",
       envText: "dev · env-dev",
       checkedAtText: "尚未查验",
     });
@@ -45,7 +45,7 @@ describe("miniprogram sync status", () => {
     ).resolves.toMatchObject({
       state: "synced",
       label: "云端已查验",
-      detailText: "今日登记可先读本地账簿，云端同步入口可用。",
+      detailText: "今日登记可先读本地记录，云端同步入口可用。",
       envText: "dev · env-dev",
       checkedAtText: "20:00",
     });

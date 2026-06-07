@@ -1,10 +1,10 @@
 <view class="page-shell">
   <block wx:if="{{model}}">
     <view class="panel-stack">
-      <view class="archive-panel">
-        <view class="kicker">{{model.kicker}}</view>
-        <view class="title">{{model.title}}</view>
-        <view class="body-copy">{{model.cityText}}</view>
+      <view class="hero-panel">
+        <view class="page-label">{{model.kicker}}</view>
+        <view class="page-title">{{model.title}}</view>
+        <view class="page-copy">{{model.cityText}}</view>
       </view>
 
       <view class="section-panel">
@@ -16,7 +16,7 @@
                 <view class="record-title">{{item.name}}</view>
                 <view class="record-meta">{{item.styleText}} · {{item.feeText}}</view>
               </view>
-              <text class="stamp status-{{item.statusTone}}">{{item.statusText}}</text>
+              <text class="status-pill status-{{item.statusTone}}">{{item.statusText}}</text>
             </view>
             <view class="record-copy">擅写：{{item.specialtiesText}}</view>
           </view>

@@ -1,53 +1,43 @@
 <view class="page-shell">
   <block wx:if="{{model}}">
     <view class="panel-stack">
-      <view class="archive-panel">
-        <view class="kicker">{{model.kicker}}</view>
-        <view class="title">{{model.title}}</view>
-        <view class="body-copy">{{model.presentDateText}}</view>
+      <view class="hero-panel">
+        <view class="page-label">{{model.kicker}}</view>
+        <view class="page-title">{{model.title}}</view>
+        <view class="page-copy">{{model.presentDateText}}</view>
       </view>
 
       <view class="section-panel">
-        <view class="section-title">今日登记</view>
-        <view class="record-list">
-          <view class="record-row">
-            <view class="meta-row">
-              <text class="meta-label">钱匣余款</text>
-              <text class="meta-value strong-number">{{model.walletBalanceText}}</text>
-            </view>
+        <view class="section-title">今日摘要</view>
+        <view class="metric-grid">
+          <view class="metric-card">
+            <view class="metric-label">钱匣余款</view>
+            <view class="metric-value">{{model.walletBalanceText}}</view>
           </view>
-          <view class="record-row">
-            <view class="meta-row">
-              <text class="meta-label">代笔先生</text>
-              <text class="meta-value">{{model.availableScribeText}}</text>
-            </view>
+          <view class="metric-card">
+            <view class="metric-label">代笔先生</view>
+            <view class="metric-value">{{model.availableScribeText}}</view>
           </view>
-          <view class="record-row">
-            <view class="meta-row">
-              <text class="meta-label">今日信箱</text>
-              <text class="meta-value">{{model.inboxText}}</text>
-            </view>
+          <view class="metric-card wide">
+            <view class="metric-label">今日信箱</view>
+            <view class="metric-value">{{model.inboxText}}</view>
           </view>
         </view>
       </view>
 
       <view class="section-panel">
         <view class="section-title">同步簿</view>
-        <view class="record-list">
-          <view class="record-row">
+        <view class="status-block">
             <view class="meta-row">
               <text class="meta-label">云端</text>
               <text class="meta-value">{{syncStatus.label}}</text>
             </view>
             <view class="record-copy">{{syncStatus.detailText}}</view>
-          </view>
-          <view class="record-row">
             <view class="meta-row">
               <text class="meta-label">环境</text>
               <text class="meta-value">{{syncStatus.envText}}</text>
             </view>
             <view class="record-copy">最近查验：{{syncStatus.checkedAtText}}</view>
-          </view>
         </view>
       </view>
 
