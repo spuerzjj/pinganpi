@@ -35,7 +35,7 @@ Page({
   data: {
     kicker: "平安批 / 账号簿",
     title: "请先登录",
-    body: "通过微信授权一键登录，手机号写入你的账号簿。",
+    body: "通过微信身份登录，进入你的账号簿。",
     loading: false,
     account: null,
     binding: null,
@@ -54,7 +54,7 @@ Page({
       this.setData({
         account: cached.account,
         binding: cached.binding,
-        statusText: createStatusText(cached.account, cached.binding)
+        statusText: createStatusText(cached.binding)
       });
     }
 
@@ -76,7 +76,7 @@ Page({
         this.setData({
           account: session.account,
           binding: session.binding,
-          statusText: createStatusText(session.account, session.binding)
+          statusText: createStatusText(session.binding)
         });
       }
     } catch (error) {
@@ -105,7 +105,7 @@ Page({
       this.setData({
         account: session.account,
         binding: session.binding,
-        statusText: createStatusText(session.account, session.binding)
+        statusText: createStatusText(session.binding)
       });
       routeAfterLogin(session.binding);
     } catch (error) {
@@ -144,7 +144,7 @@ function routeAfterLogin(binding: MiniProgramBinding | null): void {
   wx.switchTab({ url: "/pages/today/index" });
 }
 
-function createStatusText(account: MiniProgramAccount, binding: MiniProgramBinding | null): string {
+function createStatusText(binding: MiniProgramBinding | null): string {
   return binding === null ? "已登录，尚未建立关系" : "已登录，关系已绑定";
 }
 
@@ -154,10 +154,6 @@ function showToast(title: string): void {
 
 function toUserMessage(error: unknown): string {
   if (error instanceof PinganpiCloudFunctionError) {
-    if (error.reason === "phone_number_unavailable") {
-      return "微信手机号暂未换取成功，请确认小程序手机号能力或稍后重试。";
-    }
-
     if (error.reason === "unauthorized") {
       return "云函数没有取得微信身份，请确认小程序已关联 CloudBase 环境。";
     }

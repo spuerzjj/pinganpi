@@ -2,6 +2,8 @@
 
 > **2026-05-25 工程结构更新：** 本设计中的迁移目标仍有效，但物理路径已按 `docs/project-structure.md` 治理为 `apps/miniprogram/`、`apps/legacy-capacitor/`、`packages/domain/src/`、`services/` 和 `tools/`。后续实施以新路径为准。
 
+> **2026-05-31 账号方案修订：** 本设计中“手机号作为业务账号主键、微信一键取号默认入口、短信验证码兜底”的初始假设已被当前小程序个人主体限制修订。现行小程序主线使用可信 `WX_OPENID` / `authUid` 静默登录；手机号仅作为旧 App 历史字段和未来企业主体恢复取号路径的展示字段保留。阶段 29 不再把手机号能力作为当前上架前置。
+
 ## 背景
 
 《平安批》原主线是 iOS / Android Capacitor App：Vue 3、Vite、Tailwind CSS、Varlet、Capacitor 原生壳，加 CloudBase HTTP 云函数承载 AI 起稿和双人同步代理。

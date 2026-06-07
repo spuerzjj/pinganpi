@@ -43,14 +43,14 @@ async function main() {
   let cloudFunctionStubInstalled = false;
 
   try {
-    if (mode === "smoke") {
-      results.push(await runScenario("account-invalid-phone", () => runAccountInvalidPhoneSmoke(miniProgram)));
-    } else {
-      await installCloudFunctionStub(miniProgram);
-      cloudFunctionStubInstalled = true;
+    await installCloudFunctionStub(miniProgram);
+    cloudFunctionStubInstalled = true;
 
+    if (mode === "smoke") {
+      results.push(await runScenario("account-wechat-login", () => runAccountWechatLoginSmoke(miniProgram)));
+    } else {
       const scenarios = [
-        ["account-invalid-phone", () => runAccountInvalidPhoneSmoke(miniProgram)],
+        ["account-wechat-login", () => runAccountWechatLoginSmoke(miniProgram)],
         ["pair-invalid-invite", () => runPairInvalidInviteSmoke(miniProgram)],
         ["today", () => inspectStaticPage(miniProgram, "/pages/today/index", "today", ["model.title", "syncStatus.state"])],
         ["write-ai-flow-no-post", () => inspectWriteFlow(miniProgram)],
@@ -191,25 +191,30 @@ async function connectAutomator(automatorPort, timeoutMs = readPositiveIntegerEn
   throw new Error(`无法连接微信开发者工具自动化端口 ${wsEndpoint}${suffix}`);
 }
 
-async function runAccountInvalidPhoneSmoke(miniProgram) {
+async function runAccountWechatLoginSmoke(miniProgram) {
   await safeRemoveStorage(miniProgram, storageKey);
+  await miniProgram.mockWxMethod("redirectTo", { errMsg: "redirectTo:ok" });
 
   const page = await relaunch(miniProgram, "/pages/account/index");
   const before = await page.data();
-  await input(page, ".form-input", "123");
-  await tapButton(page, "使用兜底入口");
-  await page.waitFor(500);
+  assertEqual(before.statusText, "未登录", "账号页初始状态应为未登录");
+  await tapButton(page, "微信登录");
 
-  const after = await page.data();
-  assertEqual(after.devPhoneNumber, "123", "账号页应保留输入的测试手机号");
-  assertEqual(after.errorText, "请填写 11 位中国大陆手机号。", "账号页应显示手机号校验错误");
+  const after = await waitForPageData(
+    page,
+    (pageData) => pageData.account !== null && pageData.statusText === "已登录，尚未建立关系",
+    "账号页应通过微信 openid 测试桩登录",
+  );
+  assertEqual(after.account.accountId, "account-devtools-a", "账号页应保存 openid 登录账号");
+  assertEqual(after.errorText, "", "账号页登录后不应显示错误");
+  await safeRestore(miniProgram, "redirectTo");
 
   return {
-    scenario: "account-invalid-phone",
+    scenario: "account-wechat-login",
     route: page.path,
     beforeStatus: before.statusText,
-    inputValue: after.devPhoneNumber,
-    errorText: after.errorText,
+    afterStatus: after.statusText,
+    accountId: after.account.accountId,
   };
 }
 
@@ -303,6 +308,14 @@ async function inspectWriteFlow(miniProgram) {
 async function installCloudFunctionStub(miniProgram) {
   await miniProgram.evaluate((draftText) => {
     const root = typeof globalThis === "object" && globalThis ? globalThis : {};
+    const account = {
+      accountId: "account-devtools-a",
+      authUid: "wx-openid:devtools:openid-a",
+      phoneNumber: "",
+      status: "active",
+      createdAtIso: "2026-06-07T00:00:00.000Z",
+      lastLoginAtIso: "2026-06-07T00:00:00.000Z",
+    };
 
     if (!wx.cloud) {
       wx.cloud = {};
@@ -317,10 +330,33 @@ async function installCloudFunctionStub(miniProgram) {
             };
     }
 
+    root.__pinganpiDevtoolsAccountLoggedIn = false;
+
     wx.cloud.callFunction = async (options) => {
       const name = options && options.name;
       const data = (options && options.data) || {};
       const action = data.action;
+
+      if (name === "pinganpi-account" && action === "loginByWechat") {
+        root.__pinganpiDevtoolsAccountLoggedIn = true;
+        return {
+          result: {
+            ok: true,
+            action,
+            data: { account, binding: null },
+          },
+        };
+      }
+
+      if (name === "pinganpi-account" && (action === "getCurrentAccount" || action === "getActiveBinding")) {
+        return {
+          result: {
+            ok: true,
+            action,
+            data: root.__pinganpiDevtoolsAccountLoggedIn ? { account, binding: null } : { account: null, binding: null },
+          },
+        };
+      }
 
       if (name === "pinganpi-ai" && action === "scribeDraft") {
         return {
@@ -372,11 +408,21 @@ async function relaunch(miniProgram, route) {
 async function input(page, selector, value) {
   const element = await page.$(selector);
 
-  if (!element || typeof element.input !== "function") {
+  if (!element) {
     throw new Error(`找不到可输入控件：${selector}`);
   }
 
-  await element.input(value);
+  if (typeof element.input === "function") {
+    await element.input(value);
+    return;
+  }
+
+  if (typeof element.trigger === "function") {
+    await element.trigger("input", { value });
+    return;
+  }
+
+  throw new Error(`控件不支持输入：${selector}`);
 }
 
 async function tapButton(page, textIncludes) {
@@ -574,6 +620,8 @@ async function safeRestoreCloudFunctionStub(miniProgram) {
         wx.cloud.callFunction = root.__pinganpiOriginalCloudCallFunction;
         delete root.__pinganpiOriginalCloudCallFunction;
       }
+
+      delete root.__pinganpiDevtoolsAccountLoggedIn;
     });
   } catch {
     // Cloud function stubs are best-effort for DevTools flow isolation.

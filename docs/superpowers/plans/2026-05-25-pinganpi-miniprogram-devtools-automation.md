@@ -8,6 +8,8 @@
 
 **Tech Stack:** Node.js CommonJS script, `miniprogram-automator`, WeChat DevTools CLI, npm scripts, existing Vitest and miniprogram type checks.
 
+> **2026-06-07 账号 smoke 修订：** 当前脚本已迁移到 `tools/scripts/miniprogram-devtools-automator.cjs`，账号 smoke 不再输入无效手机号或点击“使用兜底入口”。现行 `smoke` / `flow` 会安装云函数测试桩并通过 `pinganpi-account/loginByWechat` 覆盖 openid 静默登录，避免触达真实账号云函数。
+
 ---
 
 ### Task 1: Add Automator Dependency And Shared Runner
@@ -49,11 +51,11 @@ Expected: scripts can be run from the repository root.
 
 - [x] **Step 1: Implement account smoke**
 
-Use `miniProgram.reLaunch('/pages/account/index')`, input `123` into `.paper-input`, tap the button whose text includes `使用兜底入口`, and assert `errorText` equals `请填写 11 位中国大陆手机号。`.
+Install the cloud function test stub, use `miniProgram.reLaunch('/pages/account/index')`, tap the button whose text includes `微信登录`, and assert the account page shows the stubbed openid login session.
 
 - [x] **Step 2: Implement full low-risk flow**
 
-Visit `pages/account/index`, `pages/pair/index`, `pages/today/index`, `pages/write/index`, `pages/scribes/index`, `pages/wallet/index`, `pages/mailbox/index`, and `pages/archive/index`. For write flow, use local-only safe input and inspect page data without sending a letter. For account flow, use invalid phone input only.
+Visit `pages/account/index`, `pages/pair/index`, `pages/today/index`, `pages/write/index`, `pages/scribes/index`, `pages/wallet/index`, `pages/mailbox/index`, and `pages/archive/index`. For write flow, use local-only safe input and inspect page data without sending a letter. For account flow, use the stubbed openid login path only.
 
 - [x] **Step 3: Verify structured output**
 
@@ -93,7 +95,7 @@ Run:
 WECHAT_DEVTOOLS_PORT=62046 npm run miniprogram:devtools:smoke
 ```
 
-Expected: PASS and JSON output includes the account invalid phone validation.
+Expected: PASS and JSON output includes the stubbed account openid login validation.
 
 - [x] **Step 2: Run full automator flow**
 

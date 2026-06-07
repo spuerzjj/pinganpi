@@ -6,9 +6,9 @@
 
 **旧静态看板：** `docs/pinganpi-roadmap-dashboard.html` 已删除，不再维护第二套静态看板。
 
-**当前分支：** `codex/stage28-ui-redesign`
+**当前主线：** `dev`；精确状态以 `git status --short --branch` 和 `git log --oneline --decorate -5` 为准。
 
-**当前开发基线：** 阶段 1-19 的 Capacitor / Vue App 工程能力已形成完整业务参考：领域层、写信流程、AI 起稿、流式起稿、CloudBase AI 代理、同步模型、CloudBase 同步代理、手机号账号本地闭环、双人绑定本地 / 服务端边界和外部平台配置收口均已完成对应验证。2026-05-24 用户确认重大方向调整：目标运行环境从 iOS / Android App 改为微信小程序并需要上架；新主线采用微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境；手机号仍是《平安批》业务账号主键；微信一键获取手机号为默认登录入口，短信验证码保留兜底；本地开发和线上都优先走 CloudBase 云函数，本地 proxy 降级为诊断工具。阶段 21 已完成迁移设计与重基线；阶段 22 已完成小程序工程基座；阶段 23 已完成共享领域核心迁移；阶段 24 已完成小程序本地核心界面；阶段 25 已完成小程序 CloudBase dev 主链路；阶段 26 已完成小程序登录与双人关系工程闭环；阶段 27 已完成小程序 AI 与同步体验补齐：写信页默认通过 `wx.cloud.callFunction` 调用 `pinganpi-ai/scribeDraft` 非流式起稿，AI 成功后进入校改，失败保留口述且不回退模板；今日页新增低调同步簿，通过 `pinganpi-sync/health` 查验云端入口；DevTools flow 使用云函数测试桩覆盖 AI 成功路径，避免消耗真实 MiMo 额度。阶段 28 已完成小程序 UI 完整重设计：全局切换为非复古、安静现代视觉系统，写信页保留私密编辑感，账号、关系、今日、写信、先生、钱匣、信箱和档案页统一使用现代 token、轻边框、状态 pill、摘要卡、输入和按钮样式；设计文档为 `docs/superpowers/specs/2026-06-07-pinganpi-miniprogram-ui-redesign-design.md`，实施计划为 `docs/superpowers/plans/2026-06-07-pinganpi-miniprogram-ui-redesign.md`，概念图为 `docs/assets/stage28-ui-redesign/non-retro-ui-concept.png`。2026-05-30 小程序 `dev` 环境切换为微信开发者工具内新开通并绑定当前 AppID 的 CloudBase 环境 `cloud1-d6gg9pfb476fc78b4`，历史环境 `pinganpi-d7gml1f6sbcc172ea` 只保留为旧 HTTP AI / sync 和旧 event 函数验证基线；新增 `miniprogram:cloud:deploy:functions` 用微信开发者工具 CLI 部署当前 `cloud1-...` 环境，新增 `miniprogram:cloud:init` 显式初始化账号、关系和同步集合，新增 `cloudbase:configure:miniprogram-ai-env` 供腾讯云 CLI 可见环境配置 `pinganpi-ai` MiMo env。当前 `cloud1-d6gg9pfb476fc78b4` 的 `pinganpi-ai` env 已由用户在控制台配置，真实 `wx.cloud.callFunction` AI 起稿 smoke 已通过；当前 `cloud1-...` dev 已通过一次性 token 维护函数创建 `pinganpi_accounts`、`pinganpi_households`、`pinganpi_members`、`pinganpi_invites`、`pinganpi_sync_snapshots`，业务云函数不在运行时自动建集合，`pinganpi-account/getCurrentAccount` 已复测返回空账号 / 空绑定。为兼容微信工具默认创建的 `Nodejs16.13` 云函数，MiMo client 已增加 Node HTTP fallback，避免依赖 Node 20 全局 `fetch` / `Headers`。小程序端流式结论：当前 CloudBase event 云函数主链路不能按浏览器 SSE 方式消费分片，本期不纳入流式实现，保留“先生起稿中”的等待状态；若后续恢复流式，应另开专项评估 `wx.request` + HTTP 云函数 / CloudBase Run 的安全与稳定性。下一步进入阶段 29：微信小程序上架配置。2026-05-25 已完成一次治理审查并固化 worktree / 多 agent 协作规则，记录为 `docs/governance-reviews/2026-05-25-project-governance-review.md` 和 `docs/agent-collaboration.md`。迁移设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`，阶段 22 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md`，阶段 23 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-shared-domain-core.md`，阶段 24 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-local-ui.md`，阶段 25 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-cloudbase-dev.md`，阶段 26 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-login-pair.md`，阶段 27 实施计划为 `docs/superpowers/plans/2026-05-25-pinganpi-miniprogram-ai-sync-experience.md`。精确提交以 `git log --oneline --decorate -5` 为准。
+**当前开发基线：** 阶段 1-19 的 Capacitor / Vue App 工程能力已形成完整业务参考：领域层、写信流程、AI 起稿、流式起稿、CloudBase AI 代理、同步模型、CloudBase 同步代理、手机号账号本地闭环、双人绑定本地 / 服务端边界和外部平台配置收口均已完成对应验证。2026-05-24 用户确认重大方向调整：目标运行环境从 iOS / Android App 改为微信小程序并需要上架；新主线采用微信原生小程序 + TypeScript + CloudBase 云函数 `dev` / `prd` 多环境；本地开发和线上都优先走 CloudBase 云函数，本地 proxy 降级为诊断工具。阶段 21 已完成迁移设计与重基线；阶段 22 已完成小程序工程基座；阶段 23 已完成共享领域核心迁移；阶段 24 已完成小程序本地核心界面；阶段 25 已完成小程序 CloudBase dev 主链路；阶段 26 已完成小程序登录与双人关系工程闭环，并于 2026-05-31 因个人主体限制把当前小程序账号入口改为可信 `WX_OPENID` / `authUid` 静默登录；手机号仅保留为旧 App / 将来企业主体取号路径的展示字段，当前上架路径不依赖微信手机号能力或短信验证码兜底。阶段 27 已完成小程序 AI 与同步体验补齐：写信页默认通过 `wx.cloud.callFunction` 调用 `pinganpi-ai/scribeDraft` 非流式起稿，AI 成功后进入校改，失败保留口述且不回退模板；今日页新增低调同步簿，通过 `pinganpi-sync/health` 查验云端入口；DevTools flow 使用云函数测试桩覆盖 AI 成功路径，避免消耗真实 MiMo 额度。阶段 28 已完成小程序 UI 完整重设计：全局切换为非复古、安静现代视觉系统，写信页保留私密编辑感，账号、关系、今日、写信、先生、钱匣、信箱和档案页统一使用现代 token、轻边框、状态 pill、摘要卡、输入和按钮样式；设计文档为 `docs/superpowers/specs/2026-06-07-pinganpi-miniprogram-ui-redesign-design.md`，实施计划为 `docs/superpowers/plans/2026-06-07-pinganpi-miniprogram-ui-redesign.md`，概念图为 `docs/assets/stage28-ui-redesign/non-retro-ui-concept.png`。2026-05-30 小程序 `dev` 环境切换为微信开发者工具内新开通并绑定当前 AppID 的 CloudBase 环境 `cloud1-d6gg9pfb476fc78b4`，历史环境 `pinganpi-d7gml1f6sbcc172ea` 只保留为旧 HTTP AI / sync 和旧 event 函数验证基线；新增 `miniprogram:cloud:deploy:functions` 用微信开发者工具 CLI 部署当前 `cloud1-...` 环境，新增 `miniprogram:cloud:init` 显式初始化账号、关系和同步集合，新增 `cloudbase:configure:miniprogram-ai-env` 供腾讯云 CLI 可见环境配置 `pinganpi-ai` MiMo env。当前 `cloud1-d6gg9pfb476fc78b4` 的 `pinganpi-ai` env 已由用户在控制台配置，真实 `wx.cloud.callFunction` AI 起稿 smoke 已通过；当前 `cloud1-...` dev 已通过一次性 token 维护函数创建 `pinganpi_accounts`、`pinganpi_households`、`pinganpi_members`、`pinganpi_invites`、`pinganpi_sync_snapshots`，业务云函数不在运行时自动建集合，`pinganpi-account/getCurrentAccount` 已复测返回空账号 / 空绑定。为兼容微信工具默认创建的 `Nodejs16.13` 云函数，MiMo client 已增加 Node HTTP fallback，避免依赖 Node 20 全局 `fetch` / `Headers`。小程序端流式结论：当前 CloudBase event 云函数主链路不能按浏览器 SSE 方式消费分片，本期不纳入流式实现，保留“先生起稿中”的等待状态；若后续恢复流式，应另开专项评估 `wx.request` + HTTP 云函数 / CloudBase Run 的安全与稳定性。下一步进入阶段 29：微信小程序上架配置。2026-05-25 已完成一次治理审查并固化 worktree / 多 agent 协作规则，记录为 `docs/governance-reviews/2026-05-25-project-governance-review.md` 和 `docs/agent-collaboration.md`。迁移设计文档为 `docs/superpowers/specs/2026-05-24-pinganpi-wechat-miniprogram-migration-design.md`，阶段 22 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-foundation.md`，阶段 23 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-shared-domain-core.md`，阶段 24 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-local-ui.md`，阶段 25 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-cloudbase-dev.md`，阶段 26 实施计划为 `docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-login-pair.md`，阶段 27 实施计划为 `docs/superpowers/plans/2026-05-25-pinganpi-miniprogram-ai-sync-experience.md`。
 
 **工程结构基线：** 2026-05-25 已完成工程目录结构治理：小程序主线位于 `apps/miniprogram/`，旧 Capacitor / Vue App 归档到 `apps/legacy-capacitor/`，共享领域位于 `packages/domain/src/`，服务端模块位于 `services/`，脚本和 Roadmap Viewer 位于 `tools/`。结构边界说明见 `docs/project-structure.md`，治理记录见 `docs/governance-reviews/2026-05-25-project-structure-governance.md`，自动审计命令为 `npm run structure:audit`。
 
@@ -214,7 +214,7 @@
 
 新主线从阶段 21 开始改为“微信小程序迁移设计 → 小程序工程基座 → 共享领域核心 → 小程序核心界面 → CloudBase dev 主链路 → 登录绑定真实闭环 → AI 与同步补齐 → 小程序 UI 完整重设计 → 小程序上架配置 → 小程序完整人工验证 → 邮政异常 / 推送 / 附件 / 发布打磨”。
 
-**本期目标：** 阶段 28 已完成小程序 UI 完整重设计。下一步进入阶段 29：微信小程序上架配置，处理 AppID、隐私保护指引、手机号能力、CloudBase `prd` 环境和审核发布人工事项。旧 Capacitor / Vue 实现暂存为历史参考，不再作为主开发目标。
+**本期目标：** 阶段 28 已完成小程序 UI 完整重设计，当前小程序账号入口已改为 openid 静默登录。下一步进入阶段 29：微信小程序上架配置，处理 AppID、主体 / 服务类目、隐私保护指引、CloudBase `prd` 环境和审核发布人工事项。旧 Capacitor / Vue 实现暂存为历史参考，不再作为主开发目标。
 
 | 阶段 | 名称 | 状态 | 说明 |
 | --- | --- | --- | --- |
@@ -243,11 +243,11 @@
 | 23 | 共享领域核心迁移 | 已完成基础 | 已新增 `packages/domain/src/` 作为领域规则真实实现，`apps/legacy-capacitor/src/domain/` 保留兼容 re-export，小程序根内副本和一致性检查已建立，今日页已使用共享领域摘要。 |
 | 24 | 小程序本地核心界面 | 已完成基础 | 今日、写信、先生、钱匣、信箱 / 档案已接入本地 mock view-model；写信页已有本地 5 步流程，tab 切换保留进度，口述变更会重新起稿。 |
 | 25 | 小程序 CloudBase dev 主链路 | 已完成 dev smoke | 已新增并部署账号、绑定、同步、AI event 云函数入口，小程序 cloud function adapter，构建 / 部署 / smoke 脚本；dev health smoke 已通过。 |
-| 26 | 小程序登录与双人关系真实闭环 | 已完成工程闭环 | 账号页接入微信手机号 code 登录和受控兜底入口；关系页接入创建关系、邀请码和加入；服务端可信推导账号，不信任客户端身份字段。 |
+| 26 | 小程序登录与双人关系真实闭环 | 已完成工程闭环 | 账号页接入 openid 静默登录；关系页接入创建关系、邀请码和加入；服务端可信推导账号，不信任客户端身份字段。 |
 | 27 | 小程序 AI 与同步体验补齐 | 已完成工程闭环 | 小程序写信页接入非流式 AI 起稿、失败关闭、AI metadata、今日同步簿和 DevTools 云函数测试桩；流式不纳入本期。 |
 | 28 | 小程序 UI 完整重设计 | 已完成 | 非复古、安静现代视觉系统；全页面现代 token、摘要卡、状态 pill、表单和按钮统一，写信页保留私密编辑感。 |
-| 29 | 微信小程序上架配置 | 下一步 | AppID、隐私、手机号能力、`prd` 环境、审核发布人工清单。 |
-| 30 | 小程序完整人工验证 | 未开始 | 双手机号、双端、写信、送达、拆阅、断网、清空数据、`prd` smoke。 |
+| 29 | 微信小程序上架配置 | 下一步 | AppID、主体 / 服务类目、隐私、`prd` 环境、审核发布人工清单。 |
+| 30 | 小程序完整人工验证 | 未开始 | 双账号双端、写信、送达、拆阅、断网、清空数据、`prd` smoke。 |
 | 31 | 邮政异常规则 | 未开始 | 延误、错分、迷失、找回、退回的确定性推进。 |
 | 32 | 系统推送 / 订阅消息 | 未开始 | 重要信、挂号信、找回、退回等克制提醒；小程序内优先评估订阅消息。 |
 | 33 | 照片附件 | 未开始 | 夹寄照片、费用、存储、展示和隐私边界。 |
@@ -269,11 +269,11 @@
 - 阶段 23 依赖阶段 22，已抽取共享领域核心，确保小程序不重复实现时间、钱匣、邮政和状态机规则。
 - 阶段 24 依赖阶段 23，先用本地 mock 跑通小程序核心界面。
 - 阶段 25 依赖阶段 24，并把账号、绑定、同步、AI 接到 CloudBase `dev` 云函数 event wrapper。
-- 阶段 26 依赖阶段 25，已完成小程序账号 / 关系工程闭环；微信手机号能力真机弹窗、短信真实验证码、AppID 关联和 prd 验证顺延到阶段 29 / 30。
+- 阶段 26 依赖阶段 25，已完成小程序账号 / 关系工程闭环；2026-05-31 已按个人主体限制转向 openid 静默登录，手机号取号路径仅作为未来企业主体兼容能力保留。
 - 阶段 27 依赖阶段 25 / 26，已补齐小程序 AI 起稿、失败关闭、同步状态和流式专项结论；实施计划为 `docs/superpowers/plans/2026-05-25-pinganpi-miniprogram-ai-sync-experience.md`。
 - 阶段 27 流式结论：小程序主链路使用 `wx.cloud.callFunction` 调 CloudBase event 云函数，当前不按 SSE 分片返回；本期保留非流式 AI 起稿和“先生起稿中”等待反馈，不强行模拟流式。
 - 阶段 28 依赖阶段 22-27 的可演示小程序，已完成上架前 UI 完整重设计；它只改视觉系统、页面层级和状态表达，不改变领域规则、云函数协议、AI 起稿状态机或同步边界。
-- 阶段 29 依赖阶段 28，统一处理 AppID、隐私、手机号能力、`prd` 环境和审核发布人工清单。
+- 阶段 29 依赖阶段 28，统一处理 AppID、主体 / 服务类目、隐私、`prd` 环境和审核发布人工清单；当前个人主体方案不把手机号能力作为上架前置。
 - 阶段 30 依赖阶段 29，由 Codex 引导用户做小程序完整人工验证。
 - 阶段 31-34 是原阶段 30-33 顺延，分别处理邮政异常、推送 / 订阅消息、照片附件和发布准备。
 
@@ -282,12 +282,12 @@
 阶段 28 新增验证记录：
 
 - `npm test -- apps/miniprogram/styles/ui-redesign.test.ts`：通过，1 个测试文件，3 个测试通过；覆盖非复古 token、旧 class 移除和 app 导航配色。
-- `npm test`：通过，65 个测试文件，420 个测试通过。
+- `npm test`：通过，65 个测试文件，429 个测试通过。
 - `npm run miniprogram:check`：通过；包含共享副本一致性检查和小程序 typecheck。
 - `npm run typecheck`：通过。
 - `npm run roadmap:build`：通过；Roadmap Viewer 数据源和构建可用。
 - `npm run structure:audit`：通过。
-- `node --check tools/scripts/miniprogram-devtools-automator.cjs`：通过；自动化脚本选择器已从旧 `.paper-input` 更新为 `.form-input`。
+- `node --check tools/scripts/miniprogram-devtools-automator.cjs`：通过；自动化脚本账号 smoke 已从旧手机号兜底校验改为 openid 登录测试桩。
 - `npm run miniprogram:devtools:flow`：本轮未执行成功；本机未找到微信开发者工具服务端口，需先开启服务端口并设置 `WECHAT_DEVTOOLS_PORT=<端口>`。
 - 视觉验证：已查看 `docs/assets/stage28-ui-redesign/non-retro-ui-concept.png` 和 `docs/assets/stage28-ui-redesign/implementation-preview.png`；后者由 Chrome headless 从 `docs/assets/stage28-ui-redesign/implementation-preview.html` 生成，作为 DevTools 端口不可用时的静态视觉核对，不替代真机 / 微信开发者工具截图。
 - `git diff --check`：通过；仅输出 Windows 工作区 LF/CRLF 提示。
@@ -321,9 +321,9 @@
 - 控制台已确认历史阻断错误为 `app.json: 未找到 ["pages"][0] 对应的 pages/account/index.js 文件`；根因是微信开发者工具未启用 TypeScript 编译插件，导致页面 `.ts` 入口被按 `.js` 查找。
 - `apps/miniprogram/project.config.json` 已显式配置 `setting.useCompilerPlugins: ["typescript"]`；本机 `apps/miniprogram/project.private.config.json` 也需保持同项配置，避免私有配置覆盖后复现该错误。
 - 重新打开并编译项目后，开发者工具 Console 不再出现 app.json 阻断错误；剩余为 WeChatLib、LazyCodeLoading 和 HarmonyOS `getSystemInfo` 兼容提示。
-- `WECHAT_DEVTOOLS_PORT=62046 npm run miniprogram:devtools:smoke`：通过；自动打开账号页，输入无效手机号 `123`，点击 `使用兜底入口`，断言错误文案为 `请填写 11 位中国大陆手机号。`。
+- `WECHAT_DEVTOOLS_PORT=62046 npm run miniprogram:devtools:smoke`：历史通过；旧记录覆盖账号页手机号兜底校验。当前脚本已改为账号页 openid 登录测试桩，需在开启微信开发者工具服务端口后重新运行。
 - `WECHAT_DEVTOOLS_PORT=62046 npm run miniprogram:devtools:flow`：通过；覆盖账号、关系、今日、写信、代笔先生、钱匣、信箱和档案；写信场景停在投寄核算页，不点击本地投寄。
-- 自动化安全边界：不点击上传、发布、真机预览、真实微信手机号授权或审核提交；只做低风险页面巡检和本地输入校验。
+- 自动化安全边界：不点击上传、发布、真机预览或审核提交；账号、AI 和同步路径使用测试桩时不调用真实云端额度。
 
 Roadmap Viewer 新增验证记录：
 
@@ -446,7 +446,7 @@ npm run cap:doctor
 - 小程序今日、写信、先生、钱匣、信箱 / 档案页面目前只有骨架，尚未接入真实业务状态。
 - 小程序 CloudBase `dev` 主链路尚未接通；现有 HTTP proxy 需要降级为诊断工具。
 - 微信一键手机号登录、短信兜底、真实账号恢复和小程序双人绑定尚未实现。
-- CloudBase `prd` 环境、微信小程序 AppID、隐私保护指引、手机号能力和审核发布仍需用户人工配置。
+- CloudBase `prd` 环境、微信小程序 AppID、主体 / 服务类目、隐私保护指引和审核发布仍需用户人工配置。
 - 小程序端 AI 起稿先做非流式闭环；流式能力需单独验证微信小程序和 CloudBase 响应能力。
 - 小程序完整人工验证尚未开始。
 - 延误、错分、迷失、找回、退回的自动确定性推进规则尚未接入。
@@ -1003,9 +1003,9 @@ npm run cap:doctor
 
 ### 阶段 21：微信小程序迁移设计与重基线
 
-目标：把项目主线从 Capacitor iOS / Android App 切换为微信原生小程序，并明确 CloudBase `dev` / `prd` 多环境、微信一键手机号登录、短信兜底、本地 proxy 降级和上架边界。
+目标：把项目主线从 Capacitor iOS / Android App 切换为微信原生小程序，并明确 CloudBase `dev` / `prd` 多环境、登录、上架和本地 proxy 降级边界。
 
-状态：进行中。
+状态：已完成。初始迁移设计曾以微信一键手机号和短信兜底为默认账号入口；2026-05-31 已因个人主体限制修订为 openid 静默登录，详见阶段 26 记录。
 
 设计文档：
 
@@ -1018,8 +1018,8 @@ npm run cap:doctor
 已确认决策：
 
 - 采用微信原生小程序 + TypeScript + CloudBase 云函数多环境。
-- 手机号仍是《平安批》业务账号主键。
-- 微信一键获取手机号为默认登录入口，短信验证码保留兜底。
+- 当前小程序账号身份由可信 `WX_OPENID` / `authUid` 推导；手机号仅作为旧 App 和未来企业主体取号路径的展示字段保留。
+- 个人主体当前不依赖微信手机号能力或短信验证码兜底；若未来升级企业主体，再重新评估手机号登录。
 - 本地开发和上线都优先走 CloudBase 云函数；本地 proxy 只保留为诊断工具。
 - 旧 Capacitor / Vue 实现暂存，不立即删除。
 - Codex 作为总控推进，子 agent 只处理边界清晰的并行任务，完成后关闭。
@@ -1093,18 +1093,18 @@ npm run cap:doctor
 
 ### 阶段 26：小程序登录与双人关系真实闭环
 
-目标：完成微信一键手机号登录、短信兜底、账号恢复、创建关系和邀请码加入。
+目标：完成可信微信身份登录、账号恢复、创建关系和邀请码加入。
 
-状态：已完成工程闭环；真实微信手机号能力和短信验证码人工验证顺延到阶段 29 / 30。
+状态：已完成工程闭环；当前小程序个人主体路径已转向 openid 静默登录，真实微信手机号能力和短信验证码不再作为当前上架前置。
 
 已完成：
 
 - 新增阶段 26 实施计划：`docs/superpowers/plans/2026-05-24-pinganpi-miniprogram-login-pair.md`。
 - 新增 `services/miniprogram-functions/miniprogram-auth.ts`，从 CloudBase / 微信可信上下文读取 `openid` / `unionid` 并生成稳定 `authUid`。
-- `pinganpi-account` 新增 `loginByWechatPhone`、受控 `loginByDevPhone`、`getCurrentAccount` 和可信 `getActiveBinding`；手机号只来自服务端微信手机号 resolver 或显式 dev guard，不信任客户端伪造字段。
+- `pinganpi-account` 新增 `loginByWechat`、`loginByWechatPhone`、受控 `loginByDevPhone`、`getCurrentAccount` 和可信 `getActiveBinding`；当前客户端默认调用 `loginByWechat`，手机号取号路径仅作为未来企业主体兼容能力保留，不信任客户端伪造字段。
 - `pinganpi-pair` 的 `createHousehold`、`createInvite`、`joinByInvite` 和 `getActiveBinding` 均从当前可信账号推导，不再接收客户端 `accountId` 作为授权依据。
 - 新增 `apps/miniprogram/services/account-session.ts` 和 `account-cloud.ts`，小程序只缓存账号 / 绑定摘要，不保存验证码、token、secret 或邀请码 hash。
-- 账号页接入微信手机号按钮、兜底入口、登录态恢复和登录后路由；关系页接入创建关系、生成邀请码、输入邀请码加入和本地会话刷新。
+- 账号页接入单个「微信登录」按钮、登录态恢复和登录后路由；关系页接入创建关系、生成邀请码、输入邀请码加入和本地会话刷新。
 - 2026-05-31 登录方式转向 openid 静默登录（个人主体决策）：小程序主体为个人，微信 `getPhoneNumber` 组件对个人主体不可用（点击必然失败），短信验证码又需企业资质且要自建发送 / 频控，均不可行。鉴于账号身份本就由可信 `WX_OPENID` 派生的 `authUid` 做主键、手机号在 `PinganpiAccount` 中只是展示字段，改用 openid 静默登录：
   - 后端 `pinganpi-account.ts` 新增 `loginByWechat` action，无 payload，直接用 `runAccountMutation` 读到的可信身份 `ensureAccount({ authUid })`；`account-pair-service.ts` 的 `EnsureAccountInput.phoneNumber` 改为可选，缺省时不覆盖已有手机号、新账号默认空串（旧版 Capacitor 短信登录始终传手机号，不受影响）。
   - 客户端 `account-cloud.ts` 新增 `loginWithWechat()`（移除 `loginWithWechatPhoneCode`）；账号页改为单个「微信登录」按钮 `bindtap="onWechatLogin"`，移除手机号展示行与 `statusText` 中的手机号；删除已无引用的 `apps/miniprogram/services/wechat-phone.ts` 及其测试。
@@ -1114,10 +1114,10 @@ npm run cap:doctor
 
 仍需人工验证：
 
-- 微信小程序 AppID 关联 CloudBase 环境后，`open-type="getPhoneNumber"` 是否能在开发者工具 / 真机返回 `code`。
-- 当前主体、服务类目和手机号能力是否满足微信平台要求。
-- 短信验证码兜底的真实发送、频控和模板 / 签名表现。
-- 两个真实手机号完成 A 创建邀请、B 输入加入、清空本地数据后恢复账号。
+- 微信小程序 AppID 关联 CloudBase 环境后，可信 `WX_OPENID` 是否在 dev / prd 云函数上下文稳定可用。
+- 当前个人主体、服务类目和隐私保护指引是否满足微信平台审核要求。
+- 若未来升级企业主体并恢复手机号登录，再重新验证 `getPhoneNumber`、短信发送、频控和模板 / 签名表现。
+- 两个真实微信账号完成 A 创建邀请、B 输入加入、清空本地数据后恢复账号。
 
 ### 阶段 27：小程序 AI 与同步体验补齐
 
@@ -1137,7 +1137,7 @@ npm run cap:doctor
 仍需后续阶段处理：
 
 - 投寄 / 拆阅的真实联网校验、双端真实同步和清空本地数据后的恢复验证放入阶段 30。
-- `cloud1-...` dev 环境真实 MiMo 起稿 smoke 已通过；微信手机号授权和 `prd` 环境验证仍依赖阶段 29 / 30 的人工配置。
+- `cloud1-...` dev 环境真实 MiMo 起稿 smoke 已通过；`prd` 环境验证仍依赖阶段 29 / 30 的人工配置。
 
 ### 阶段 28：小程序 UI 完整重设计
 
@@ -1174,13 +1174,13 @@ npm run cap:doctor
 
 ### 阶段 29：微信小程序上架配置
 
-目标：统一处理微信小程序 AppID、隐私、手机号能力、`prd` 环境和审核发布人工事项。
+目标：统一处理微信小程序 AppID、主体 / 服务类目、隐私、`prd` 环境和审核发布人工事项。
 
 需要用户介入：
 
 - 微信小程序 AppID、主体认证、服务类目。
 - 小程序隐私保护指引和用户协议确认。
-- 手机号能力开通。
+- 当前个人主体路径不申请手机号能力；若未来改企业主体，再重新评估手机号能力和短信兜底。
 - CloudBase `prd` 环境创建 / 绑定 / 套餐确认。
 - 提交审核、审核反馈处理和发布确认。
 
@@ -1190,7 +1190,7 @@ npm run cap:doctor
 
 推荐范围：
 
-- 两个真实手机号完成微信一键登录或短信兜底。
+- 两个真实微信账号完成 openid 静默登录。
 - A 创建关系，B 输入邀请码加入。
 - 双端同步、AI 起稿、写信投寄、真实等待、到达拆阅、归档。
 - 断网、重启、清空本地数据、重新登录恢复。

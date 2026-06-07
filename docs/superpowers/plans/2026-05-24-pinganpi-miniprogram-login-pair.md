@@ -8,6 +8,8 @@
 
 **Tech Stack:** 微信原生小程序、TypeScript、CloudBase event 云函数、Vitest、现有 `account-pair-service`。
 
+> **2026-05-31 账号方案修订：** 本计划已完成工程闭环，但其中微信手机号 code / 短信兜底作为默认入口的前提已被个人主体限制修订。当前小程序主线使用 `pinganpi-account/loginByWechat` 通过可信 `WX_OPENID` / `authUid` 静默登录；`loginByWechatPhone`、手机号 resolver 和 `loginByDevPhone` 仅作为未来企业主体恢复取号或开发调试兼容能力保留。
+
 ---
 
 ## Scope
